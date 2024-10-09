@@ -1,5 +1,0 @@
-/home/bwb/work/diy-x86os/start/start/build/CMakeFiles/edit_cache.dir
-/home/bwb/work/diy-x86os/start/start/build/CMakeFiles/rebuild_cache.dir
-/home/bwb/work/diy-x86os/start/start/build/source/boot/CMakeFiles/boot.dir
-/home/bwb/work/diy-x86os/start/start/build/source/boot/CMakeFiles/edit_cache.dir
-/home/bwb/work/diy-x86os/start/start/build/source/boot/CMakeFiles/rebuild_cache.dir
