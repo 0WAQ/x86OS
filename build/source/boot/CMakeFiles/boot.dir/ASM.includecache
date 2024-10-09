@@ -1,0 +1,14 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/bwb/work/diy-x86os/start/start/source/boot/boot.h
+
+/home/bwb/work/diy-x86os/start/start/source/boot/start.S
+boot.h
+/home/bwb/work/diy-x86os/start/start/source/boot/boot.h
+

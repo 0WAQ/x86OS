@@ -1,0 +1,14 @@
+[
+{
+  "directory": "/home/bwb/work/diy-x86os/start/start/build/source/boot",
+  "command": "/usr/bin/x86_64-linux-gnu-gcc  -I/home/bwb/work/diy-x86os/start/start/source -m32 -g -g -o CMakeFiles/boot.dir/start.S.obj -c /home/bwb/work/diy-x86os/start/start/source/boot/start.S",
+  "file": "/home/bwb/work/diy-x86os/start/start/source/boot/start.S",
+  "output": "source/boot/CMakeFiles/boot.dir/start.S.obj"
+},
+{
+  "directory": "/home/bwb/work/diy-x86os/start/start/build/source/boot",
+  "command": "/usr/bin/x86_64-linux-gnu-gcc  -I/home/bwb/work/diy-x86os/start/start/source -g -c -O0 -m32 -fno-pie -fno-stack-protector -fno-asynchronous-unwind-tables -g -o CMakeFiles/boot.dir/boot.c.obj -c /home/bwb/work/diy-x86os/start/start/source/boot/boot.c",
+  "file": "/home/bwb/work/diy-x86os/start/start/source/boot/boot.c",
+  "output": "source/boot/CMakeFiles/boot.dir/boot.c.obj"
+}
+]
