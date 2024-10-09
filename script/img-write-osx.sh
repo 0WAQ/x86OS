@@ -3,7 +3,7 @@ if [ -f "disk1.vhd" ]; then
 fi
 
 if [ ! -f "disk1.dmg" ]; then
-    echo "找不到disk1.vhd，请从课程提供的百度网盘链接上下载放到image目录下"
+    echo "Error: no disk2.vhd!"
     exit
 fi
 
@@ -12,7 +12,7 @@ if [ -f "disk2.vhd" ]; then
 fi
 
 if [ ! -f "disk2.dmg" ]; then
-    echo "找不到disk2.vhd，请从课程提供的百度网盘链接上下载放到image目录下"
+    echo "Error: no disk2.vhd!"
     exit
 fi
 

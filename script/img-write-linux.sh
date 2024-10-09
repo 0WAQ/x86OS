@@ -3,7 +3,7 @@ if [ -f "disk1.vhd" ]; then
 fi
 
 if [ ! -f "disk1.img" ]; then
-    echo "error: no disk1.vhd, download it first!!!"
+    echo "Error: no disk1.vhd!"
     exit -1
 fi
 
@@ -12,7 +12,7 @@ if [ -f "disk2.vhd" ]; then
 fi
 
 if [ ! -f "disk2.img" ]; then
-    echo "error: no disk2.vhd, download it first!!!"
+    echo "Error: no disk2.vhd!"
     exit -1
 fi
 
