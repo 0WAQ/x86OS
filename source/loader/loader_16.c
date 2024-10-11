@@ -25,7 +25,7 @@ void loader_entry() {
 // 参考：https://wiki.osdev.org/Memory_Map_(x86)
 // 1MB以下比较标准, 在1M以上会有差别:
 // 检测：https://wiki.osdev.org/Detecting_Memory_(x86)#BIOS_Function:_INT_0x15.2C_AH_.3D_0xC7
-static void detect_memory() {
+void detect_memory() {
     show_msg("...Detecting Memory...\n\r");
     
     uint32_t contID = 0;
