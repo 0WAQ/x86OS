@@ -35,10 +35,6 @@ _start:
 
 	// 显示boot加载完成提示
 	mov $0xe, %ah
-	mov $'L', %al
-	int $0x10
-
-	mov $0xe, %ah
 	mov $'.', %al
 	int $0x10
 	
@@ -51,7 +47,7 @@ _start:
 	int $0x10
 
 	mov $0xe, %ah
-	mov $'b', %al
+	mov $'B', %al
 	int $0x10
 
 	mov $0xe, %ah
