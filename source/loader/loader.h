@@ -1,6 +1,6 @@
 /**
  *
- * 二级加载部分，用于实现更为复杂的初始化、内核加载的工作。
+ * 二级加载器16位和32位的通用部分，用于实现更为复杂的初始化、内核加载的工作。
  *
  */
 #ifndef LOADER_H
@@ -8,21 +8,7 @@
 
 #include "common/types.h"
 #include "common/boot_info.h"
-
-/**
- * @brief 引导器入口函数
- */
-void loader_entry();
-
-/**
- * @brief 内存检测函数
- */
-void detect_memory();
-
-/**
- * @brief 显示字符串 
- */
-void show_msg(const char* msg);
+#include "common/cpu_instr.h"
 
 /**
  * @brief 内存检测信息结构

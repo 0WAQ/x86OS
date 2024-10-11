@@ -9,6 +9,7 @@
 __asm__(".code16gcc");
 
 #include "loader.h"
+#include "loader_16.h"
 
 // 声明全局的启动信息参数
 static boot_info_t boot_info;
@@ -19,6 +20,9 @@ void loader_entry() {
     // 检测内存容量
     detect_memory();
 
+    // 进入保护模式
+    enter_protect_mode();
+
     for(;;) {}
 }
 
@@ -26,7 +30,7 @@ void loader_entry() {
 // 1MB以下比较标准, 在1M以上会有差别:
 // 检测：https://wiki.osdev.org/Detecting_Memory_(x86)#BIOS_Function:_INT_0x15.2C_AH_.3D_0xC7
 void detect_memory() {
-    show_msg("...Detecting Memory...\n\r");
+    show_msg("...Detecting Memory...");
     
     uint32_t contID = 0;
     SMAP_entry_t smap_entry;
@@ -43,7 +47,7 @@ void detect_memory() {
         );
 
         if(signature != 0x534D4150) {
-            show_msg("Error: Memory Dectection Failed!\n\r");
+            show_msg("Failed!\n\r");
             return;
         }
 
@@ -64,7 +68,36 @@ void detect_memory() {
             break;
         }
     }
-    show_msg("Memory Dectection Successful!\n\r");
+    show_msg("Successful!\n\r");
+}
+
+// GDT表
+uint16_t gdt_table[][4] = {
+    {0, 0, 0, 0},
+    {0xFFFF, 0x0000, 0x9A00, 0x00CF},
+    {0xFFFF, 0x0000, 0x9200, 0x00CF},
+};
+
+void enter_protect_mode() {
+    show_msg("...Entering Protect Mode...");
+
+    // 关中断
+    cli();
+
+    // 开启A20地址线
+    // 使用的是Fast A20 Gate方式，见https://wiki.osdev.org/A20#Fast_A20_Gate
+    uint8_t data = inb(0x92);
+    outb(0x92, data | 0x2);
+
+    // 加载GDT；由于中断已经关闭，无需加载IDT
+    lgdt((uint32_t)gdt_table, sizeof(gdt_table));
+
+    // 开启CR0的PE位
+    uint32_t cr0 = read_cr0();
+    write_cr0(cr0 | (1 << 0));
+
+    // 远跳转
+    far_jump(8, (uint32_t)protect_mode_entry);
 }
 
 void show_msg(const char* msg) {
