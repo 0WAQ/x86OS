@@ -38,6 +38,65 @@ _start:
 	mov $'L', %al
 	int $0x10
 
+	mov $0xe, %ah
+	mov $'.', %al
+	int $0x10
+	
+	mov $0xe, %ah
+	mov $'.', %al
+	int $0x10
+
+	mov $0xe, %ah
+	mov $'.', %al
+	int $0x10
+
+	mov $0xe, %ah
+	mov $'b', %al
+	int $0x10
+
+	mov $0xe, %ah
+	mov $'o', %al
+	int $0x10
+
+	mov $0xe, %ah
+	mov $'o', %al
+	int $0x10
+
+	mov $0xe, %ah
+	mov $'t', %al
+	int $0x10
+
+	mov $0xe, %ah
+	mov $'i', %al
+	int $0x10
+	
+	mov $0xe, %ah
+	mov $'n', %al
+	int $0x10
+
+	mov $0xe, %ah
+	mov $'g', %al
+	int $0x10
+
+	mov $0xe, %ah
+	mov $'.', %al
+	int $0x10
+
+	mov $0xe, %ah
+	mov $'.', %al
+	int $0x10
+
+	mov $0xe, %ah
+	mov $'.', %al
+	int $0x10
+
+	mov $0xe, %ah
+	mov $'\n', %al
+	int $0x10
+
+	mov $0xe, %ah
+	mov $'\r', %al
+	int $0x10
 
 // 加载loader, 只支持磁盘1
 // https://wiki.osdev.org/Disk_access_using_the_BIOS_(INT_13h)
