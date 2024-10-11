@@ -13,6 +13,9 @@ void loader_kernel() {
     // 从第100个扇区开始读取扇区，将内核加载到1MB处
     read_disk(100, 500, (uint8_t*)SYS_KERNEL_LOAD_ADDR);
 
+    // 跳转到内核代码
+    ((void(*)())SYS_KERNEL_LOAD_ADDR)();
+    
     for(;;);
 }
 
