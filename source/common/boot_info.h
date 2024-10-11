@@ -26,4 +26,6 @@ typedef struct _boot_info_t {
 
 }boot_info_t;
 
+#define SECTOR_SIZE 512
+
 #endif // BOOT_INFO_H 

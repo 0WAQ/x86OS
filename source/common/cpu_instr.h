@@ -47,6 +47,30 @@ static inline void outb(uint16_t port, uint8_t data) {
 }
 
 /**
+ * @brief 读端口，inw ax, dx
+ */
+static inline uint16_t inw(uint16_t port) {
+    uint16_t data;
+    __asm__ __volatile__(
+        "inw %[p], %[v]"
+        : [v]"=a" (data)    // 输出端口
+        : [p]"d" (port)     // 输入端口
+    );
+    return data;
+}
+
+/**
+ * @brief 写端口，outw ax, dx
+ */
+static inline void outw(uint16_t port, uint16_t data) {
+    __asm__ __volatile__(
+        "outw %[v], %[p]"
+        :
+        : [p]"d" (port), [v]"a" (data)
+    );
+}
+
+/**
  * @brief 加载全局段描述符表
  */
 static inline void lgdt(uint32_t start, uint32_t size) {
