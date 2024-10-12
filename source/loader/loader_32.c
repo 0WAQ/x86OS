@@ -14,7 +14,7 @@ void loader_kernel() {
     read_disk(100, 500, (uint8_t*)SYS_KERNEL_LOAD_ADDR);
 
     // 跳转到内核代码
-    ((void(*)())SYS_KERNEL_LOAD_ADDR)();
+    ((void(*)(boot_info_t*))SYS_KERNEL_LOAD_ADDR)(&boot_info);
     
     for(;;);
 }

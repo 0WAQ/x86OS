@@ -12,7 +12,7 @@ __asm__(".code16gcc");
 #include "loader_16.h"
 
 // 声明全局的启动信息参数
-static boot_info_t boot_info;
+boot_info_t boot_info;
 
 void loader_entry() {
     show_msg("...Loading...\n\r");
