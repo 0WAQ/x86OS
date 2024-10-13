@@ -1,19 +1,25 @@
 
-// gcc汇编器默认代码是32位
+# gcc汇编器默认代码是32位
 
     .text
     .extern kernel_init
 
-    // void _start(boot_info_t* boot_info)
+    # void _start(boot_info_t* boot_info)
     .global _start
 _start:
-    // 将 boot_info 压栈
-    // push %ebp
-    // mov %esp, %ebp
-    // mov 0x8(%ebp), %eax
-    mov 0x4(%esp), %eax
+    # 第一种方法
+    # push %ebp
+    # mov %esp, %ebp
+    # mov 0x8(%ebp), %eax
+    # push %eax
 
-    // kernel_init(boot_info)
-    push %eax
+    # 第二种方法
+    # mov 4(%esp), %eax
+    # push %eax
+
+    # 第三种方法
+    push 4(%esp)
+
+    # kernel_init(boot_info)
     call kernel_init
     jmp .
