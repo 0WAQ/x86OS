@@ -82,7 +82,7 @@ uint32_t reload_elf_file(uint8_t* file_buffer) {
         uint8_t* src = file_buffer + phdr->p_offset;
         uint8_t* dest = (uint8_t*)phdr->p_paddr;
         for(int j = 0; j < phdr->p_filesz; j++) {
-            *dest = *src++;
+            *dest++ = *src++;
         }
 
         // memsz和filesz不同时要填0
