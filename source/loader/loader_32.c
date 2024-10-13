@@ -10,11 +10,18 @@
 
 void loader_kernel() {
 
-    // 从第100个扇区开始读取扇区，将内核加载到1MB处
+    // 从第100个扇区开始读取扇区，将内核映像文件加载到1MB处，原本写入的是二进制文件，现在时elf文件，是在CMakeLists文件中修改
     read_disk(100, 500, (uint8_t*)SYS_KERNEL_LOAD_ADDR);
 
+    // 读取kernel的elf文件，而不是二进制文件
+    // 需要先将其从内存中读取出来解析，获得其入口函数地址0x10000(在lds中设置)
+    uint32_t kernel_entry = reload_elf_file((uint8_t*)SYS_KERNEL_LOAD_ADDR);
+    if(kernel_entry == 0) {
+        die(-1);
+    }
+
     // 跳转到内核代码
-    ((void(*)(boot_info_t*))SYS_KERNEL_LOAD_ADDR)(&boot_info);
+    ((void(*)(boot_info_t*))kernel_entry)(&boot_info);
     
     for(;;);
 }
@@ -48,4 +55,46 @@ void read_disk(uint32_t sector, uint32_t sector_cnt, uint8_t* buffer) {
             *buf++ = inw(0x1F0);
         }
     }
+}
+
+uint32_t reload_elf_file(uint8_t* file_buffer) {
+
+    // 从0x100000处开始的数据转换成elf文件，elf不像bin一样可以直接运行，需要先解析
+    Elf32_Ehdr* elf_hdr = (Elf32_Ehdr*)file_buffer;
+    
+    // 判断文件是否是合格的elf
+    if(elf_hdr->e_ident[0] != 0x7F || 
+       elf_hdr->e_ident[1] != 'E'  ||
+       elf_hdr->e_ident[2] != 'L'  ||
+       elf_hdr->e_ident[3] != 'F')
+    {
+        return 0;
+    }
+
+    // 加载程序头，将内容拷贝到相应的位置
+    for(int i = 0; i < elf_hdr->e_phnum; i++) {
+        Elf32_Phdr* phdr = (Elf32_Phdr*)(file_buffer + elf_hdr->e_phoff) + i;
+        if(phdr->p_type != PT_LOAD) {
+            continue;
+        }
+
+        // 全部使用物理地址
+        uint8_t* src = file_buffer + phdr->p_offset;
+        uint8_t* dest = (uint8_t*)phdr->p_paddr;
+        for(int j = 0; j < phdr->p_filesz; j++) {
+            *dest = *src++;
+        }
+
+        // memsz和filesz不同时要填0
+        dest = (uint8_t*)phdr->p_paddr + phdr->p_filesz;
+        for(int j = 0; j < phdr->p_memsz - phdr->p_filesz; j++) {
+            *dest++ = 0;
+        }
+    }
+
+    return elf_hdr->e_entry;
+}
+
+void die(int err_code) {
+    for(;;);
 }
