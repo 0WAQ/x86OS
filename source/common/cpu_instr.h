@@ -94,6 +94,29 @@ static inline void lgdt(uint32_t start, uint32_t size) {
 }
 
 /**
+ * @brief 加载中断描述符表
+ */
+static inline void lidt(uint32_t start, uint32_t size) {
+    
+    // 顺序不能变
+    struct {
+        uint16_t limit;
+        uint16_t start15_0;
+        uint16_t start31_16;
+    }idt;
+    
+    idt.start31_16 = start >> 16;
+    idt.start15_0 = start & 0xFFFF;
+    idt.limit = size - 1;
+
+    __asm__ __volatile__(
+        "lidt %[addr]"
+        :
+        : [addr]"m" (idt)
+    );
+}
+
+/**
  * @brief 读取CR0
  */
 static inline uint32_t read_cr0() {

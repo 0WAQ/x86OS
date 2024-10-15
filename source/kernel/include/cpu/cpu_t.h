@@ -54,6 +54,9 @@
 #define DESC_ATTR_TYPE_ERC  (6)
 #define DESC_ATTR_TYPE_ERCA (7)
 
+/**
+ * GDT表项，段描述符
+ */
 typedef struct _segment_desc_t {
     uint16_t limit15_0;     // 0 ~ 15
     uint16_t base15_0;      // 16 ~ 31
@@ -63,6 +66,17 @@ typedef struct _segment_desc_t {
     uint8_t  base24_31;     // 24 ~ 31
 
 }segment_desc_t;
+
+/**
+ * IDT表项(三者中的中断门)，调用门描述符
+ */
+typedef struct _gate_desc_t {
+    uint16_t offset15_0;    // 0 ~ 15
+    uint16_t selector;      // 16 ~ 31
+    uint16_t attr;          // 0 ~ 15
+    uint16_t offset31_16;   // 16 ~ 31
+}gate_desc_t;
+
 
 #pragma pack()
 

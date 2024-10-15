@@ -19,9 +19,13 @@ void cpu_init();
 void gdt_init();
 
 /**
- * @brief 设置段描述符
+ * @brief 在GDT中设置段描述符
  */
 void segment_desc_set(int selector, uint32_t base, uint32_t limit, uint16_t attr);
 
+/**
+ * @brief 在IDT中设置中断门描述符
+ */
+void gate_desc_set(gate_desc_t* desc, uint16_t selector, uint32_t offset, uint16_t attr);
 
 #endif // CPU_H

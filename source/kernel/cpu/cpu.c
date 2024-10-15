@@ -50,3 +50,10 @@ void segment_desc_set(int selector, uint32_t base, uint32_t limit, uint16_t attr
     desc->attr = attr | (((limit >> 16) & 0xF) << 8);
     desc->base24_31 = (base >> 24) & 0xFF;
 }
+
+void gate_desc_set(gate_desc_t* desc, uint16_t selector, uint32_t offset, uint16_t attr) {
+    desc->offset15_0 = offset & 0xFFFF;
+    desc->selector = selector;
+    desc->attr = attr;
+    desc->offset31_16 = (offset >> 16) & 0xFFFF;
+}
