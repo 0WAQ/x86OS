@@ -11,7 +11,7 @@
 #pragma pack(1)
 
 
-// 段描述符表的属性
+////// 段描述符表的属性
 #define DESC_ATTR_G         (1 << 15)   // 粒度位
 #define DESC_ATTR_D         (1 << 14)
 #define DESC_ATTR_B         (1 << 14)
@@ -53,6 +53,26 @@
 #define DESC_ATTR_TYPE_ECA  (5)
 #define DESC_ATTR_TYPE_ERC  (6)
 #define DESC_ATTR_TYPE_ERCA (7)
+
+
+////// 中断表中的属性
+#define GATE_ATTR_P         (1 << 15)
+
+// DPL属性
+#define GATE_ATTR_DPL0      (0 << 13)
+#define GATE_ATTR_DPL1      (1 << 13)
+#define GATE_ATTR_DPL2      (2 << 13)
+#define GATE_ATTR_DPL3      (3 << 13)
+
+// D位，任务门始终为0
+#define GATE_ATTR_D         (1 << 11)
+
+// 调用门类型
+#define GATE_ATTR_TYPE_TASK (5 << 8)    // 任务门
+#define GATE_ATTR_TYPE_INTR (6 << 8)    // 中断门
+#define GATE_ATTR_TYPE_TRAP (7 << 8)    // 陷阱门
+
+
 
 /**
  * GDT表项，段描述符

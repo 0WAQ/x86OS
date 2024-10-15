@@ -40,3 +40,31 @@ gdt_reload:
 # 设置内核栈
     .bss
 .comm stack, KERNEL_STACK_SIZE
+
+    .text
+    .extern default_exception_handler_aux
+    .global default_exception_handler
+default_exception_handler:
+
+    # 保存通用寄存器
+    pusha
+
+    # 保存段寄存器
+    push %ss
+    push %ds
+    push %es
+    push %fs
+    push %gs 
+
+    # 调用默认异常处理程序，C实现
+    call default_exception_handler_aux
+    
+    # 恢复寄存器
+    pop %gs
+    pop %fs
+    pop %es
+    pop %ds
+    pop %ss
+    popa
+
+    iret
