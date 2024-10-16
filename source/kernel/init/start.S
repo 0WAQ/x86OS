@@ -50,21 +50,22 @@ default_exception_handler:
     pusha
 
     # 保存段寄存器
-    push %ss
     push %ds
     push %es
     push %fs
     push %gs 
 
+    push %esp   # esp在执行此条语句之前指向gs，压栈后，这个值就是exception_frame_t结构体的起始地址
+
     # 调用默认异常处理程序，C实现
     call default_exception_handler_aux
     
     # 恢复寄存器
+    pop %esp
     pop %gs
     pop %fs
     pop %es
     pop %ds
-    pop %ss
     popa
 
     iret

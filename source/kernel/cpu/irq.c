@@ -20,10 +20,10 @@ void irq_init() {
     lidt((uint32_t)idt_table, sizeof(idt_table));
 }
 
-void default_exception_handler_aux() {
-    do_default_handler("unknown exception\n");
+void default_exception_handler_aux(exception_frame_t* frame) {
+    do_default_handler(frame, "unknown exception\n");
 }
 
-void do_default_handler(const char* msg) {
+void do_default_handler(exception_frame_t* frame, const char* msg) {
     for(;;);
 }
