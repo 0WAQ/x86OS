@@ -81,4 +81,8 @@ gdt_reload:
         iret
 .endm
 
+# 未知异常
 exception_handler unknown, -1, 0
+
+# 除0异常
+exception_handler divider, 0, 0
