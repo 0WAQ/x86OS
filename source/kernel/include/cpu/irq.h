@@ -19,9 +19,29 @@ void irq_init();
 int irq_install(int irq_num, irq_handler_t handler);
 
 /**
- * @brief
+ * @brief 初始化pic
  */
 void pic_init();
+
+/**
+ * @brief 关中断
+ */
+void irq_disable_global();
+
+/**
+ * @brief 开中断
+ */
+void irq_enalbe_global();
+
+/**
+ * @brief 开启指定中断
+ */
+void irq_enable(int irq_num);
+
+/**
+ * @brief 关闭指定中断
+ */
+void irq_disable(int irq_num);
 
 /**
  * @brief 异常处理程序的执行函数

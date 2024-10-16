@@ -85,6 +85,46 @@ void pic_init(void) {
     outb(PIC1_IMR, 0xFF);
 }
 
+void irq_disable_global() {
+	cli();
+}
+
+void irq_enalbe_global() {
+	sti();
+}
+
+void irq_enable(int irq_num) {
+	if(irq_num < IRQ_PIC_START) {
+		return;
+	}
+	
+	irq_num -= IRQ_PIC_START;
+	if(irq_num < 8) {
+		uint8_t mask = inb(PIC0_IMR) & ~(1 << irq_num);
+		outb(PIC0_IMR, mask);
+	}
+	else {
+		uint8_t mask = inb(PIC0_IMR) & ~(1 << irq_num);
+		outb(PIC1_IMR, mask);
+	}
+}
+
+void irq_disable(int irq_num) {
+	if(irq_num < IRQ_PIC_START) {
+		return;
+	}
+	
+	irq_num -= IRQ_PIC_START;
+	if(irq_num < 8) {
+		uint8_t mask = inb(PIC0_IMR) | (1 << irq_num);
+		outb(PIC0_IMR, mask);
+	}
+	else {
+		uint8_t mask = inb(PIC0_IMR) | (1 << irq_num);
+		outb(PIC1_IMR, mask);
+	}
+}
+
 void do_default_handler(exception_frame_t* frame, const char* msg) {
     for(;;) { hlt(); }
 }
