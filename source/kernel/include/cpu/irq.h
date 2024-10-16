@@ -19,6 +19,11 @@ void irq_init();
 int irq_install(int irq_num, irq_handler_t handler);
 
 /**
+ * @brief
+ */
+void pic_init();
+
+/**
  * @brief 异常处理程序的执行函数
  */
 void do_default_handler(exception_frame_t* frame, const char* msg);

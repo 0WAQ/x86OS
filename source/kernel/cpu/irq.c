@@ -39,6 +39,9 @@ void irq_init() {
 	irq_install(IRQ20_VE, exception_handler_virtual_exception);
 
     lidt((uint32_t)idt_table, sizeof(idt_table));
+
+	// 初始化中断控制器
+	pic_init();
 }
 
 // 安装irq
@@ -50,6 +53,36 @@ int irq_install(int irq_num, irq_handler_t handler) {
     // 设置门描述符，将irq_num这个异常号与handler绑定
     gate_desc_set(idt_table + irq_num, KERNEL_SELECTOR_CS, (uint32_t)handler, 
         GATE_ATTR_TYPE_INTR | GATE_ATTR_P | GATE_ATTR_DPL0 | GATE_ATTR_D);
+}
+
+void pic_init(void) {
+    // 边缘触发，级联，需要配置icw4, 8086模式
+    outb(PIC0_ICW1, PIC_ICW1_ALWAYS_1 | PIC_ICW1_ICW4);
+
+    // 对应的中断号起始序号0x20
+    outb(PIC0_ICW2, IRQ_PIC_START);
+
+    // 主片IRQ2有从片
+    outb(PIC0_ICW3, 1 << 2);
+
+    // 普通全嵌套、非缓冲、非自动结束、8086模式
+    outb(PIC0_ICW4, PIC_ICW4_8086);
+
+    // 边缘触发，级联，需要配置icw4, 8086模式
+    outb(PIC1_ICW1, PIC_ICW1_ICW4 | PIC_ICW1_ALWAYS_1);
+
+    // 起始中断序号，要加上8
+    outb(PIC1_ICW2, IRQ_PIC_START + 8);
+
+    // 没有从片，连接到主片的IRQ2上
+    outb(PIC1_ICW3, 2);
+
+    // 普通全嵌套、非缓冲、非自动结束、8086模式
+    outb(PIC1_ICW4, PIC_ICW4_8086);
+
+    // 禁止所有中断, 允许从PIC1传来的中断
+    outb(PIC0_IMR, 0xFF & ~(1 << 2));
+    outb(PIC1_IMR, 0xFF);
 }
 
 void do_default_handler(exception_frame_t* frame, const char* msg) {
