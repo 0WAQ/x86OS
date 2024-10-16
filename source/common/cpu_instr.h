@@ -9,6 +9,13 @@
 #include "types.h"
 
 /**
+ * @brief 停机指令
+ */
+static inline void hlt() {
+    __asm__ __volatile__("hlt");
+}
+
+/**
  * @brief 关中断
  */
 static inline void cli() {
