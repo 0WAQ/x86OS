@@ -6,6 +6,7 @@
 #include "init.h"
 #include "cpu/cpu.h"
 #include "cpu/irq.h"
+#include "dev/time.h"
 
 void kernel_init(boot_info_t* boot_info) {    
     // 初始化cpu，并重新加载gdt
@@ -14,10 +15,13 @@ void kernel_init(boot_info_t* boot_info) {
     // 初始化idt
     irq_init();
 
+    // 初始化定时器
+    time_init();
+
     // 该函数返回后，会长跳转至gdt_reload，并跳转到init
 }
 
-void init() {
-    int a = 3 / 0;
+void init_main() {
+    // irq_enalbe_global();
     for(;;);
 }

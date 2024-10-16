@@ -44,6 +44,12 @@ void irq_enable(int irq_num);
 void irq_disable(int irq_num);
 
 /**
+ * @brief 通知8259继续响应后续的中断
+ */
+void pic_send_eoi(int irq_num);
+
+
+/**
  * @brief 异常处理程序的执行函数
  */
 void do_default_handler(exception_frame_t* frame, const char* msg);

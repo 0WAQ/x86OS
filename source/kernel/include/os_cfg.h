@@ -17,4 +17,9 @@
 
 #define KERNEL_STACK_SIZE   (8192)  // 8KB
 
+
+// 每毫秒的时钟数
+#define OS_TICK_MS      10
+
+
 #endif // OS_CFG_H

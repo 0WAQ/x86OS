@@ -5,7 +5,7 @@
 
     .text
     .extern kernel_init
-    .extern init
+    .extern init_main
     # void _start(boot_info_t* boot_info)
     .global _start
 _start:
@@ -35,7 +35,7 @@ gdt_reload:
 	mov %ax, %fs
 	mov %ax, %gs
     mov $(stack + KERNEL_STACK_SIZE), %esp
-    jmp init
+    jmp init_main
 
 # 设置内核栈
     .bss
@@ -102,3 +102,6 @@ exception_handler alignment_check, 17, 1
 exception_handler machine_check, 18, 0
 exception_handler smd_exception, 19, 0
 exception_handler virtual_exception, 20, 0
+
+# 定时器的中断处理函数
+exception_handler timer, 0x20, 0

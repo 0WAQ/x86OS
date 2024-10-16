@@ -13,4 +13,9 @@
  */
 void kernel_init(boot_info_t* boot_info);
 
+/**
+ * @brief
+ */
+void init_main();
+
 #endif // INIT_H
