@@ -1,0 +1,1 @@
+## 运行前需在image目录下生成两个vdi文件disk1.vdi, disk2.vdi
