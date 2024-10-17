@@ -15,7 +15,7 @@
                 "command": "bash ${workspaceRoot}/script/img-write-linux.sh"
             },
             "options": {
-                "cwd": "${workspaceRoot}/../../image/"
+                "cwd": "${workspaceRoot}/image/"
             },
         },
         {
@@ -30,7 +30,7 @@
                 "command": "bash ${workspaceRoot}/script/qemu-debug-linux.sh",
             },
             "options": {
-                "cwd": "${workspaceRoot}/../../image/"
+                "cwd": "${workspaceRoot}/image/"
             },
         },
         {

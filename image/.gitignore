@@ -1,0 +1,7 @@
+
+*.bin
+*.elf
+*.img
+*.vhd
+*.dmg
+/boot.bin
