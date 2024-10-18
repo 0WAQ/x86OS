@@ -4,6 +4,7 @@
  * 
  */
 #include "tools/log.h"
+#include "tools/klib.h"
 #include "common/cpu_instr.h"
 
 void log_init() {
@@ -19,7 +20,21 @@ void log_init() {
 }
 
 void log_print(const char* fmt, ...) {
-    const char* p = fmt;
+    
+    va_list args; // 声明参数列表
+    char buf[128];
+    kernel_memset(buf, '\0', sizeof(buf));
+
+    // 初始化参数列表
+    va_start(args, fmt);
+
+    // 解析参数列表，将其填充到buf中
+    kernel_vsprintf(buf, fmt, args);
+    
+    // 关闭参数列表
+    va_end(args);
+
+    const char* p = buf;
     while(*p != '\0') {
         // 忙等待
         while((inb(COM1_PORT + 5) & (1 << 6)) == 0);

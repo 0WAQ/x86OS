@@ -6,6 +6,50 @@
 
 #include "tools/klib.h"
 
+void kernel_vsprintf(char* buf, const char* fmt, va_list args) {
+    
+    // 定义两种状态
+    enum {READ_FMT, READ_ARGS} state = NORMAL;
+    
+    char* cur = buf;
+    char ch;
+
+    while((ch = *fmt++) != '\0') {
+        switch (state)
+        {
+        case READ_FMT:
+            // 若当前字符是 % 就改变状态
+            if(ch == '%') {
+                state = READ_ARGS;
+            }
+            else {
+                // 否则正常拷贝
+                *cur++ = ch;
+            }
+            break;
+        
+        case READ_ARGS:
+            // 字符串类型
+            if(ch == 's') {
+                const char* str = va_arg(args, char*);
+                
+                // 将这个字符串放入buf
+                int len = kernel_strlen(str);
+                while(len--) {
+                    *cur++ = *str++;
+                }
+            }
+            // 整型
+            else if(ch == 'd') {
+
+            }
+
+            state = READ_FMT;
+            break;
+        }
+    }
+}
+
 void kernel_strcpy(char* dest, const char* src) {
     if(!dest || !src) {
         return;

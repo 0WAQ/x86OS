@@ -6,6 +6,7 @@
 #ifndef LOG_H
 #define LOG_H
 
+#include <stdarg.h>     // 该头文件不依赖任何库，只使用了编译器内置方法
 #include "log_t.h"
 
 /**

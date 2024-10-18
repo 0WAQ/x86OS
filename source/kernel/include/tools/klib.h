@@ -6,7 +6,13 @@
 #ifndef KLIB_H
 #define KLIB_H
 
+#include <stdarg.h>
 #include "common/types.h"
+
+/**
+ * @brief 处理可变参数列表
+ */
+void kernel_vsprintf(char* buf, const char* fmt, va_list args);
 
 /**
  * @brief 复制字符串
