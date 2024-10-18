@@ -22,7 +22,7 @@ void log_init() {
 void log_print(const char* fmt, ...) {
     
     va_list args; // 声明参数列表
-    char buf[128];
+    char buf[256];
     kernel_memset(buf, '\0', sizeof(buf));
 
     // 初始化参数列表

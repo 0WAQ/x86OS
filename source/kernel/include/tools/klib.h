@@ -13,6 +13,12 @@
  * @brief 处理可变参数列表
  */
 void kernel_vsprintf(char* buf, const char* fmt, va_list args);
+void kernel_sprintf(char* buf, const char* fmt, ...);
+
+/**
+ * @brief 将num以base进制转换为字符串放入dest
+ */
+void kernel_itoa(char* dest, int num, uint32_t base);
 
 /**
  * @brief 复制字符串

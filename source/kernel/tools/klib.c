@@ -6,10 +6,18 @@
 
 #include "tools/klib.h"
 
+void kernel_sprintf(char* buf, const char* fmt, ...) {
+    va_list args;
+
+    va_start(args, fmt);
+    kernel_vsprintf(buf, fmt, args);
+    va_end(args);    
+}
+
 void kernel_vsprintf(char* buf, const char* fmt, va_list args) {
     
     // 定义两种状态
-    enum {READ_FMT, READ_ARGS} state = NORMAL;
+    enum {READ_FMT, READ_ARGS} state = READ_FMT;
     
     char* cur = buf;
     char ch;
@@ -17,20 +25,24 @@ void kernel_vsprintf(char* buf, const char* fmt, va_list args) {
     while((ch = *fmt++) != '\0') {
         switch (state)
         {
+        // 读取fmt
         case READ_FMT:
-            // 若当前字符是 % 就改变状态
+            // 若读到 % 就改变状态
             if(ch == '%') {
                 state = READ_ARGS;
             }
+            // 否则就正常拷贝
             else {
-                // 否则正常拷贝
                 *cur++ = ch;
             }
             break;
         
+        // 读取args
         case READ_ARGS:
-            // 字符串类型
-            if(ch == 's') {
+            switch (ch)
+            {
+            case 's':   // 字符串
+            {
                 const char* str = va_arg(args, char*);
                 
                 // 将这个字符串放入buf
@@ -38,15 +50,71 @@ void kernel_vsprintf(char* buf, const char* fmt, va_list args) {
                 while(len--) {
                     *cur++ = *str++;
                 }
+                break;
             }
-            // 整型
-            else if(ch == 'd') {
-
+            case 'd':   // 整型
+            {
+                int num = va_arg(args, int);
+                kernel_itoa(cur, num, 10);
+                cur += kernel_strlen(cur);
+                break;
+            }
+            case 'x':   // 十六进制数
+            {
+                *cur++ = '0';
+                *cur++ = 'x';
+                int num = va_arg(args, int);
+                kernel_itoa(cur, num, 16);
+                cur += kernel_strlen(cur);
+                break;
+            }
+            case 'c':   // 字符
+            {
+                char c = va_arg(args, int);
+                *cur++ = c;
+                break;
+            }
             }
 
             state = READ_FMT;
             break;
         }
+    }
+}
+
+void kernel_itoa(char* dest, int num, uint32_t base) {
+    char* p = dest;
+    char* start = dest;
+    
+    // 不支持其它进制
+    if(base != 2 && base != 8 && base != 10 && base != 16) {
+        *p = '\0';
+        return;
+    }
+
+    // 只有十进制支持负数
+    if(num < 0 && base == 10) {
+        ++start;    // 在下面对调时跳过负号
+        *p++ = '-';
+    }
+
+    // 转换表
+    static const char* num2ch = {"0123456789ABCDEF"};
+
+    uint32_t unum = num < 0 ? -num : num;
+    do {
+        *p++ = num2ch[unum % base];
+        unum /= base;
+    }while(unum);
+    *p-- = '\0';
+
+    // 对调
+    while(start < p) {
+        char ch = *start;
+        *start = *p;
+        *p = ch;
+    
+        ++start, --p;
     }
 }
 
