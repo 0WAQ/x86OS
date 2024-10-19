@@ -33,6 +33,7 @@
 // 以下为TYPE段，从左到右表示
 #define DESC_ATTR_TYPE_DATA (0 << 3)
 #define DESC_ATTR_TYPE_CODE (1 << 3)
+#define DESC_ATTR_TYPE_TSS  (9 << 0)
 
 // 表示数据段时一定可读，Read-Only，Expand-down(向下增长)，Write，Accessed(是否访问过)
 #define DESC_ATTR_TYPE_R    (0)

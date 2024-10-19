@@ -124,6 +124,17 @@ static inline void lidt(uint32_t start, uint32_t size) {
 }
 
 /**
+ * @brief 加载tss到任务寄存器
+ */
+static inline void ltr(uint16_t tss_sel) {
+    __asm__ __volatile__(
+        "ltr %%ax"
+        :
+        : "a"(tss_sel)
+    );
+}
+
+/**
  * @brief 读取CR0
  */
 static inline uint32_t read_cr0() {

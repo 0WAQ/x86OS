@@ -57,3 +57,20 @@ void gate_desc_set(gate_desc_t* desc, uint16_t selector, uint32_t offset, uint16
     desc->attr = attr;
     desc->offset31_16 = (offset >> 16) & 0xFFFF;
 }
+
+int gdt_alloc_desc() {
+    for(int i = 1; i < GDT_TABLE_SIZE; ++i) {
+        segment_desc_t* desc = gdt_table + i;
+        if(desc->attr == 0) {
+            return i * sizeof(segment_desc_t);
+        }
+    }
+    return -1;
+}
+
+void switch_to_tss(int tss_sel) {
+
+    // cpu发现跳转的目标是tss段，所以会将当前运行状态保存到当前tss段中(当前tss的值在tr中)
+    // 并将目标tss段切换出来，然后接着运行(读取切换后的tss中的cs:ip)
+    far_jump(tss_sel, 0);
+}

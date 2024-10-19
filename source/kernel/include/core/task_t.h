@@ -14,6 +14,7 @@
  */
 typedef struct _task_t {
     tss_t tss;
+    int tss_sel;    // 该任务对应的tss段的选择子
 }task_t;
 
 #endif // TASK_T_H
