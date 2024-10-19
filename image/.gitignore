@@ -5,3 +5,4 @@
 *.vhd
 *.dmg
 /boot.bin
+win_error.txt
