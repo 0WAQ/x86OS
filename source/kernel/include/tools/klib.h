@@ -51,4 +51,15 @@ void kernel_memset(void* dest, uint8_t v, int size);
  */
 int kernel_memcmp(void* d1, void* d2, int size);
 
+/**
+ * @brief ASSERT相关
+ */
+void panic(const char* file, int line, const char* func, const char* msg);
+
+#ifndef RELEASE
+    #define ASSERT(expr)    if(!(expr)) panic(__FILE__, __LINE__, __func__, #expr);
+#else   // DEBUG
+    #define ASSERT(expr)    ((void)0)
+#endif // RELEASE
+
 #endif // KLIB_H

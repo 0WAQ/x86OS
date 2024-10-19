@@ -7,6 +7,7 @@
 #include "cpu/irq.h"
 #include "os_cfg.h"
 #include "common/cpu_instr.h"
+#include "tools/log.h"
 
 // IDT
 static gate_desc_t idt_table[IDT_TABLE_SIZE];
@@ -139,51 +140,77 @@ void pic_send_eoi(int irq_num) {
 }
 
 void do_default_handler(exception_frame_t* frame, const char* msg) {
+	log_print("------------------------------");
+	log_print("IRQ/Exception happened %s", msg);
+	dump_core_regs(frame);
     for(;;) { hlt(); }
+}
+
+void dump_core_regs(exception_frame_t* frame) {
+	log_print("IRQ: %d, Error Code: %d", frame->num, frame->errno);
+	log_print("CS: %d\r\n"
+			  "DS: %d\r\n"
+			  "ES: %d\r\n"
+			  "SS: %d\r\n"
+			  "FS: %d\r\n"
+			  "GS: %d", frame->cs, frame->ds, frame->es, frame->ds, frame->fs, frame->gs);
+	
+	log_print("EAX: 0x%x\r\n"
+              "EBX: 0x%x\r\n"
+              "ECX: 0x%x\r\n"
+              "EDX: 0x%x\r\n"
+              "EDI: 0x%x\r\n"
+              "ESI: 0x%x\r\n"
+              "EBP: 0x%x\r\n"
+              "ESP: 0x%x", frame->eax, frame->ebx, frame->ecx, frame->edx,
+               				 frame->edi, frame->esi, frame->ebp, frame->esp);
+
+    log_print("EIP: 0x%x\r\n"
+			  "EFLAGS: 0x%x\r\n", frame->eip, frame->eflags);
 }
 
 /////////////////////////////////////////////////////////////////////////////////
 
 // unknown, -1
 void do_handler_unknown(exception_frame_t* frame) {
-    do_default_handler(frame, "Unknown Exception.\n");
+    do_default_handler(frame, "Unknown Exception.");
 }
 
 // divider, 0
 void do_handler_divider(exception_frame_t* frame) {
-    do_default_handler(frame, "Divider Exception.\n");
+    do_default_handler(frame, "Divider Exception.");
 }
 
 void do_handler_debug(exception_frame_t * frame) {
-	do_default_handler(frame, "Debug Exception.\n");
+	do_default_handler(frame, "Debug Exception.");
 }
 
 void do_handler_NMI(exception_frame_t * frame) {
-	do_default_handler(frame, "NMI Interrupt.\n");
+	do_default_handler(frame, "NMI Interrupt.");
 }
 
 void do_handler_breakpoint(exception_frame_t * frame) {
-	do_default_handler(frame, "Breakpoint.\n");
+	do_default_handler(frame, "Breakpoint.");
 }
 
 void do_handler_overflow(exception_frame_t * frame) {
-	do_default_handler(frame, "Overflow.\n");
+	do_default_handler(frame, "Overflow.");
 }
 
 void do_handler_bound_range(exception_frame_t * frame) {
-	do_default_handler(frame, "BOUND Range Exceeded.\n");
+	do_default_handler(frame, "BOUND Range Exceeded.");
 }
 
 void do_handler_invalid_opcode(exception_frame_t * frame) {
-	do_default_handler(frame, "Invalid Opcode.\n");
+	do_default_handler(frame, "Invalid Opcode.");
 }
 
 void do_handler_device_unavailable(exception_frame_t * frame) {
-	do_default_handler(frame, "Device Not Available.\n");
+	do_default_handler(frame, "Device Not Available.");
 }
 
 void do_handler_double_fault(exception_frame_t * frame) {
-	do_default_handler(frame, "Double Fault.\n");
+	do_default_handler(frame, "Double Fault.");
 }
 
 void do_handler_invalid_tss(exception_frame_t * frame) {
@@ -191,37 +218,37 @@ void do_handler_invalid_tss(exception_frame_t * frame) {
 }
 
 void do_handler_segment_not_present(exception_frame_t * frame) {
-	do_default_handler(frame, "Segment Not Present.\n");
+	do_default_handler(frame, "Segment Not Present.");
 }
 
 void do_handler_stack_segment_fault(exception_frame_t * frame) {
-	do_default_handler(frame, "Stack-Segment Fault.\n");
+	do_default_handler(frame, "Stack-Segment Fault.");
 }
 
 void do_handler_general_protection(exception_frame_t * frame) {
-	do_default_handler(frame, "General Protection.\n");
+	do_default_handler(frame, "General Protection.");
 }
 
 void do_handler_page_fault(exception_frame_t * frame) {
-	do_default_handler(frame, "Page Fault.\n");
+	do_default_handler(frame, "Page Fault.");
 }
 
 void do_handler_fpu_error(exception_frame_t * frame) {
-	do_default_handler(frame, "X87 FPU Floating Point Error.\n");
+	do_default_handler(frame, "X87 FPU Floating Point Error.");
 }
 
 void do_handler_alignment_check(exception_frame_t * frame) {
-	do_default_handler(frame, "Alignment Check.\n");
+	do_default_handler(frame, "Alignment Check.");
 }
 
 void do_handler_machine_check(exception_frame_t * frame) {
-	do_default_handler(frame, "Machine Check.\n");
+	do_default_handler(frame, "Machine Check.");
 }
 
 void do_handler_smd_exception(exception_frame_t * frame) {
-	do_default_handler(frame, "SIMD Floating Point Exception.\n");
+	do_default_handler(frame, "SIMD Floating Point Exception.");
 }
 
 void do_handler_virtual_exception(exception_frame_t * frame) {
-	do_default_handler(frame, "Virtualization Exception.\n");
+	do_default_handler(frame, "Virtualization Exception.");
 }

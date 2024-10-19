@@ -5,6 +5,8 @@
  */ 
 
 #include "tools/klib.h"
+#include "tools/log.h"
+#include "common/cpu_instr.h"
 
 void kernel_sprintf(char* buf, const char* fmt, ...) {
     va_list args;
@@ -61,8 +63,6 @@ void kernel_vsprintf(char* buf, const char* fmt, va_list args) {
             }
             case 'x':   // 十六进制数
             {
-                *cur++ = '0';
-                *cur++ = 'x';
                 int num = va_arg(args, int);
                 kernel_itoa(cur, num, 16);
                 cur += kernel_strlen(cur);
@@ -212,4 +212,10 @@ int kernel_memcmp(void* d1, void* d2, int size) {
         }
     }
     return 0;
+}
+
+void panic(const char* file, int line, const char* func, const char* msg) {
+    log_print("assert failed! %s", msg);
+    log_print("file: %s\r\nline: %s\r\nfunc: %s\r\n", file, line, func);
+    for(;;) { hlt(); }
 }

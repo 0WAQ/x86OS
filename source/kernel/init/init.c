@@ -8,9 +8,13 @@
 #include "cpu/irq.h"
 #include "dev/time.h"
 #include "tools/log.h"
+#include "tools/klib.h"
 #include "os_cfg.h"
 
-void kernel_init(boot_info_t* boot_info) {    
+void kernel_init(boot_info_t* boot_info) {
+
+    ASSERT(boot_info->ram_region_count != 0);
+
     // 初始化cpu，并重新加载gdt
     cpu_init();
 
@@ -42,8 +46,10 @@ void init_main() {
     // 导致在本该提取b的va_arg，提取了0xffffffff, 也即-1
 
     // 解决方法：将其强转为int，使其在压栈时被视为4字节数
-    log_print("%c %d %d", 'a', -2147483648, 'b');
+    log_print("%c %d %d", 'a', (int)-2147483648, 'b');
     // 为什么会将-2147483648视为ll？
+
+    int a = 3 / 0;
 
     for(;;);
 }

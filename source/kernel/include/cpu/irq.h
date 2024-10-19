@@ -54,6 +54,10 @@ void pic_send_eoi(int irq_num);
  */
 void do_default_handler(exception_frame_t* frame, const char* msg);
 
+/**
+ * @brief 打印异常栈寄存器
+ */
+void dump_core_regs(exception_frame_t* frame);
 
 /**
  * @brief 异常处理程序，在init/start.S中实现，与异常号绑定
