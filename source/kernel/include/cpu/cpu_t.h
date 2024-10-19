@@ -73,6 +73,9 @@
 #define GATE_ATTR_TYPE_TRAP (7 << 8)    // 陷阱门
 
 
+// 初始化tss时eflags的状态
+#define EFLAGS_DEFAULT      (1 << 1)
+#define EFLAGS_IF           (1 << 9)
 
 /**
  * GDT表项，段描述符
