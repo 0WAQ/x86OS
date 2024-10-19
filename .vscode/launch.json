@@ -16,7 +16,7 @@
             "externalConsole": false,
             "MIMode": "gdb",
             "miDebuggerPath": "x86_64-elf-gdb",
-            "miDebuggerServerAddress": "127.0.0.1:1234",
+            "miDebuggerServerAddress": "127.0.0.1:12345",
             "targetArchitecture": "x86",
             "stopAtConnect": true,
             "serverLaunchTimeout": 30000,
