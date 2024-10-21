@@ -1,6 +1,6 @@
 /**
  * 
- * 
+ * 任务管理
  * 
  */
 #include "core/task.h"
@@ -11,7 +11,21 @@
 
 int task_init(task_t* task, uint32_t entry, uint32_t esp) {
     ASSERT(task != (task_t*)0);
-    tss_init(task, entry, esp);
+    // tss_init(task, entry, esp);
+
+    // 初始化任务时，执行以下操作的原因:
+    // 因为从其它任务首次切换到该任务时，会先恢复该任务的状态
+    //  但该任务是首次运行，之前没有状态(并且该任务的调用栈为空)
+    uint32_t* pesp = (uint32_t*)esp;
+    if(pesp) {
+        *(--pesp) = entry;  // eip, 即返回参数
+        *(--pesp) = 0;      // ebp
+        *(--pesp) = 0;      // ebx
+        *(--pesp) = 0;      // esi
+        *(--pesp) = 0;      // edi
+        task->stack = pesp; // 设置该任务的栈顶
+    }
+
     return 0;
 }
 
@@ -51,6 +65,7 @@ int tss_init(task_t* task, uint32_t entry, uint32_t esp) {
 }
 
 void task_switch_from_to(task_t* from, task_t* to) {
-    switch_to_tss(to->tss_sel);
+    // switch_to_tss(to->tss_sel);
+    simple_switch(&from->stack, to->stack);
 }
 

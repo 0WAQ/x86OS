@@ -53,7 +53,7 @@ void init_main() {
     task_init(&task2, (uint32_t)task2_entry, (uint32_t)&task2_stack[1024]);
 
     // tr寄存器默认为空，加载task1到tr
-    ltr(task1.tss_sel);
+    // ltr(task1.tss_sel);  // 若使用task_switch_from_to使用switch_tss，那么需要启用改行
 
     int cnt = 0;
     for(;;) {
