@@ -13,7 +13,7 @@
  * 同Linux中的task_struct
  */
 typedef struct _task_t {
-    uint32_t* stack;    // 保存esp
+    // uint32_t* stack;    // 保存esp, simple_switch使用`
     tss_t tss;
     int tss_sel;    // 该任务对应的tss段的选择子
 }task_t;
