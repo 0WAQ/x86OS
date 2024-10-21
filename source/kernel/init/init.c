@@ -45,7 +45,72 @@ void task2_entry() {
 
 void list_test() {
     list_t list;
+    list_node_t nodes[5];
+
+
+    // 测试头插
     list_init(&list);
+    log_print("list: first = 0x%x, last = 0x%x, count = %d",
+        list_first(&list), list_last(&list), list_count(&list));
+    for(int i = 0; i < 5; i++) {
+        list_node_t* node = nodes + i;
+        log_print("insert first to list: %d, 0x%x", i, (uint32_t)node);
+        list_insert_first(&list, node);
+    }
+    log_print("list: first = 0x%x, last = 0x%x, count = %d",
+        list_first(&list), list_last(&list), list_count(&list));
+
+    // 测试尾插
+    list_init(&list);
+    for(int i = 0; i < 5; i++) {
+        list_node_t* node = nodes + i;
+        log_print("insert last to list: %d, 0x%x", i, (uint32_t)node);
+        list_insert_last(&list, node);
+    }
+    log_print("list: first = 0x%x, last = 0x%x, count = %d",
+        list_first(&list), list_last(&list), list_count(&list));
+
+    // 测试头删
+    for(int i = 0; i < 5; i++) {
+        list_node_t* node = list_remove_first(&list);
+        log_print("remove first from list: %d, 0x%x", i, (uint32_t)node);
+    }
+    log_print("list: first = 0x%x, last = 0x%x, count = %d",
+        list_first(&list), list_last(&list), list_count(&list));
+
+    // 测试任意位置删除
+        list_init(&list);
+        for(int i = 0; i < 5; i++) {
+            list_node_t* node = nodes + i;
+            log_print("insert last to list: %d, 0x%x", i, (uint32_t)node);
+            list_insert_last(&list, node);
+        }
+        log_print("list: first = 0x%x, last = 0x%x, count = %d",
+            list_first(&list), list_last(&list), list_count(&list));
+
+    for(int i = 0; i < 5; i++) {
+        list_node_t* node = nodes + i;
+        log_print("remove node to list: %d, 0x%x", i, (uint32_t)node);
+        list_insert_last(&list, node);
+    }
+
+
+    struct task {
+        int i;
+        list_node_t list_node;
+    };
+
+    struct task v = {123, NODE_NULL};
+
+    list_node_t* vnode = &v.list_node;
+    struct task* x = list_entry_of(vnode, struct task);
+    
+    if(x->i == 123) {
+        log_print("container_of correct!");
+    }
+    else {
+        log_print("container_of wrong!");
+    }
 }
 
 void init_main() {
