@@ -10,6 +10,7 @@
 #include "dev/time.h"
 #include "tools/log.h"
 #include "tools/klib.h"
+#include "tools/list.h"
 #include "core/task.h"
 #include "os_cfg.h"
 
@@ -42,8 +43,16 @@ void task2_entry() {
     }
 }
 
+void list_test() {
+    list_t list;
+    list_init(&list);
+}
+
 void init_main() {
     // irq_enalbe_global();
+
+    // 测试链表
+    list_test();
 
     log_print("...kernel is running...");
     log_print("Version: %s", OS_VERSION);
@@ -60,6 +69,4 @@ void init_main() {
         log_print("task1: %d", cnt++);
         task_switch_from_to(&task1, &task2);
     }
-
-    task2_entry();
 }
