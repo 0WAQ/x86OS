@@ -6,6 +6,7 @@
 #include "core/task.h"
 #include "tools/log.h"
 #include "tools/klib.h"
+#include "common/cpu_instr.h"
 #include "cpu/cpu.h"
 #include "os_cfg.h"
 
@@ -69,3 +70,26 @@ void task_switch_from_to(task_t* from, task_t* to) {
     // simple_switch(&from->stack, to->stack);
 }
 
+
+// 全局的任务管理器
+static task_manager_t* task_manager;
+
+void task_manager_init() {
+    list_init(&task_manager->ready_list);
+    list_init(&task_manager->task_list);
+    task_manager->curr_task = (task_t*)0;
+}
+
+void first_task_init() {
+
+    // 这里不需要给参数，因为当cpu从当前任务切换走时，会自动将状态保存，只要保证有地方可去就行
+    // cpu会自动保存来源
+    task_init(&task_manager->first_task, 0, 0);
+    ltr(task_manager->first_task.tss_sel);
+
+    task_manager->curr_task = &task_manager->first_task;
+}
+
+task_t* get_first_task() {
+    return &task_manager->first_task;
+}

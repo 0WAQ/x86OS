@@ -28,4 +28,22 @@ void task_switch_from_to(task_t* from, task_t* to);
  */
 void simple_switch(uint32_t** from, uint32_t* to);
 
+/*==============================================================*/
+
+/**
+ * @brief
+ */
+void task_manager_init();
+
+/**
+ * @brief
+ */
+void first_task_init();
+
+
+/**
+ * @brief
+ */
+task_t* get_first_task();
+
 #endif // TASK_H

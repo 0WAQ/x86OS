@@ -30,17 +30,9 @@ void kernel_init(boot_info_t* boot_info) {
 
     // 初始化定时器
     time_init();
-}
 
-static task_t task1, task2;
-static uint32_t task2_stack[1024];
-
-void task2_entry() {
-    int cnt = 0;
-    for(;;) {
-        log_print("task2: %d", cnt++);
-        task_switch_from_to(&task2, &task1);
-    }
+    // 初始化任务管理器
+    task_manager_init();
 }
 
 void list_test() {
@@ -113,25 +105,35 @@ void list_test() {
     }
 }
 
+static task_t task2;
+static uint32_t task2_stack[1024];
+
+void task2_entry() {
+    int cnt = 0;
+    for(;;) {
+        log_print("task2: %d", cnt++);
+        task_switch_from_to(&task2, get_first_task());
+    }
+}
+
 void init_main() {
     // irq_enalbe_global();
 
     // 测试链表
-    list_test();
+    // list_test();
 
     log_print("...kernel is running...");
     log_print("Version: %s", OS_VERSION);
 
-    // 这里不需要给参数，因为当cpu从当前任务切换走时，会将状态保存，只要保证有地方可去就行
-    task_init(&task1, (uint32_t)0, 0);
-    task_init(&task2, (uint32_t)task2_entry, (uint32_t)&task2_stack[1024]);
+    // 初始化第一个任务
+    first_task_init();
 
-    // tr寄存器默认为空，加载task1到tr
-    ltr(task1.tss_sel);  // 若使用task_switch_from_to使用switch_tss，那么需要启用改行
+    // 初始化第二个任务
+    task_init(&task2, (uint32_t)task2_entry, (uint32_t)&task2_stack[1024]);
 
     int cnt = 0;
     for(;;) {
-        log_print("task1: %d", cnt++);
-        task_switch_from_to(&task1, &task2);
+        log_print("first_task: %d", cnt++);
+        task_switch_from_to(get_first_task(), &task2);
     }
 }
