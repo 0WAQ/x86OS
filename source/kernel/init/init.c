@@ -129,7 +129,7 @@ void init_main() {
     first_task_init();
 
     // 初始化第二个任务
-    task_init(&task2, (uint32_t)task2_entry, (uint32_t)&task2_stack[1024]);
+    task_init(&task2, "task2", (uint32_t)task2_entry, (uint32_t)&task2_stack[1024]);
 
     int cnt = 0;
     for(;;) {

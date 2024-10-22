@@ -10,7 +10,10 @@
 #include "cpu/cpu.h"
 #include "os_cfg.h"
 
-int task_init(task_t* task, uint32_t entry, uint32_t esp) {
+// 任务管理器
+static task_manager_t* task_manager;
+
+int task_init(task_t* task, const char* name, uint32_t entry, uint32_t esp) {
     ASSERT(task != (task_t*)0);
     tss_init(task, entry, esp);
 
@@ -26,6 +29,19 @@ int task_init(task_t* task, uint32_t entry, uint32_t esp) {
     //     *(--pesp) = 0;      // edi
     //     task->stack = pesp; // 设置该任务的栈顶
     // }
+
+    // 设置任务名和状态
+    kernel_strncpy(task->name, name, TASK_NAME_SIZE);
+    task->state = TASK_CREATED;
+
+    list_node_init(&task->all_node);
+    list_node_init(&task->run_node);
+
+    // 插入到任务队列中
+    list_insert_last(&task_manager->task_list, &task->all_node);
+    
+    // 插入到就绪队列中(设置任务为就绪态)
+    set_task_ready(task);
 
     return 0;
 }
@@ -71,9 +87,6 @@ void task_switch_from_to(task_t* from, task_t* to) {
 }
 
 
-// 全局的任务管理器
-static task_manager_t* task_manager;
-
 void task_manager_init() {
     list_init(&task_manager->ready_list);
     list_init(&task_manager->task_list);
@@ -84,7 +97,7 @@ void first_task_init() {
 
     // 这里不需要给参数，因为当cpu从当前任务切换走时，会自动将状态保存，只要保证有地方可去就行
     // cpu会自动保存来源
-    task_init(&task_manager->first_task, 0, 0);
+    task_init(&task_manager->first_task, "first task", 0, 0);
     ltr(task_manager->first_task.tss_sel);
 
     task_manager->curr_task = &task_manager->first_task;
@@ -92,4 +105,21 @@ void first_task_init() {
 
 task_t* get_first_task() {
     return &task_manager->first_task;
+}
+
+void set_task_ready(task_t* task) {
+
+    // 执行插入
+    list_insert_last(&task_manager->ready_list, &task->run_node);
+
+    // 设置任务状态
+    task->state = TASK_READY;
+}
+
+void set_task_block(task_t* task) {
+    
+    // 执行删除
+    list_remove(&task_manager->ready_list, &task->run_node);
+
+    // 不设置状态，因为不确定
 }

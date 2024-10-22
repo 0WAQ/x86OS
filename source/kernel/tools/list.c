@@ -61,7 +61,7 @@ list_node_t* list_remove_last(list_t* list) {
     // TODO:
 }
 
-list_node_t* list_insert(list_t* list, list_node_t* node) {
+list_node_t* list_remove(list_t* list, list_node_t* node) {
     if(list->first = node) {
         list->first = node->next;
     }
