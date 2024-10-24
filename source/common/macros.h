@@ -9,11 +9,11 @@
 #define offset_of(container_type, member_name) \
         ((uint32_t)&((container_type*)0)->member_name)
 
-#define container_of(member, container_type, member_name) \
-    ( (container_type*)( (uint32_t)member - offset_of(container_type, member_name) ) )
+#define container_of(member_val, container_type, member_name) \
+    ( (container_type*)( (uint32_t)member_val - offset_of(container_type, member_name) ) )
 
-#define entry_of(member, container_type, member_name) \
-    ((container_type*)(member ? container_of(member, container_type, member_name) : 0))
+#define entry_of(member_val, container_type, member_name) \
+    ((container_type*)(member_val ? container_of(member_val, container_type, member_name) : 0))
 
 
 #endif // MACROS_H

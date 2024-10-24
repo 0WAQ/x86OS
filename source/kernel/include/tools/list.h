@@ -12,8 +12,8 @@
 /**
  * 封装container_of
  */
-#define list_entry_of(member, container_type) \
-    entry_of(member, container_type, list_node)
+#define list_entry_of(member_val, container_type, member_name) \
+    entry_of(member_val, container_type, member_name)
 
 /**
  * @brief 初始化链表
