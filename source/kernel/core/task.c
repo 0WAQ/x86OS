@@ -11,7 +11,7 @@
 #include "os_cfg.h"
 
 // 任务管理器
-static task_manager_t* task_manager;
+static task_manager_t task_manager;
 
 int task_init(task_t* task, const char* name, uint32_t entry, uint32_t esp) {
     ASSERT(task != (task_t*)0);
@@ -38,7 +38,7 @@ int task_init(task_t* task, const char* name, uint32_t entry, uint32_t esp) {
     list_node_init(&task->run_node);
 
     // 插入到任务队列中
-    list_insert_last(&task_manager->task_list, &task->all_node);
+    list_insert_last(&task_manager.task_list, &task->all_node);
     
     // 插入到就绪队列中(设置任务为就绪态)
     set_task_ready(task);
@@ -88,29 +88,29 @@ void task_switch_from_to(task_t* from, task_t* to) {
 
 
 void task_manager_init() {
-    list_init(&task_manager->ready_list);
-    list_init(&task_manager->task_list);
-    task_manager->curr_task = (task_t*)0;
+    list_init(&task_manager.ready_list);
+    list_init(&task_manager.task_list);
+    task_manager.curr_task = (task_t*)0;
 }
 
 void first_task_init() {
 
     // 这里不需要给参数，因为当cpu从当前任务切换走时，会自动将状态保存，只要保证有地方可去就行
     // cpu会自动保存来源
-    task_init(&task_manager->first_task, "first task", 0, 0);
-    ltr(task_manager->first_task.tss_sel);
+    task_init(&task_manager.first_task, "first task", 0, 0);
+    ltr(task_manager.first_task.tss_sel);
 
-    task_manager->curr_task = &task_manager->first_task;
+    task_manager.curr_task = &task_manager.first_task;
 }
 
 task_t* get_first_task() {
-    return &task_manager->first_task;
+    return &task_manager.first_task;
 }
 
 void set_task_ready(task_t* task) {
 
     // 执行插入
-    list_insert_last(&task_manager->ready_list, &task->run_node);
+    list_insert_last(&task_manager.ready_list, &task->run_node);
 
     // 设置任务状态
     task->state = TASK_READY;
@@ -119,7 +119,45 @@ void set_task_ready(task_t* task) {
 void set_task_block(task_t* task) {
     
     // 执行删除
-    list_remove(&task_manager->ready_list, &task->run_node);
+    list_remove(&task_manager.ready_list, &task->run_node);
 
     // 不设置状态，因为不确定
+}
+
+task_t* get_curr_task() {
+    return task_manager.curr_task;
+}
+
+int sys_yield() {
+    // 判断就绪队列中是否有任务
+    if(list_count(&task_manager.ready_list) > 1) {
+        task_t* curr_task = get_curr_task();
+        
+        // 若就绪队列中还有其它任务,则将当前任务移入队列尾部
+        set_task_block(curr_task);  // 先删除
+        set_task_ready(curr_task);  // 再尾插
+    
+        // 任务切换
+        task_dispatch();
+    }
+    return 0;
+}
+
+task_t* get_next_task() {
+    list_node_t* task_node = list_first(&task_manager.ready_list);
+    return list_entry_of(task_node, task_t, run_node);
+}
+
+void task_dispatch() {
+    
+    // 获取当前任务和下个任务
+    task_t* from = get_curr_task();
+    task_t* to   = get_next_task();
+
+    // 若与当前任务不相同, 那么就切换过去
+    if(to != from) {
+        task_manager.curr_task = to;
+        to->state = TASK_RUNNING;
+        task_switch_from_to(from, to);
+    }
 }

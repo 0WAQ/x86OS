@@ -95,7 +95,7 @@ void list_test() {
     struct task v = {123, NODE_NULL};
 
     list_node_t* vnode = &v.list_node;
-    struct task* x = list_entry_of(vnode, struct task);
+    struct task* x = list_entry_of(vnode, struct task, list_node);
     
     if(x->i == 123) {
         log_print("container_of correct!");
@@ -111,8 +111,9 @@ static uint32_t task2_stack[1024];
 void task2_entry() {
     int cnt = 0;
     for(;;) {
-        log_print("task2: %d", cnt++);
-        task_switch_from_to(&task2, get_first_task());
+        log_print("%s: %d", task2.name, cnt++);
+        // task_switch_from_to(&task2, get_first_task());
+        sys_yield();
     }
 }
 
@@ -133,7 +134,8 @@ void init_main() {
 
     int cnt = 0;
     for(;;) {
-        log_print("first_task: %d", cnt++);
-        task_switch_from_to(get_first_task(), &task2);
+        log_print("%s: %d", get_first_task()->name, cnt++);
+        // task_switch_from_to(get_first_task(), &task2);
+        sys_yield();
     }
 }

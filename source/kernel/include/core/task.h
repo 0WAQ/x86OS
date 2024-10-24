@@ -46,13 +46,33 @@ void first_task_init();
 task_t* get_first_task();
 
 /**
+ * @brief 获取当前任务
+ */
+task_t* get_curr_task();
+
+/**
  * @brief 将任务设置为就绪态
  */
 void set_task_ready(task_t* task);
 
 /**
- * @brief 将任务设置为
+ * @brief 将任务设置为block
  */
 void set_task_block(task_t* task);
+
+/**
+ * @brief 会让任务主动放弃cpu
+ */
+int sys_yield();
+
+/**
+ * @brief 获取下一个运行的任务s
+ */
+task_t* get_next_task();
+
+/**
+ * @brief 进行一次任务调度
+ */
+void task_dispatch();
 
 #endif // TASK_H
