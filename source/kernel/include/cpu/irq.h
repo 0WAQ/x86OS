@@ -107,4 +107,16 @@ void do_handler_machine_check(exception_frame_t * frame);
 void do_handler_smd_exception(exception_frame_t * frame);
 void do_handler_virtual_exception(exception_frame_t * frame);
 
+
+/**
+ * @brief 进入临界区
+ */
+irq_state_t irq_enter_protection();
+
+/**
+ * @brief 退出临界区
+ */
+void irq_leave_protectoin(irq_state_t state);
+
+
 #endif // IRQ_H

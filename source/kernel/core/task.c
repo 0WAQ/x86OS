@@ -8,6 +8,7 @@
 #include "tools/klib.h"
 #include "common/cpu_instr.h"
 #include "cpu/cpu.h"
+#include "cpu/irq.h"
 #include "os_cfg.h"
 
 // 任务管理器
@@ -39,11 +40,19 @@ int task_init(task_t* task, const char* name, uint32_t entry, uint32_t esp) {
     list_node_init(&task->all_node);
     list_node_init(&task->run_node);
 
+    /////////////////////////////////////////// 进入临界区
+    irq_state_t state = irq_enter_protection();
+
+
     // 插入到任务队列中
     list_insert_last(&task_manager.task_list, &task->all_node);
     
     // 插入到就绪队列中(设置任务为就绪态)
     set_task_ready(task);
+
+
+    irq_leave_protectoin(state);
+    /////////////////////////////////////////// 退出临界区
 
     return 0;
 }
@@ -131,6 +140,11 @@ task_t* get_curr_task() {
 }
 
 int sys_yield() {
+
+    /////////////////////////////////////////// 进入临界区
+    irq_state_t state = irq_enter_protection();
+
+
     // 判断就绪队列中是否有任务
     if(list_count(&task_manager.ready_list) > 1) {
         task_t* curr_task = get_curr_task();
@@ -142,6 +156,11 @@ int sys_yield() {
         // 任务切换
         task_dispatch();
     }
+
+
+    irq_leave_protectoin(state);
+    /////////////////////////////////////////// 退出临界区
+
     return 0;
 }
 
@@ -152,6 +171,10 @@ task_t* get_next_task() {
 
 void task_dispatch() {
     
+    /////////////////////////////////////////// 进入临界区
+    irq_state_t state = irq_enter_protection();
+
+
     // 获取当前任务和下个任务
     task_t* from = get_curr_task();
     task_t* to   = get_next_task();
@@ -162,6 +185,9 @@ void task_dispatch() {
         to->state = TASK_RUNNING;
         task_switch_from_to(from, to);
     }
+
+    irq_leave_protectoin(state);
+    /////////////////////////////////////////// 退出临界区
 }
 
 void task_time_tick() {

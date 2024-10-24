@@ -6,6 +6,7 @@
 #include "tools/log.h"
 #include "tools/klib.h"
 #include "common/cpu_instr.h"
+#include "cpu/irq.h"
 
 void log_init() {
     
@@ -34,6 +35,9 @@ void log_print(const char* fmt, ...) {
     // 关闭参数列表
     va_end(args);
 
+    /////////////////////////////////////////// 进入临界区
+    irq_state_t state = irq_enter_protection();
+
     const char* p = buf;
     while(*p != '\0') {
         // 忙等待
@@ -43,4 +47,7 @@ void log_print(const char* fmt, ...) {
 
     outb(COM1_PORT, '\r');
     outb(COM1_PORT, '\n');
+
+    irq_leave_protectoin(state);
+    /////////////////////////////////////////// 退出临界区
 }

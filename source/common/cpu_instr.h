@@ -170,4 +170,30 @@ static inline void far_jump(uint32_t selector, uint32_t offset) {
     );
 }
 
+/**
+ * @brief 读eflags寄存器
+ */
+static inline uint32_t read_eflags() {
+    uint32_t eflags;
+    __asm__ __volatile__(
+        "pushf\n\t"
+        "pop %%eax"
+        :"=a"(eflags)
+        :
+    );
+    return eflags;
+}
+
+/**
+ * @brief 写eflags寄存器
+ */
+static inline void write_eflags(uint32_t eflags) {
+    __asm__ __volatile__(
+        "push %%eax\n\t"
+        "popf"
+        :
+        :"a"(eflags)
+    );
+}
+
 #endif // CPU_INSTR_H

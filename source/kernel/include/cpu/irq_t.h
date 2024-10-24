@@ -72,6 +72,8 @@
 
 #define IRQ_PIC_START		0x20			// PIC中断起始号
 
+// irq_enter_protection 与 irq_leave_protection 使用, 用于判断进入临界区前, 中断的状态
+typedef uint32_t irq_state_t;
 
 typedef struct _exception_frame_t{
     uint32_t gs, fs, es, ds;

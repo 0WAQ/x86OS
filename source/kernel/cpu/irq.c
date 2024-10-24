@@ -252,3 +252,16 @@ void do_handler_smd_exception(exception_frame_t * frame) {
 void do_handler_virtual_exception(exception_frame_t * frame) {
 	do_default_handler(frame, "Virtualization Exception.");
 }
+
+
+irq_state_t irq_enter_protection() {
+	// 通过读eflags寄存器, 判断在进入临界区前, 中断开关的状态
+	irq_state_t state = read_eflags();
+	irq_disable_global();
+	return state;
+}
+
+void irq_leave_protectoin(irq_state_t state) {
+	// 复原进入临界区之前中断的状态
+	write_eflags(state);
+}
