@@ -33,6 +33,8 @@ int task_init(task_t* task, const char* name, uint32_t entry, uint32_t esp) {
     // 设置任务名和状态
     kernel_strncpy(task->name, name, TASK_NAME_SIZE);
     task->state = TASK_CREATED;
+    task->time_ticks = TASK_TIME_SLICE_DEFAULT;
+    task->slice_ticks = task->time_ticks;
 
     list_node_init(&task->all_node);
     list_node_init(&task->run_node);
@@ -159,5 +161,22 @@ void task_dispatch() {
         task_manager.curr_task = to;
         to->state = TASK_RUNNING;
         task_switch_from_to(from, to);
+    }
+}
+
+void task_time_tick() {
+    task_t* curr_task = get_curr_task();
+
+    // 处理时间片
+    if(--curr_task->slice_ticks == 0) {
+        
+        // 时间片用完, 重新设置时间片
+        curr_task->slice_ticks = curr_task->time_ticks;
+
+        // 若就绪队列中还有其它任务,则将当前任务移入队列尾部
+        set_task_block(curr_task);  // 先删除
+        set_task_ready(curr_task);  // 再尾插
+    
+        task_dispatch();
     }
 }

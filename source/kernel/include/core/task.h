@@ -75,4 +75,9 @@ task_t* get_next_task();
  */
 void task_dispatch();
 
+/**
+ * @brief 每次中断时, 都会调用此函数
+ */
+void task_time_tick();
+
 #endif // TASK_H

@@ -112,14 +112,11 @@ void task2_entry() {
     int cnt = 0;
     for(;;) {
         log_print("%s: %d", task2.name, cnt++);
-        // task_switch_from_to(&task2, get_first_task());
-        sys_yield();
+        // sys_yield();
     }
 }
 
 void init_main() {
-    // irq_enalbe_global();
-
     // 测试链表
     // list_test();
 
@@ -132,10 +129,12 @@ void init_main() {
     // 初始化第二个任务
     task_init(&task2, "task2", (uint32_t)task2_entry, (uint32_t)&task2_stack[1024]);
 
+    // 开中断
+    irq_enalbe_global();
+
     int cnt = 0;
     for(;;) {
         log_print("%s: %d", get_first_task()->name, cnt++);
-        // task_switch_from_to(get_first_task(), &task2);
-        sys_yield();
+        // sys_yield();
     }
 }
