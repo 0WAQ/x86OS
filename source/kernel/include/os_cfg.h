@@ -16,7 +16,7 @@
 #define KERNEL_SELECTOR_DS  (2 * 8)
 
 #define KERNEL_STACK_SIZE   (8192)  // 8KB
-
+#define IDLE_STACK_SIZE     (1024)
 
 // 每毫秒的时钟数
 #define OS_TICK_MS      10

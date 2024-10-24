@@ -46,6 +46,21 @@ void first_task_init();
 task_t* get_first_task();
 
 /**
+ * @brief 初始化空闲任务
+ */
+void idle_task_init();
+
+/**
+ * @brief 获取空闲任务
+ */
+task_t* get_idle_task();
+
+/**
+ * @brief 空闲任务的执行代码
+ */
+void idle_task_entry();
+
+/**
  * @brief 获取当前任务
  */
 task_t* get_curr_task();
@@ -59,6 +74,16 @@ void set_task_ready(task_t* task);
  * @brief 将任务设置为block
  */
 void set_task_block(task_t* task);
+
+/**
+ * @brief 将任务设置为sleep
+ */
+void set_task_sleep(task_t* task, uint32_t ticks);
+
+/**
+ * @brief 将任务从sleep唤醒
+ */
+void set_task_wakeup(task_t* task);
 
 /**
  * @brief 会让任务主动放弃cpu
@@ -79,5 +104,10 @@ void task_dispatch();
  * @brief 每次中断时, 都会调用此函数
  */
 void task_time_tick();
+
+/**
+ * @brief 让任务睡眠
+ */
+void sys_sleep(uint32_t ms);
 
 #endif // TASK_H

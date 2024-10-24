@@ -39,6 +39,7 @@ typedef struct _task_t {
     // 每个时间片是100ms
     uint32_t slice_ticks;   // 时间片计数(递减)
     uint32_t time_ticks;    // 时间片
+    uint32_t sleep_ticks;   // 
 
 }task_t;
 
@@ -50,8 +51,10 @@ typedef struct _task_manager_t {
 
     list_t ready_list;  // 就绪队列
     list_t task_list;   // 任务队列
+    list_t sleep_list;  // 睡眠队列
 
     task_t first_task;  // 
+    task_t idle_task;   // 空闲进程
 
 }task_manager_t;
 

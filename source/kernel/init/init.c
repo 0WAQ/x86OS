@@ -112,7 +112,7 @@ void task2_entry() {
     int cnt = 0;
     for(;;) {
         log_print("%s: %d", task2.name, cnt++);
-        // sys_yield();
+        sys_sleep(1000);
     }
 }
 
@@ -135,6 +135,6 @@ void init_main() {
     int cnt = 0;
     for(;;) {
         log_print("%s: %d", get_first_task()->name, cnt++);
-        // sys_yield();
+        sys_sleep(1000);
     }
 }
