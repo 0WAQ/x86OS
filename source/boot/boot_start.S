@@ -25,7 +25,7 @@
 _start:
 
 	# 重置数据段寄存器
-	mov $0, %eax
+	mov $0, %eax	# 此处会发生异常是因为在gdb中要求它运行到0x7c00处
 	mov %ax, %ds
 	mov %ax, %ss
 	mov %ax, %es

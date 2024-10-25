@@ -6,8 +6,7 @@
     .text
     .extern kernel_init
     .extern init_main
-    # void _start(boot_info_t* boot_info)
-    .global _start
+    .global _start      # void _start(boot_info_t* boot_info)
 _start:
     # 第一种方法
     # push %ebp

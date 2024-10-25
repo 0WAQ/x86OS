@@ -10,10 +10,10 @@
 
 void loader_kernel() {
 
-    // 从第100个扇区开始读取扇区，将内核映像文件加载到1MB处，原本写入的是二进制文件，现在时elf文件，是在CMakeLists文件中修改
+    // 从第100个扇区开始读取扇区，将内核映像文件(elf格式)加载到1MB处
     read_disk(100, 500, (uint8_t*)SYS_KERNEL_LOAD_ADDR);
 
-    // 读取kernel的elf文件，而不是二进制文件
+    // 读取kernel的elf文件，而不是bin文件
     // 需要先将其从内存中读取出来解析，获得其入口函数地址0x10000(在lds中设置)
     uint32_t kernel_entry = reload_elf_file((uint8_t*)SYS_KERNEL_LOAD_ADDR);
     if(kernel_entry == 0) {

@@ -162,6 +162,8 @@ static inline void write_cr0(uint32_t cr0) {
  * @brief 远跳转指令
  */
 static inline void far_jump(uint32_t selector, uint32_t offset) {
+    
+    // 小端字节序, 高字节放在低地址处, 所以offset在低地址, selector在高地址
     uint32_t addr[] = {offset, selector};
     __asm__ __volatile__(
         "ljmpl *(%[a])"
