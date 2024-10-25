@@ -32,6 +32,7 @@ typedef struct _task_t {
     int tss_sel;    // 该任务对应的tss段的选择子
 
     list_node_t run_node;   // task在就绪队列中的节点
+    list_node_t wait_node;  // task在等待队列(信号量)中的节点
     list_node_t all_node;   // task在任务队列中的节点
 
     char name[TASK_NAME_SIZE];    // 任务名称

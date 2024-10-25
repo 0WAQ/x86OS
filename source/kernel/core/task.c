@@ -42,6 +42,7 @@ int task_init(task_t* task, const char* name, uint32_t entry, uint32_t esp) {
     task->sleep_ticks = 0;
 
     list_node_init(&task->all_node);
+    list_node_init(&task->wait_node);
     list_node_init(&task->run_node);
 
     /////////////////////////////////////////// 进入临界区
