@@ -113,7 +113,7 @@ static sem_t sem;
 void task2_entry() {
     int cnt = 0;
     for(;;) {
-        sem_wait(&sem);
+        // sem_wait(&sem);
         log_print("%s: %d", task2.name, cnt++);
     }
 }
@@ -132,7 +132,7 @@ void init_main() {
     task_init(&task2, "task2", (uint32_t)task2_entry, (uint32_t)&task2_stack[1024]);
 
     // 初始化信号量
-    sem_init(&sem, 2);
+    // sem_init(&sem, 2);
 
     // 开中断
     irq_enalbe_global();
@@ -140,7 +140,7 @@ void init_main() {
     int cnt = 0;
     for(;;) {
         log_print("%s: %d", get_first_task()->name, cnt++);
-        sem_notify(&sem);
-        sys_sleep(1000);
+        // sem_notify(&sem);
+        // sys_sleep(1000);
     }
 }

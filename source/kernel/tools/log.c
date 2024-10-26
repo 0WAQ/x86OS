@@ -7,9 +7,15 @@
 #include "tools/klib.h"
 #include "common/cpu_instr.h"
 #include "cpu/irq.h"
+#include "ipc/mutex.h"
+
+// 互斥锁
+static mutex_t mutex;
 
 void log_init() {
-    
+    // 初始化锁
+    mutex_init(&mutex);
+
     // 将串行接口相关的中断关闭
     outb(COM1_PORT + 1, 0x00);
     outb(COM1_PORT + 3, 0x80);
@@ -35,8 +41,8 @@ void log_print(const char* fmt, ...) {
     // 关闭参数列表
     va_end(args);
 
-    /////////////////////////////////////////// 进入临界区
-    irq_state_t state = irq_enter_protection();
+    /////////////////////////////////////////// 上锁
+    mutex_lock(&mutex);
 
     const char* p = buf;
     while(*p != '\0') {
@@ -48,6 +54,6 @@ void log_print(const char* fmt, ...) {
     outb(COM1_PORT, '\r');
     outb(COM1_PORT, '\n');
 
-    irq_leave_protectoin(state);
-    /////////////////////////////////////////// 退出临界区
+    mutex_unlock(&mutex);
+    /////////////////////////////////////////// 解锁
 }
