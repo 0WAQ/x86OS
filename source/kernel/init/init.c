@@ -13,6 +13,7 @@
 #include "tools/klib.h"
 #include "tools/list.h"
 #include "core/task.h"
+#include "core/memory.h"
 #include "os_cfg.h"
 
 // 该函数返回后，会长跳转至gdt_reload，并跳转到init_main
@@ -22,6 +23,9 @@ void kernel_init(boot_info_t* boot_info) {
 
     // 初始化cpu，并重新加载gdt
     cpu_init();
+
+    // 初始化内存
+    memroy_init(boot_info);
 
     // 初始化日志
     log_init();
