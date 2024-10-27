@@ -20,6 +20,9 @@ void loader_kernel() {
         die(-1);
     }
 
+    // 打开分页机制
+    enable_page_mode();
+
     // 跳转到内核代码
     ((void(*)(boot_info_t*))kernel_entry)(&boot_info);
     
@@ -93,6 +96,18 @@ uint32_t reload_elf_file(uint8_t* file_buffer) {
     }
 
     return elf_hdr->e_entry;
+}
+
+void enable_page_mode() {
+    static uint32_t page_dir[1024] __attribute__((aligned(4096))) = {
+        [0] = PDE_P | PDE_W | PDE_PS | 0
+    };
+
+    uint32_t cr4 = read_cr4();
+    write_cr4(cr4 | CR4_PSE);
+    write_cr3((uint32_t)page_dir);
+
+    write_cr0(read_cr0() | CR0_PG);
 }
 
 void die(int err_code) {

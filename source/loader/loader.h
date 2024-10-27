@@ -25,4 +25,11 @@ typedef struct SMAP_entry {
     uint32_t ACPI;          // extended
 }__attribute__((packed)) SMAP_entry_t;
 
+
+#define CR4_PSE         (1 << 4)
+#define CR0_PG          (1 << 31)
+#define PDE_P           (1 << 0)
+#define PDE_W           (1 << 1)
+#define PDE_PS          (1 << 7)
+
 #endif  // LOADER_H

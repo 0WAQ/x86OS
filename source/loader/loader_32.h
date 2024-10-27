@@ -25,6 +25,10 @@ void read_disk(uint32_t sector, uint32_t sector_cnt, uint8_t* buffer);
  */
 uint32_t reload_elf_file(uint8_t* file_buffer);
 
+/**
+ * @brief 打开分页机制
+ */
+void enable_page_mode();
 
 /**
  * @brief 死机
