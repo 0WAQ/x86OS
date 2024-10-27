@@ -9,6 +9,9 @@
 
 /**
  * @brief 初始化地址分配结构, 由调用者检查start和size的页边界
+ * @param bits 位图的起始地址
+ * @param start 内存起始地址
+ * @param size 内存大小
  */
 static void addr_alloc_init(addr_alloc_t* alloc, uint8_t* bits, 
             uint32_t start, uint32_t size, uint32_t page_size)
@@ -69,14 +72,16 @@ void memroy_init(boot_info_t* boot_info) {
     log_print("...Memory Init...");
     show_mem_info(boot_info);
 
+    // 计算1MB以上的空闲内存容量, 并向下对齐到页大小的整数倍
     uint32_t mem_up1MB_free = total_mem_size(boot_info) - MEM_EXT_START;
     mem_up1MB_free = down2(mem_up1MB_free, MEM_PAGE_SIZE);
     log_print("Free Memory: start = 0x%x, size = 0x%x", MEM_EXT_START, mem_up1MB_free);
 
-    // 链接脚本定义的变量
+    // 链接脚本定义的变量, 其为内核结束后的第一个字节
     extern uint8_t* mem_free_start;
     uint8_t* mem_free = (uint8_t*)&mem_free_start;
 
+    // 4GB总共需要 4*1024*1024*1024 / 4096 / 8 = 128KB大小的位图, 将其放在1MB字节以下
     addr_alloc_init(&paddr_alloc, mem_free, MEM_EXT_START, mem_up1MB_free, MEM_PAGE_SIZE);
     mem_free += bitmap_byte_count(paddr_alloc.size / MEM_PAGE_SIZE);
 
