@@ -16,4 +16,9 @@
  */
 void memroy_init(boot_info_t* boot_info);
 
+/**
+ * @brief 打印内存空间
+ */
+void show_mem_info(boot_info_t* boot_info);
+
 #endif // MEMORY_H

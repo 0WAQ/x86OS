@@ -5,6 +5,7 @@
  */
 #include "core/memory.h"
 #include "tools/log.h"
+#include "tools/klib.h"
 
 /**
  * @brief 初始化地址分配结构, 由调用者检查start和size的页边界
@@ -50,23 +51,44 @@ static void addr_free_page(addr_alloc_t* alloc, uint32_t addr, int page_count) {
     mutex_unlock(&alloc->mutex);
 }
 
+/**
+ * @brief 计算当前使用的内存空间总大小
+ */
+static uint32_t total_mem_size(boot_info_t* boot_info) {
+    uint32_t tot = 0;
+    for(int i = 0; i < boot_info->ram_region_count; i++) {
+        tot += boot_info->ram_region_cfg[i].size;
+    }
+    return tot;
+}
+
+// 物理内存分配器
+static addr_alloc_t paddr_alloc;
+
 void memroy_init(boot_info_t* boot_info) {
-    addr_alloc_t addr_alloc;
-    uint8_t bits[8];
+    log_print("...Memory Init...");
+    show_mem_info(boot_info);
 
-    // 初始化地址分配结构, 该结构表示从地址0x1000开始的连续64个大小为4096的页
-    addr_alloc_init(&addr_alloc, bits, 0x1000, 64*4096, 4096);
+    uint32_t mem_up1MB_free = total_mem_size(boot_info) - MEM_EXT_START;
+    mem_up1MB_free = down2(mem_up1MB_free, MEM_PAGE_SIZE);
+    log_print("Free Memory: start = 0x%x, size = 0x%x", MEM_EXT_START, mem_up1MB_free);
 
-    // 在addr_alloc表示的地址空间中分配页
-    for(int i = 0; i < 32; i++) {
-        // 每次分配2个
-        uint32_t addr = addr_alloc_page(&addr_alloc, 2);
-        log_print("alloc addr: 0x%x", addr);
+    // 链接脚本定义的变量
+    extern uint8_t* mem_free_start;
+    uint8_t* mem_free = (uint8_t*)&mem_free_start;
+
+    addr_alloc_init(&paddr_alloc, mem_free, MEM_EXT_START, mem_up1MB_free, MEM_PAGE_SIZE);
+    mem_free += bitmap_byte_count(paddr_alloc.size / MEM_PAGE_SIZE);
+
+    ASSERT(mem_free < (uint8_t*)MEM_EBDA_START);
+}
+
+void show_mem_info(boot_info_t* boot_info) {
+    log_print("Memory Region:");
+    for(int i = 0; i < boot_info->ram_region_count; i++) {
+        log_print("  [%d]: 0x%x - 0x%x", i, 
+            boot_info->ram_region_cfg[i].start, 
+            boot_info->ram_region_cfg[i].size);
     }
-
-    uint32_t addr = 0x1000;
-    for(int i = 0; i < 32; i++) {
-        addr_free_page(&addr_alloc, addr, 2);
-        addr += 4096 * 2;
-    }
+    log_print("");
 }
