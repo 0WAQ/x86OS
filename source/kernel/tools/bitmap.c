@@ -30,7 +30,7 @@ void bitmap_set_bit(bitmap_t* bitmap, uint32_t index, uint32_t count, int val)
     }
     else {
         for(uint32_t i = 0; i < count && index < bitmap->bit_count; ++i, ++index)
-            bitmap->bits[index / 8] &= (1 << (index % 8));
+            bitmap->bits[index / 8] &= ~(1 << (index % 8));
     }
 }
 
@@ -46,7 +46,7 @@ int bitmap_alloc_nbits(bitmap_t* bitmap, uint32_t count, int val)
         if(bitmap_get_bit(bitmap, i) == val) {
             if(++len == count) {
                 // 分配
-                bitmap_set_bit(bitmap, i - len + 1, ~val);
+                bitmap_set_bit(bitmap, i - len + 1, len, ~val);
                 return i - len + 1;
             }
         }
@@ -57,4 +57,8 @@ int bitmap_alloc_nbits(bitmap_t* bitmap, uint32_t count, int val)
     }
 
     return -1;
+}
+
+uint32_t bitmap_byte_count(uint32_t bit_count) {
+    return (bit_count + 7) / 8;    // 向上取整
 }

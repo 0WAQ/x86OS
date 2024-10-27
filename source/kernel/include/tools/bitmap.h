@@ -36,9 +36,6 @@ int bitmap_alloc_nbits(bitmap_t* bitmap, uint32_t count, int val);
 /**
  * @brief 计算位图中有多少个字节
  */
-inline
-uint32_t bitmap_byte_count(uint32_t bit_count) {
-    return (bit_count + 7) / 8;    // 向上取整
-}
+uint32_t bitmap_byte_count(uint32_t bit_count);
 
 #endif // BITMAP_H
