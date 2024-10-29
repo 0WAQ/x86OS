@@ -19,7 +19,7 @@ void bitmap_init(bitmap_t* bitmap, uint8_t* bits, uint32_t bit_count, int val)
 int bitmap_get_bit(bitmap_t* bitmap, uint32_t index)
 {
     // 在第(index / 8)个字节 的 第(index % 8)个位置上
-    return bitmap->bits[index / 8] & (1 << (index % 8));
+    return (bitmap->bits[index / 8] & (1 << (index % 8))) ? 1 : 0;
 }
 
 void bitmap_set_bit(bitmap_t* bitmap, uint32_t index, uint32_t count, int val)
