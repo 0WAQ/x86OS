@@ -2,8 +2,6 @@
 
 SECTIONS {
 
-    PROVIDE(kernel_base = 0x0);
-
     /* 内核的elf文件加载到0x100000处，但是入口函数的地址放在0x10000处 */
     . = 0x00010000;
 

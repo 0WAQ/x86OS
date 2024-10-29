@@ -29,4 +29,15 @@ typedef struct _addr_alloc_t {
 
 }addr_alloc_t;
 
+/**
+ * @brief 内存映射结构
+ * 表示一段虚拟地址与哪一段物理地址建立联系, 并设置权限
+ */
+typedef struct _memory_map_t{
+    void* vstart;       // 线性地址的起始地址
+    void* vend;         // 线性地址的结束地址
+    void* pstart;       // 物理地址的起始地址
+    uint32_t perm;
+}memory_map_t;
+
 #endif // MEMORY_T_H

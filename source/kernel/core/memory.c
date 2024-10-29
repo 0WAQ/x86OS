@@ -7,66 +7,24 @@
 #include "tools/log.h"
 #include "tools/klib.h"
 
-/**
- * @brief 初始化地址分配结构, 由调用者检查start和size的页边界
- * @param bits 位图的起始地址
- * @param start 内存起始地址
- * @param size 内存大小
- */
-static void addr_alloc_init(addr_alloc_t* alloc, uint8_t* bits, 
-            uint32_t start, uint32_t size, uint32_t page_size)
-{
-    mutex_init(&alloc->mutex);
-    alloc->start = start;
-    alloc->size = size;
-    alloc->page_size = page_size;
-    bitmap_init(&alloc->bitmap, bits, size / page_size, 0);
-}
+//////////////////////////////////////////////////////////////////////////////
+    // 链接脚本kernek.lds定义的变量
+    extern uint8_t* mem_free_start;     // 为内核结束后的第一个字节
+    extern uint8_t s_text[], e_text[], s_data[], e_data[];
 
-/**
- * @brief 分配多页内存
- */
-static uint32_t addr_alloc_page(addr_alloc_t* alloc, int page_count) {
-    mutex_lock(&alloc->mutex);
+    // 全局物理内存分配器, 其管理1MB以上的所有物理内存
+    addr_alloc_t paddr_alloc;
 
-    uint32_t addr = 0;
+    // 内核页目录表
+    static pde_t kernel_page_dir[PDE_CNT] __attribute__((aligned(MEM_PAGE_SIZE)));
 
-    // 分配连续的多个空闲页
-    int page_index = bitmap_alloc_nbits(&alloc->bitmap, page_count, 0);
-    if(page_index >= 0) {
-        addr = alloc->start + page_index * alloc->page_size;
-    }
-    mutex_unlock(&alloc->mutex);
-
-    return addr;
-}
-
-/**
- * @brief 释放多页内存
- */
-static void addr_free_page(addr_alloc_t* alloc, uint32_t addr, int page_count) {
-    mutex_lock(&alloc->mutex);
-
-    uint32_t page_index = (addr - alloc->start) / alloc->page_size;
-    // 将这段内存页设置为0
-    bitmap_set_bit(&alloc->bitmap, page_index, page_count, 0);
-
-    mutex_unlock(&alloc->mutex);
-}
-
-/**
- * @brief 计算当前使用的内存空间总大小
- */
-static uint32_t total_mem_size(boot_info_t* boot_info) {
-    uint32_t tot = 0;
-    for(int i = 0; i < boot_info->ram_region_count; i++) {
-        tot += boot_info->ram_region_cfg[i].size;
-    }
-    return tot;
-}
-
-// 物理内存分配器
-static addr_alloc_t paddr_alloc;
+    // 地址映射表, 用于建立内核级的地址映射
+    static memory_map_t kernel_map[] = {
+        {0,         s_text,                      0,        PTE_W},   // 内核栈区, 1MB以下
+        {s_text,    e_text,                      s_text,   0},       // 内核代码区, 从1MB开始
+        {s_data,    (void*)(MEM_EBDA_START - 1), s_data,   PTE_W}    // 内核数据区
+    };
+//////////////////////////////////////////////////////////////////////////////
 
 void memroy_init(boot_info_t* boot_info) {
     log_print("...Memory Init...");
@@ -77,15 +35,65 @@ void memroy_init(boot_info_t* boot_info) {
     mem_up1MB_free = down2(mem_up1MB_free, MEM_PAGE_SIZE);
     log_print("Free Memory: start = 0x%x, size = 0x%x", MEM_EXT_START, mem_up1MB_free);
 
-    // 链接脚本定义的变量, 其为内核结束后的第一个字节
-    extern uint8_t* mem_free_start;
     uint8_t* mem_free = (uint8_t*)&mem_free_start;
 
-    // 4GB总共需要 4*1024*1024*1024 / 4096 / 8 = 128KB大小的位图, 将其放在1MB字节以下
+    // 32位系统最多4GB内存
+    // 最多需要 4*1024*1024*1024 / 4096 / 8 = 128KB大小的位图, 这里一次性分配
+    // 将其放在mem_free_start处(在1MB下)
+
+
+    // 初始化物理内存分配器, 让其管理从1MB开始的所有物理内存, 按页管理, 一页4096字节
     addr_alloc_init(&paddr_alloc, mem_free, MEM_EXT_START, mem_up1MB_free, MEM_PAGE_SIZE);
     mem_free += bitmap_byte_count(paddr_alloc.size / MEM_PAGE_SIZE);
 
+    // 放完之后, mem_free一定小于0x80000(显卡控制)
     ASSERT(mem_free < (uint8_t*)MEM_EBDA_START);
+
+    // 根据地址映射表, 创建内核页目录表
+    create_kernel_table();
+
+    // 加载cr3寄存器
+    mmu_set_page_dit((uint32_t)kernel_page_dir);
+}
+
+void create_kernel_table() {
+
+    // 清空页目录表
+    kernel_memset(kernel_page_dir, 0, sizeof(kernel_page_dir));
+
+    // 遍历地址映射表, 内核由三个地址映射关系
+    int nr = sizeof(kernel_map) / sizeof(memory_map_t);
+    for(int i = 0; i < nr; ++i) {
+        memory_map_t* map = kernel_map + i;
+
+        uint32_t vstart = down2((uint32_t)map->vstart, MEM_PAGE_SIZE);
+        uint32_t vend = up2((uint32_t)map->vend, MEM_PAGE_SIZE);
+        uint32_t page_nr = (vend - vstart) / MEM_PAGE_SIZE;
+    
+        // 创建内核页表, 处理一个地址映射关系
+        _create_kernel_table(kernel_page_dir, vstart, (uint32_t)map->pstart, page_nr, map->perm);
+    }
+}
+
+int _create_kernel_table(pde_t* page_dir, uint32_t vaddr, uint32_t paddr, uint32_t page_nr, uint32_t perm)
+{
+    // 遍历一个映射关系拥有的页表数
+    for(int i = 0; i < page_nr; i++) {
+
+        // 查找或创建一个页表项
+        pte_t* pte = find_pte(page_dir, vaddr, 1);
+        if(pte == (pte_t*)0) {
+            return -1;
+        }
+
+        ASSERT(pte->present == 0);
+        pte->v = paddr | perm | PTE_P;
+    
+        vaddr += MEM_PAGE_SIZE;
+        paddr += MEM_PAGE_SIZE;
+    }
+
+    return 0;
 }
 
 void show_mem_info(boot_info_t* boot_info) {
