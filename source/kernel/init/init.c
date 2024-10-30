@@ -16,7 +16,7 @@
 #include "core/memory.h"
 #include "os_cfg.h"
 
-// 该函数返回后，会长跳转至gdt_reload，并跳转到init_main
+// 该函数返回后，会长跳转至gdt_reload，并跳转到kernel_main
 void kernel_init(boot_info_t* boot_info) {
 
     ASSERT(boot_info->ram_region_count != 0);
@@ -122,7 +122,7 @@ void task2_entry() {
     }
 }
 
-void init_main() {
+void kernel_main() {
     // 测试链表
     // list_test();
 

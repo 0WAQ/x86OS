@@ -5,7 +5,7 @@
 
     .text
     .extern kernel_init
-    .extern init_main
+    .extern kernel_main
     .global _start      # void _start(boot_info_t* boot_info)
 _start:
     # 第一种方法
@@ -34,7 +34,7 @@ gdt_reload:
 	mov %ax, %fs
 	mov %ax, %gs
     mov $(stack + KERNEL_STACK_SIZE), %esp
-    jmp init_main
+    jmp kernel_main
 
 # 设置内核栈
     .bss

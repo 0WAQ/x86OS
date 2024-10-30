@@ -9,13 +9,13 @@
 #include "common/boot_info.h"
 
 /**
- * @brief 内核入口函数
+ * @brief 内核初始化函数
  */
 void kernel_init(boot_info_t* boot_info);
 
 /**
- * @brief
+ * @brief 内核main函数
  */
-void init_main();
+void kernel_main();
 
 #endif // INIT_H

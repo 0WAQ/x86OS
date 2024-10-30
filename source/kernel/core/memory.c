@@ -18,7 +18,7 @@
     // 内核页目录表
     static pde_t kernel_page_dir[PDE_CNT] __attribute__((aligned(MEM_PAGE_SIZE)));
 
-    // 地址映射表, 用于建立内核级的地址映射
+    // 地址映射表, 用于建立内核级的地址映射, 直接映射区
     static memory_map_t kernel_map[] = {
         {0,         s_text,                      0,        PTE_W},   // 内核栈区, 1MB以下
         {s_text,    e_text,                      s_text,   0},       // 内核代码区, 从1MB开始
@@ -80,7 +80,7 @@ int _create_kernel_table(pde_t* page_dir, uint32_t vaddr, uint32_t paddr, uint32
     // 遍历一个映射关系拥有的页表数
     for(int i = 0; i < page_nr; i++) {
 
-        // 查找或创建一个页表项
+        // 查找或创建一个页表项(页)
         pte_t* pte = find_pte(page_dir, vaddr, 1);
         if(pte == (pte_t*)0) {
             return -1;
