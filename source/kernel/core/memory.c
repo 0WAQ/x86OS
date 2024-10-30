@@ -20,9 +20,12 @@
 
     // 地址映射表, 用于建立内核级的地址映射, 直接映射区
     static memory_map_t kernel_map[] = {
-        {0,         s_text,                      0,        PTE_W},   // 内核栈区, 1MB以下
-        {s_text,    e_text,                      s_text,   0},       // 内核代码区, 从1MB开始
-        {s_data,    (void*)(MEM_EBDA_START - 1), s_data,   PTE_W}    // 内核数据区
+        {0,         s_text,                      0,        PTE_W},   // 内核栈区, 64KB以下
+        {s_text,    e_text,                      s_text,   0},       // 内核代码区, 从64KB开始
+        {s_data,    (void*)(MEM_EBDA_START - 1), s_data,   PTE_W},   // 内核数据区
+        
+        // 将1MB以后的所有内存也直接映射
+        {(void*)MEM_EXT_START, (void*)MEM_EXT_END, (void*)MEM_EXT_START, PTE_W}
     };
 //////////////////////////////////////////////////////////////////////////////
 
@@ -94,6 +97,28 @@ int _create_kernel_table(pde_t* page_dir, uint32_t vaddr, uint32_t paddr, uint32
     }
 
     return 0;
+}
+
+uint32_t memory_create_user_vm() {
+    
+    // 分配一页物理内存, 用于放置用户的页目录表
+    pde_t* page_dir = (pde_t*)addr_alloc_page(&paddr_alloc, 1);
+    if(page_dir == 0) {
+        return 0;
+    }
+
+    kernel_memset((void*)page_dir, 0, MEM_PAGE_SIZE);
+
+    // 用户空间的虚拟地址最小为0x80000000
+    // 页目录表中, 用户地址空间对应的索引位置, 即512及以后的页目录项都是用户的
+    uint32_t user_pde_start = pde_index(MEMORY_TASK_BASE);
+
+    // 只复制内核的页目录表项, 以便与其它进程共享内核空间
+    // 任务自己的内存空间在其加载时创建
+    for(int i = 0; i < user_pde_start; i++) {
+        page_dir[i].v = kernel_page_dir[i].v;
+    }
+    return (uint32_t)page_dir;
 }
 
 void show_mem_info(boot_info_t* boot_info) {

@@ -11,8 +11,10 @@
 #include "ipc/mutex.h"
 
 #define MEM_EXT_START       (1024*1024)
+#define MEM_EXT_END         (128 * 1024 * 1024 - 1) // 0x08000000, 目前qemu中设置的内存大小
 #define MEM_PAGE_SIZE       (4096)
 #define MEM_EBDA_START      (0x80000)
+#define MEMORY_TASK_BASE    (0x80000000)    // 用户空间的起始虚拟地址, 以下是内核
 
 /**
  * @brief 物理内存分配与释放的管理结构

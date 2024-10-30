@@ -28,6 +28,11 @@ void create_kernel_table();
 int _create_kernel_table(pde_t* page_dir, uint32_t vaddr, uint32_t paddr, uint32_t page_nr, uint32_t perm);
 
 /**
+ * @brief 创建用户虚拟内存空间
+ */
+uint32_t memory_create_user_vm();
+
+/**
  * @brief 打印内存空间
  */
 void show_mem_info(boot_info_t* boot_info);

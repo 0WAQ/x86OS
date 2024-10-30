@@ -4,6 +4,7 @@
  * 
  */
 #include "core/task.h"
+#include "core/memory.h"
 #include "tools/log.h"
 #include "tools/klib.h"
 #include "common/cpu_instr.h"
@@ -88,7 +89,15 @@ int tss_init(task_t* task, uint32_t entry, uint32_t esp) {
     task->tss.cs = KERNEL_SELECTOR_CS;
     task->tss.es = task->tss.ds = task->tss.fs = task->tss.gs = KERNEL_SELECTOR_DS;
     task->tss.ss = task->tss.ss0 = KERNEL_SELECTOR_DS;
-    
+
+    // 创建用户自己的页目录表
+    uint32_t page_dir = memory_create_user_vm();
+    if(page_dir == 0) {
+        gdt_free_desc(tss_sel);
+        return -1;
+    }
+    task->tss.cr3 = page_dir;
+
     task->tss.esp = task->tss.esp0 = esp;
     task->tss.eip = entry;
     
