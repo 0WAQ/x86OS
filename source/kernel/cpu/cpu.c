@@ -86,6 +86,18 @@ int gdt_alloc_desc() {
     return -1;
 }
 
+void gdt_free_desc(int tss_sel) {
+    
+    /////////////////////////////////////////// 上锁
+    mutex_lock(&mutex); 
+
+    gdt_table[tss_sel / sizeof(segment_desc_t)].attr = 0;
+
+    mutex_unlock(&mutex);
+    /////////////////////////////////////////// 解锁
+
+}
+
 void switch_to_tss(int tss_sel) {
 
     // cpu发现跳转的目标是tss段，所以会将当前运行状态保存到当前tss段中(当前tss的值在tr中)

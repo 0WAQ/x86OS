@@ -34,6 +34,11 @@ void gate_desc_set(gate_desc_t* desc, uint16_t selector, uint32_t offset, uint16
 int gdt_alloc_desc();
 
 /**
+ * @brief 释放表项
+ */
+void gdt_free_desc(int tss_sel);
+
+/**
  * @brief
  */
 void switch_to_tss(int tss_sel);
