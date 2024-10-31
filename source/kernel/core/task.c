@@ -128,15 +128,31 @@ void first_task_init() {
     // 在first_task_entry.S中定义
     extern void first_task_entry();
 
+    // 在链接脚本kernel.lds中定义
+    extern uint8_t s_first_task[], e_first_task[];
+    extern uint8_t* sssssss;
+
+    // first_task需要使用的内存, 只包含 .text .data .bss .rodata
+    uint32_t copy_size = (uint32_t)(e_first_task - s_first_task);
+    uint32_t alloc_size = 10 * MEM_PAGE_SIZE;   // 还有栈段需要计算, 这里不计算了
+    ASSERT(copy_size < alloc_size);
+
     // 这里不需要给参数，因为当cpu从当前任务切换走时，会自动将状态保存，只要保证有地方可去就行
     // cpu会自动保存来源
     task_init(&task_manager.first_task, "first task", (uint32_t)first_task_entry, 0);
+    task_manager.curr_task = &task_manager.first_task;
+
+    // 加载tss
     ltr(task_manager.first_task.tss_sel);
 
     // 加载cr3
     mmu_set_page_dir(task_manager.first_task.tss.cr3);
     
-    task_manager.curr_task = &task_manager.first_task;
+    // 为first_task分配物理页, 从first_task_entry(0x80000000)处分配
+    memory_alloc_page_for((uint32_t)first_task_entry, alloc_size, PTE_P | PTE_W);
+
+    // 将first_task从内核移指用户
+    kernel_memcpy(first_task_entry, s_first_task, copy_size);
 }
 
 task_t* get_first_task() {

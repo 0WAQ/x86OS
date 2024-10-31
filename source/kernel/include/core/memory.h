@@ -23,14 +23,24 @@ void memroy_init(boot_info_t* boot_info);
 void create_kernel_table();
 
 /**
- * @brief create_kernel_table的底层操作, 只处理一个地址映射关系
+ * @brief 只处理一个地址映射关系
  */
-int _create_kernel_table(pde_t* page_dir, uint32_t vaddr, uint32_t paddr, uint32_t page_nr, uint32_t perm);
+int memory_create_map(pde_t* page_dir, uint32_t vaddr, uint32_t paddr, uint32_t page_nr, uint32_t perm);
 
 /**
  * @brief 创建用户虚拟内存空间
  */
 uint32_t memory_create_user_vm();
+
+/**
+ * @brief 为vaddr分配页
+ */
+int memory_alloc_page_for(uint32_t vaddr, uint32_t size, uint32_t perm);
+
+/**
+ * @brief 子函数, 指定在一个页目录表中取分配
+ */
+int _memory_alloc_page_for(uint32_t page_dir, uint32_t vaddr, uint32_t size, uint32_t perm);
 
 /**
  * @brief 打印内存空间

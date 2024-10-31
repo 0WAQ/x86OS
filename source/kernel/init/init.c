@@ -24,11 +24,11 @@ void kernel_init(boot_info_t* boot_info) {
     // 初始化cpu，并重新加载gdt
     cpu_init();
 
-    // 初始化内存
-    memroy_init(boot_info);
-
     // 初始化日志
     log_init();
+
+    // 初始化内存
+    memroy_init(boot_info);
 
     // 初始化idt
     irq_init();

@@ -74,11 +74,11 @@ void create_kernel_table() {
         uint32_t page_nr = (vend - vstart) / MEM_PAGE_SIZE;
     
         // 创建内核页表, 处理一个地址映射关系
-        _create_kernel_table(kernel_page_dir, vstart, (uint32_t)map->pstart, page_nr, map->perm);
+        memory_create_map(kernel_page_dir, vstart, (uint32_t)map->pstart, page_nr, map->perm);
     }
 }
 
-int _create_kernel_table(pde_t* page_dir, uint32_t vaddr, uint32_t paddr, uint32_t page_nr, uint32_t perm)
+int memory_create_map(pde_t* page_dir, uint32_t vaddr, uint32_t paddr, uint32_t page_nr, uint32_t perm)
 {
     // 遍历一个映射关系拥有的页表数
     for(int i = 0; i < page_nr; i++) {
@@ -119,6 +119,47 @@ uint32_t memory_create_user_vm() {
         page_dir[i].v = kernel_page_dir[i].v;
     }
     return (uint32_t)page_dir;
+}
+
+int memory_alloc_page_for(uint32_t vaddr, uint32_t size, uint32_t perm) {
+
+    // 调用子函数, 为当前进程的页目录表分配表项(在tss_init中分配了内核的页表)
+    return _memory_alloc_page_for(get_curr_task()->tss.cr3, vaddr, size, perm);
+}
+
+int _memory_alloc_page_for(uint32_t page_dir, uint32_t vaddr, uint32_t size, uint32_t perm) {
+    uint32_t curr_vaddr = vaddr;
+
+    // 需要分配的页数
+    uint32_t page_count = up2(size, MEM_PAGE_SIZE) / MEM_PAGE_SIZE;
+    // 逐一分配页, 而不是一次分配, 因为需要对每一页建立映射
+    for(uint32_t i = 0; i < page_count; ++i) {
+
+        // 分配一个物理页
+        uint32_t paddr = addr_alloc_page(&paddr_alloc, 1);
+        if(paddr == 0) {
+            log_print("memory_alloc_page failed. no memory");
+            return -1;
+        }
+
+        // 建立映射关系
+        int errno = memory_create_map((pde_t*)page_dir, curr_vaddr, paddr, 1, perm);
+        if(errno < 0) {
+            log_print("memory_create_map failed. errno: %d", errno);
+            
+            // 将前边分配的页全部释放
+            // addr_free_page(&paddr_alloc, vaddr, i + 1);
+            
+            // 断开映射关系
+            // 
+
+            return -1;
+        }
+
+        curr_vaddr += MEM_PAGE_SIZE;
+    }
+
+    return 0;
 }
 
 void show_mem_info(boot_info_t* boot_info) {
