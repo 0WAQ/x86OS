@@ -18,4 +18,9 @@ void kernel_init(boot_info_t* boot_info);
  */
 void kernel_main();
 
+/**
+ * @brief 运行1号进程
+ */
+void move_to_first_task();
+
 #endif // INIT_H

@@ -56,7 +56,7 @@ void memroy_init(boot_info_t* boot_info) {
     create_kernel_table();
 
     // 加载cr3寄存器
-    mmu_set_page_dit((uint32_t)kernel_page_dir);
+    mmu_set_page_dir((uint32_t)kernel_page_dir);
 }
 
 void create_kernel_table() {

@@ -125,11 +125,17 @@ void task_manager_init() {
 
 void first_task_init() {
 
+    // 在first_task_entry.S中定义
+    extern void first_task_entry();
+
     // 这里不需要给参数，因为当cpu从当前任务切换走时，会自动将状态保存，只要保证有地方可去就行
     // cpu会自动保存来源
-    task_init(&task_manager.first_task, "first task", 0, 0);
+    task_init(&task_manager.first_task, "first task", (uint32_t)first_task_entry, 0);
     ltr(task_manager.first_task.tss_sel);
 
+    // 加载cr3
+    mmu_set_page_dir(task_manager.first_task.tss.cr3);
+    
     task_manager.curr_task = &task_manager.first_task;
 }
 

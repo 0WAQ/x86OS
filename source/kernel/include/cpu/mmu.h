@@ -19,7 +19,7 @@ pte_t* find_pte(pde_t* page_dir, uint32_t vaddr, int is_alloc);
 
 // 重新加载CR3寄存器
 static inline
-void mmu_set_page_dit(uint32_t paddr) {
+void mmu_set_page_dir(uint32_t paddr) {
     write_cr3(paddr);
 }
 
