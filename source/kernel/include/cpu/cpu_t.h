@@ -26,6 +26,12 @@
 #define DESC_ATTR_DPL2      (2 << 5)
 #define DESC_ATTR_DPL3      (3 << 5)
 
+// RPL
+#define DESC_ATTR_RPL0      (0 << 0)
+#define DESC_ATTR_RPL1      (1 << 0)
+#define DESC_ATTR_RPL2      (2 << 0)
+#define DESC_ATTR_RPL3      (3 << 0)
+
 // S
 #define DESC_ATTR_S_SYS     (0 << 4)    // S位，用来表示是系统段还是用户段
 #define DESC_ATTR_S_USR     (1 << 4)

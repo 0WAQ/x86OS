@@ -86,9 +86,22 @@ int tss_init(task_t* task, uint32_t entry, uint32_t esp) {
 
     kernel_memset(&task->tss, 0, sizeof(tss_t));
     
-    task->tss.cs = KERNEL_SELECTOR_CS;
-    task->tss.es = task->tss.ds = task->tss.fs = task->tss.gs = KERNEL_SELECTOR_DS;
-    task->tss.ss = task->tss.ss0 = KERNEL_SELECTOR_DS;
+    // 使用数据段寄存器访问段时要算上RPL
+    int code_sel = task_manager.code_sel | DESC_ATTR_RPL3;
+    int data_sel = task_manager.data_sel | DESC_ATTR_RPL3;
+
+    task->tss.cs = code_sel;
+    task->tss.ss = task->tss.ds = task->tss.es = task->tss.fs = task->tss.gs = data_sel;
+    
+    task->tss.ss = data_sel;
+    task->tss.ss0 = KERNEL_SELECTOR_DS;
+
+    task->tss.esp = task->tss.esp0 = esp;
+    
+    task->tss.eip = entry;
+    task->tss.eflags = EFLAGS_DEFAULT | EFLAGS_IF;
+    
+    task->tss.iomap = 0;
 
     // 创建用户自己的页目录表
     uint32_t page_dir = memory_create_user_vm();
@@ -97,11 +110,6 @@ int tss_init(task_t* task, uint32_t entry, uint32_t esp) {
         return -1;
     }
     task->tss.cr3 = page_dir;
-
-    task->tss.esp = task->tss.esp0 = esp;
-    task->tss.eip = entry;
-    
-    task->tss.eflags = EFLAGS_DEFAULT | EFLAGS_IF;
 
     return 0;
 }
@@ -113,6 +121,22 @@ void task_switch_from_to(task_t* from, task_t* to) {
 
 
 void task_manager_init() {
+
+    // 创建两个特权级为3的段
+    int data_sel = gdt_alloc_desc();
+    segment_desc_set(data_sel, 0x00000000, 0xFFFFFFFF, 
+        DESC_ATTR_P | DESC_ATTR_DPL3 | DESC_ATTR_S_USR | 
+        DESC_ATTR_TYPE_DATA | DESC_ATTR_TYPE_RW | DESC_ATTR_D
+    );
+    task_manager.data_sel = data_sel;
+
+    int code_sel = gdt_alloc_desc();
+    segment_desc_set(code_sel, 0x00000000, 0xFFFFFFFF, 
+        DESC_ATTR_P | DESC_ATTR_DPL3 | DESC_ATTR_S_USR | 
+        DESC_ATTR_TYPE_CODE | DESC_ATTR_TYPE_RW | DESC_ATTR_D
+    );
+    task_manager.code_sel = code_sel;
+
     list_init(&task_manager.ready_list);
     list_init(&task_manager.task_list);
     list_init(&task_manager.sleep_list);
