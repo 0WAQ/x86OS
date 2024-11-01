@@ -148,12 +148,23 @@ void do_default_handler(exception_frame_t* frame, const char* msg) {
 
 void dump_core_regs(exception_frame_t* frame) {
 	log_print("IRQ: %d, Error Code: %d", frame->num, frame->errno);
+	
+	uint32_t ss, esp;
+	if(frame->cs & 0x3) {
+		ss = frame->ss3;
+		esp = frame->esp3;
+	}
+	else {
+		ss = frame->ds;
+		esp = frame->esp;
+	}
+	
 	log_print("CS: %d\r\n"
 			  "DS: %d\r\n"
 			  "ES: %d\r\n"
 			  "SS: %d\r\n"
 			  "FS: %d\r\n"
-			  "GS: %d", frame->cs, frame->ds, frame->es, frame->ds, frame->fs, frame->gs);
+			  "GS: %d", frame->cs, frame->ds, frame->es, ss, frame->fs, frame->gs);
 	
 	log_print("EAX: 0x%x\r\n"
               "EBX: 0x%x\r\n"
@@ -163,7 +174,7 @@ void dump_core_regs(exception_frame_t* frame) {
               "ESI: 0x%x\r\n"
               "EBP: 0x%x\r\n"
               "ESP: 0x%x", frame->eax, frame->ebx, frame->ecx, frame->edx,
-               				 frame->edi, frame->esi, frame->ebp, frame->esp);
+               				 frame->edi, frame->esi, frame->ebp, esp);
 
     log_print("EIP: 0x%x\r\n"
 			  "EFLAGS: 0x%x\r\n", frame->eip, frame->eflags);
@@ -226,11 +237,50 @@ void do_handler_stack_segment_fault(exception_frame_t * frame) {
 }
 
 void do_handler_general_protection(exception_frame_t * frame) {
-	do_default_handler(frame, "General Protection.");
+
+    log_print("--------------------------------");
+    log_print("IRQ/Exception happend: General Protection.");
+
+    if (frame->errno & ERR_EXT)
+        log_print("the exception occurred during delivery of an \
+                    event external to the program, such as an interrupt or an earlier exception.");
+    else
+    	log_print("the exception occurred during delivery of a \
+					software interrupt (INT n, INT3, or INTO).");
+    
+    if (frame->errno & ERR_IDT)
+        log_print("the index portion of the error code refers to a gate descriptor in the IDT");
+    else
+     	log_print("the index refers to a descriptor in the GDT");
+    
+    log_print("segment index: %d", frame->errno & 0xFFF8);
+
+    dump_core_regs(frame);
+    while(1) { hlt(); }	
 }
 
 void do_handler_page_fault(exception_frame_t * frame) {
-	do_default_handler(frame, "Page Fault.");
+
+    log_print("--------------------------------");
+    log_print("IRQ/Exception happend: Page fault.");
+
+    if (frame->errno & ERR_PAGE_P)
+    	log_print("  page-level protection violation: 0x%x.", read_cr2());
+	else
+        log_print("  Page doesn't present: 0x%x", read_cr2());
+    
+    if (frame->errno & ERR_PAGE_WR)
+        log_print("  The access causing the fault was a write: 0x%x", read_cr2());
+	else
+        log_print("  The access causing the fault was a read: 0x%x", read_cr2());
+    
+    if (frame->errno & ERR_PAGE_US)
+        log_print("  A user-mode access caused the fault: 0x%x", read_cr2());
+	else
+        log_print("  A supervisor-mode access caused the fault: 0x%x", read_cr2());
+
+    dump_core_regs(frame);
+    while(1) { hlt(); }
 }
 
 void do_handler_fpu_error(exception_frame_t * frame) {

@@ -41,14 +41,6 @@
 #define IRQ1_KEYBOARD		    0x21        // 按键中断
 #define IRQ14_HARDDISK_PRIMARY  0x2E		// 主总线上的ATA磁盘中断
 
-#define ERR_PAGE_P      (1 << 0)
-#define ERR_PAGE_WR     (1 << 1)
-#define ERR_PAGE_US     (1 << 1)
-
-#define ERR_EXT         (1 << 0)
-#define ERR_IDT         (1 << 1)
-
-
 // PIC控制器相关的寄存器及位配置
 #define PIC0_ICW1			0x20
 #define PIC0_ICW2			0x21
@@ -72,6 +64,13 @@
 
 #define IRQ_PIC_START		0x20			// PIC中断起始号
 
+#define ERR_PAGE_P      (1 << 0)
+#define ERR_PAGE_WR     (1 << 1)
+#define ERR_PAGE_US     (1 << 2)
+
+#define ERR_EXT         (1 << 0)
+#define ERR_IDT         (1 << 1)
+
 // irq_enter_protection 与 irq_leave_protection 使用, 用于判断进入临界区前, 中断的状态
 typedef uint32_t irq_state_t;
 
@@ -79,6 +78,7 @@ typedef struct _exception_frame_t{
     uint32_t gs, fs, es, ds;
     uint32_t edi, esi, ebp, esp, ebx, edx, ecx, eax;
     uint32_t num, errno, eip, cs, eflags;
+    uint32_t esp3, ss3;
 }exception_frame_t;
 
 
