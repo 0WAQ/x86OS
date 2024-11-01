@@ -18,9 +18,11 @@ static task_manager_t task_manager;
 // 空闲任务的栈
 static uint32_t idle_task_stack[IDLE_STACK_SIZE];
 
-int task_init(task_t* task, const char* name, uint32_t entry, uint32_t esp) {
+int task_init(task_t* task, const char* name, uint32_t flag, uint32_t entry, uint32_t esp) {
+
     ASSERT(task != (task_t*)0);
-    tss_init(task, entry, esp);
+    
+    tss_init(task, flag, entry, esp);
 
     // 初始化任务时，执行以下操作的原因:
     // 因为从其它任务首次切换到该任务时，会先恢复该任务的状态
@@ -63,7 +65,7 @@ int task_init(task_t* task, const char* name, uint32_t entry, uint32_t esp) {
     return 0;
 }
 
-int tss_init(task_t* task, uint32_t entry, uint32_t esp) {
+int tss_init(task_t* task, uint32_t flag, uint32_t entry, uint32_t esp) {
     
 // 将tss注册到gdt中
 
@@ -86,9 +88,17 @@ int tss_init(task_t* task, uint32_t entry, uint32_t esp) {
 
     kernel_memset(&task->tss, 0, sizeof(tss_t));
     
-    // 使用数据段寄存器访问段时要算上RPL
-    int code_sel = task_manager.code_sel | DESC_ATTR_RPL3;
-    int data_sel = task_manager.data_sel | DESC_ATTR_RPL3;
+    int code_sel, data_sel; 
+
+    if(flag & TASK_FLAGS_SYSTEM) {
+        code_sel = KERNEL_SELECTOR_CS;
+        data_sel = KERNEL_SELECTOR_DS;    
+    }
+    else if(flag & TASK_FLAGS_USER) {
+        // 使用数据段寄存器访问段时要算上RPL
+        code_sel = task_manager.code_sel | DESC_ATTR_RPL3;
+        data_sel = task_manager.data_sel | DESC_ATTR_RPL3;
+    }
 
     task->tss.cs = code_sel;
     task->tss.ss = task->tss.ds = task->tss.es = task->tss.fs = task->tss.gs = data_sel;
@@ -163,7 +173,9 @@ void first_task_init() {
 
     // 这里不需要给参数，因为当cpu从当前任务切换走时，会自动将状态保存，只要保证有地方可去就行
     // cpu会自动保存来源
-    task_init(&task_manager.first_task, "first task", (uint32_t)first_task_entry, 0);
+
+    uint32_t flag = TASK_FLAGS_USER;
+    task_init(&task_manager.first_task, "first task", flag, (uint32_t)first_task_entry, 0);
     task_manager.curr_task = &task_manager.first_task;
 
     // 加载tss
@@ -184,7 +196,8 @@ task_t* get_first_task() {
 }
 
 void idle_task_init() {
-    task_init(&task_manager.idle_task, "idle task",
+    uint32_t flag = TASK_FLAGS_SYSTEM;
+    task_init(&task_manager.idle_task, "idle task", flag,
         (uint32_t)idle_task_entry, (uint32_t)(idle_task_stack + IDLE_STACK_SIZE));
 }
 

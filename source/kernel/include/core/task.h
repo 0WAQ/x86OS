@@ -11,12 +11,12 @@
 /**
  * @brief 初始化任务
  */
-int task_init(task_t* task, const char* name, uint32_t entry, uint32_t esp);
+int task_init(task_t* task, const char* name, uint32_t flag, uint32_t entry, uint32_t esp);
 
 /**
  * @brief 初始化任务状态段
  */
-int tss_init(task_t* task, uint32_t entry, uint32_t esp);
+int tss_init(task_t* task, uint32_t flag, uint32_t entry, uint32_t esp);
 
 /**
  * @brief 切换任务

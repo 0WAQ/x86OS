@@ -13,6 +13,10 @@
 #define TASK_NAME_SIZE      (32)
 #define TASK_TIME_SLICE_DEFAULT     (10)
 
+// 任务工作模式
+#define TASK_FLAGS_SYSTEM       (1 << 0)
+#define TASK_FLAGS_USER         (0 << 0)
+
 /**
  * 同Linux中的task_struct
  */
