@@ -19,7 +19,7 @@ void cpu_init() {
     // 初始化锁
     mutex_init(&mutex);
 
-    // 初始化gdt
+    // 初始化gdt, 让内核运行在平坦模型上
     gdt_init();
 }
 

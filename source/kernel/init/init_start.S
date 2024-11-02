@@ -24,7 +24,7 @@ _start:
     # kernel_init(boot_info)
     call kernel_init
 
-    jmp $KERNEL_SELECTOR_CS, $gdt_reload
+    jmp $KERNEL_SELECTOR_CS, $gdt_reload    # 长跳转
 
 gdt_reload:
 	mov $KERNEL_SELECTOR_DS, %ax

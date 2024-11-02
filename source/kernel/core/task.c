@@ -19,9 +19,9 @@ static task_manager_t task_manager;
 static uint32_t idle_task_stack[IDLE_STACK_SIZE];
 
 int task_init(task_t* task, const char* name, uint32_t flag, uint32_t entry, uint32_t esp) {
-
     ASSERT(task != (task_t*)0);
-    
+
+    // 初始化任务的tss
     tss_init(task, flag, entry, esp);
 
     // 初始化任务时，执行以下操作的原因:
@@ -104,7 +104,7 @@ int tss_init(task_t* task, uint32_t flag, uint32_t entry, uint32_t esp) {
     task->tss.ss = task->tss.ds = task->tss.es = task->tss.fs = task->tss.gs = data_sel;
     
     task->tss.ss = data_sel;
-    task->tss.ss0 = KERNEL_SELECTOR_DS;
+    task->tss.ss0 = KERNEL_SELECTOR_DS;     // 任务的内核栈
 
     task->tss.esp = task->tss.esp0 = esp;
     
@@ -166,11 +166,6 @@ void first_task_init() {
     extern uint8_t s_first_task[], e_first_task[];
     extern uint8_t* sssssss;
 
-    // first_task需要使用的内存, 只包含 .text .data .bss .rodata
-    uint32_t copy_size = (uint32_t)(e_first_task - s_first_task);
-    uint32_t alloc_size = 10 * MEM_PAGE_SIZE;   // 还有栈段需要计算, 这里不计算了
-    ASSERT(copy_size < alloc_size);
-
     // 这里不需要给参数，因为当cpu从当前任务切换走时，会自动将状态保存，只要保证有地方可去就行
     // cpu会自动保存来源
 
@@ -178,11 +173,17 @@ void first_task_init() {
     task_init(&task_manager.first_task, "first task", flag, (uint32_t)first_task_entry, 0);
     task_manager.curr_task = &task_manager.first_task;
 
-    // 加载tss
+    // 加载tss到tr寄存器中
     ltr(task_manager.first_task.tss_sel);
 
     // 加载cr3
     mmu_set_page_dir(task_manager.first_task.tss.cr3);
+
+    // 将一号进程移指用户态
+    // first_task需要使用的内存, 只包含 .text .data .bss .rodata
+    uint32_t copy_size = (uint32_t)(e_first_task - s_first_task);
+    uint32_t alloc_size = 10 * MEM_PAGE_SIZE;   // 还有栈段需要计算, 这里不计算了
+    ASSERT(copy_size < alloc_size);
     
     // 为first_task分配物理页, 从first_task_entry(0x80000000)处分配
     memory_alloc_page_for((uint32_t)first_task_entry, alloc_size, PTE_P | PTE_W);

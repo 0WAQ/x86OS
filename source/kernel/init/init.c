@@ -21,7 +21,7 @@ void kernel_init(boot_info_t* boot_info) {
 
     ASSERT(boot_info->ram_region_count != 0);
 
-    // 初始化cpu，并重新加载gdt
+    // 初始化cpu
     cpu_init();
 
     // 初始化日志
