@@ -9,7 +9,6 @@
 
 void first_task_main() {
     for(;;) {
-        log_print("first task.");
-        sys_sleep(1000);
+
     }
 }

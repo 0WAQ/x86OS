@@ -43,6 +43,16 @@ int memory_alloc_page_for(uint32_t vaddr, uint32_t size, uint32_t perm);
 int _memory_alloc_page_for(uint32_t page_dir, uint32_t vaddr, uint32_t size, uint32_t perm);
 
 /**
+ * @brief 分配一页内存
+ */
+uint32_t memory_alloc_page();
+
+/**
+ * @brief 释放一页内存
+ */
+void memory_free_page(uint32_t addr);
+
+/**
  * @brief 打印内存空间
  */
 void show_mem_info(boot_info_t* boot_info);
@@ -102,6 +112,13 @@ static uint32_t total_mem_size(boot_info_t* boot_info) {
         tot += boot_info->ram_region_cfg[i].size;
     }
     return tot;
+}
+
+/**
+ * @brief 返回当前使用的页目录表
+ */
+static pde_t* curr_page_dir() {
+    return (pde_t*)(get_curr_task()->tss.cr3);
 }
 
 #endif // MEMORY_H

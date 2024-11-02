@@ -72,8 +72,7 @@ int tss_init(task_t* task, uint32_t flag, uint32_t entry, uint32_t esp) {
     // 寻找第一个空闲的gdt表项
     int tss_sel = gdt_alloc_desc();
     if(tss_sel < 0) {
-        log_print("alloc tss failed.");
-        return -1;
+        goto tss_init_failed;
     }
 
     // 注册为tss段，段的起始地址就是&task->tss，偏移为tss的大小
@@ -94,7 +93,7 @@ int tss_init(task_t* task, uint32_t flag, uint32_t entry, uint32_t esp) {
         code_sel = KERNEL_SELECTOR_CS;
         data_sel = KERNEL_SELECTOR_DS;    
     }
-    else if(flag & TASK_FLAGS_USER) {
+    else {
         // 使用数据段寄存器访问段时要算上RPL
         code_sel = task_manager.code_sel | DESC_ATTR_RPL3;
         data_sel = task_manager.data_sel | DESC_ATTR_RPL3;
@@ -106,8 +105,15 @@ int tss_init(task_t* task, uint32_t flag, uint32_t entry, uint32_t esp) {
     task->tss.ss = data_sel;
     task->tss.ss0 = KERNEL_SELECTOR_DS;     // 任务的内核栈
 
-    task->tss.esp = task->tss.esp0 = esp;
-    
+    // 分配内核栈
+    uint32_t kernel_stack = memory_alloc_page();
+    if(kernel_stack == 0) {
+        goto tss_init_failed;
+    }
+
+    task->tss.esp = esp;
+    task->tss.esp0 = kernel_stack + MEM_PAGE_SIZE;
+
     task->tss.eip = entry;
     task->tss.eflags = EFLAGS_DEFAULT | EFLAGS_IF;
     
@@ -116,12 +122,21 @@ int tss_init(task_t* task, uint32_t flag, uint32_t entry, uint32_t esp) {
     // 创建用户自己的页目录表
     uint32_t page_dir = memory_create_user_vm();
     if(page_dir == 0) {
-        gdt_free_desc(tss_sel);
-        return -1;
+        goto tss_init_failed;
     }
     task->tss.cr3 = page_dir;
 
     return 0;
+
+tss_init_failed:
+    gdt_free_desc(tss_sel);
+    if(kernel_stack) {
+        memory_free_page(kernel_stack);
+    }
+    if(page_dir) {
+        gdt_free_desc(tss_sel);
+    }
+    return -1;
 }
 
 void task_switch_from_to(task_t* from, task_t* to) {
@@ -166,11 +181,20 @@ void first_task_init() {
     extern uint8_t s_first_task[], e_first_task[];
     extern uint8_t* sssssss;
 
+    // 将一号进程移指用户态
+    // first_task需要使用的内存, 只包含 .text .data .bss .rodata
+    uint32_t copy_size = (uint32_t)(e_first_task - s_first_task);
+    uint32_t alloc_size = 10 * MEM_PAGE_SIZE;   // 还有栈段需要计算, 这里不计算了
+    ASSERT(copy_size < alloc_size);
+
+
     // 这里不需要给参数，因为当cpu从当前任务切换走时，会自动将状态保存，只要保证有地方可去就行
     // cpu会自动保存来源
 
     uint32_t flag = TASK_FLAGS_USER;
-    task_init(&task_manager.first_task, "first task", flag, (uint32_t)first_task_entry, 0);
+    task_init(&task_manager.first_task, "first task", flag, 
+            (uint32_t)first_task_entry, (uint32_t)first_task_entry + alloc_size);
+    
     task_manager.curr_task = &task_manager.first_task;
 
     // 加载tss到tr寄存器中
@@ -178,15 +202,9 @@ void first_task_init() {
 
     // 加载cr3
     mmu_set_page_dir(task_manager.first_task.tss.cr3);
-
-    // 将一号进程移指用户态
-    // first_task需要使用的内存, 只包含 .text .data .bss .rodata
-    uint32_t copy_size = (uint32_t)(e_first_task - s_first_task);
-    uint32_t alloc_size = 10 * MEM_PAGE_SIZE;   // 还有栈段需要计算, 这里不计算了
-    ASSERT(copy_size < alloc_size);
     
     // 为first_task分配物理页, 从first_task_entry(0x80000000)处分配
-    memory_alloc_page_for((uint32_t)first_task_entry, alloc_size, PTE_P | PTE_W);
+    memory_alloc_page_for((uint32_t)first_task_entry, alloc_size, PTE_P | PTE_W | PTE_U);
 
     // 将first_task从内核移指用户
     kernel_memcpy(first_task_entry, s_first_task, copy_size);
