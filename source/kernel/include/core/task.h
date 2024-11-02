@@ -15,6 +15,7 @@ int task_init(task_t* task, const char* name, uint32_t flag, uint32_t entry, uin
 
 /**
  * @brief 初始化任务状态段
+ * @param esp 任务的用户栈
  */
 int tss_init(task_t* task, uint32_t flag, uint32_t entry, uint32_t esp);
 
@@ -44,11 +45,6 @@ void first_task_init();
  * @brief 在任务管理器中获取一号任务
  */
 task_t* get_first_task();
-
-/**
- * @brief 初始化空闲任务
- */
-void idle_task_init();
 
 /**
  * @brief 获取空闲任务

@@ -7,7 +7,7 @@
 #include "cpu/irq.h"
 
 void mutex_init(mutex_t* mutex) {
-    mutex->owner = (task_t*)0;
+    mutex->owner = NULL;
     mutex->count = 0;
     list_init(&mutex->wait_list);
 }
@@ -45,7 +45,7 @@ void mutex_unlock(mutex_t* mutex) {
     if(mutex->owner == curr) {
         // 引用计数为0时才可以真正解锁
         if(--mutex->count == 0) {
-            mutex->owner = (task_t*)0;
+            mutex->owner = NULL;
         
             // 然后让其它竞争锁的任务执行(如果有)
             if(list_count(&mutex->wait_list)) {

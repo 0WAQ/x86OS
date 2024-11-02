@@ -49,7 +49,7 @@ list_node_t* list_remove(list_t* list, list_node_t* node);
 
 static inline 
 void list_node_init(list_node_t* node) {
-    node->prev = node->next = NODE_NULL;
+    node->prev = node->next = NULL;
 }
 
 static inline 

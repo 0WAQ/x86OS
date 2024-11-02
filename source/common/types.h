@@ -6,6 +6,8 @@
 #ifndef TYPES_H
 #define TYPES_H
 
+#define NULL        ((void*)0)
+
 /**
  * 使用宏处理的原因:
  * 为避免和newlib库中的定义冲突

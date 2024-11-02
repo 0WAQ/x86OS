@@ -85,7 +85,7 @@ int memory_create_map(pde_t* page_dir, uint32_t vaddr, uint32_t paddr, uint32_t 
 
         // 查找或创建一个页表项(页)
         pte_t* pte = find_pte(page_dir, vaddr, 1);
-        if(pte == (pte_t*)0) {
+        if(pte == NULL) {
             return -1;
         }
 
@@ -180,7 +180,7 @@ void memory_free_page(uint32_t addr) {
     else {
         // 获取addr对应的页表
         pte_t* pte = find_pte(curr_page_dir(), addr, 0);
-        ASSERT(pte != (pte_t*)0 && pte->present);
+        ASSERT(pte != NULL && pte->present);
 
         // 将其释放掉
         addr_free_page(&paddr_alloc, pte_addr(pte), 1);

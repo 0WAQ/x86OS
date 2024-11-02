@@ -25,7 +25,4 @@ typedef struct _list_t {
     uint32_t count;
 }list_t;
 
-#define LIST_NULL       ((list_t*)0)
-#define NODE_NULL       ((list_node_t*)0)
-
 #endif // LIST_T_H

@@ -19,9 +19,9 @@ static task_manager_t task_manager;
 static uint32_t idle_task_stack[IDLE_STACK_SIZE];
 
 int task_init(task_t* task, const char* name, uint32_t flag, uint32_t entry, uint32_t esp) {
-    ASSERT(task != (task_t*)0);
+    ASSERT(task != NULL);
 
-    // 初始化任务的tss
+    // 初始化tss
     tss_init(task, flag, entry, esp);
 
     // 初始化任务时，执行以下操作的原因:
@@ -37,7 +37,7 @@ int task_init(task_t* task, const char* name, uint32_t flag, uint32_t entry, uin
     //     task->stack = pesp; // 设置该任务的栈顶
     // }
 
-    // 设置任务名和状态
+    // 设置任务的各种属性
     kernel_strncpy(task->name, name, TASK_NAME_SIZE);
     task->state = TASK_CREATED;
     task->time_ticks = TASK_TIME_SLICE_DEFAULT;
@@ -67,9 +67,9 @@ int task_init(task_t* task, const char* name, uint32_t flag, uint32_t entry, uin
 
 int tss_init(task_t* task, uint32_t flag, uint32_t entry, uint32_t esp) {
     
-// 将tss注册到gdt中
+// 1.创建tss, 注册到gdt中
 
-    // 寻找第一个空闲的gdt表项
+    // 分配一个gdt表项
     int tss_sel = gdt_alloc_desc();
     if(tss_sel < 0) {
         goto tss_init_failed;
@@ -83,12 +83,12 @@ int tss_init(task_t* task, uint32_t flag, uint32_t entry, uint32_t esp) {
     // 将段选择子保存起来
     task->tss_sel = tss_sel;
 
-// 初始化tss段
+
+// 2.初始化tss段
 
     kernel_memset(&task->tss, 0, sizeof(tss_t));
     
     int code_sel, data_sel; 
-
     if(flag & TASK_FLAGS_SYSTEM) {
         code_sel = KERNEL_SELECTOR_CS;
         data_sel = KERNEL_SELECTOR_DS;    
@@ -98,14 +98,13 @@ int tss_init(task_t* task, uint32_t flag, uint32_t entry, uint32_t esp) {
         code_sel = task_manager.code_sel | DESC_ATTR_RPL3;
         data_sel = task_manager.data_sel | DESC_ATTR_RPL3;
     }
-
     task->tss.cs = code_sel;
     task->tss.ss = task->tss.ds = task->tss.es = task->tss.fs = task->tss.gs = data_sel;
-    
-    task->tss.ss = data_sel;
-    task->tss.ss0 = KERNEL_SELECTOR_DS;     // 任务的内核栈
 
-    // 分配内核栈
+
+    task->tss.ss0 = KERNEL_SELECTOR_DS;     // 任务的内核栈段
+
+    // 分配一页作为栈顶
     uint32_t kernel_stack = memory_alloc_page();
     if(kernel_stack == 0) {
         goto tss_init_failed;
@@ -167,9 +166,11 @@ void task_manager_init() {
     list_init(&task_manager.sleep_list);
 
     // 初始化空闲任务
-    idle_task_init();
+    uint32_t flag = TASK_FLAGS_SYSTEM;
+    task_init(&task_manager.idle_task, "idle task", flag,
+        (uint32_t)idle_task_entry, (uint32_t)(idle_task_stack + IDLE_STACK_SIZE));
 
-    task_manager.curr_task = (task_t*)0;
+    task_manager.curr_task = NULL;
 }
 
 void first_task_init() {
@@ -183,7 +184,7 @@ void first_task_init() {
 
     // 将一号进程移指用户态
     // first_task需要使用的内存, 只包含 .text .data .bss .rodata
-    uint32_t copy_size = (uint32_t)(e_first_task - s_first_task);
+    uint32_t copy_size = (uint32_t)(e_first_task - s_first_task);   // 需要移动的字节
     uint32_t alloc_size = 10 * MEM_PAGE_SIZE;   // 还有栈段需要计算, 这里不计算了
     ASSERT(copy_size < alloc_size);
 
@@ -212,12 +213,6 @@ void first_task_init() {
 
 task_t* get_first_task() {
     return &task_manager.first_task;
-}
-
-void idle_task_init() {
-    uint32_t flag = TASK_FLAGS_SYSTEM;
-    task_init(&task_manager.idle_task, "idle task", flag,
-        (uint32_t)idle_task_entry, (uint32_t)(idle_task_stack + IDLE_STACK_SIZE));
 }
 
 task_t* get_idle_task() {
