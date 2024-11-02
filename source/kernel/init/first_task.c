@@ -9,6 +9,6 @@
 
 void first_task_main() {
     for(;;) {
-
+        sys_sleep(1000);
     }
 }

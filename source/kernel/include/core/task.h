@@ -25,7 +25,7 @@ int tss_init(task_t* task, uint32_t flag, uint32_t entry, uint32_t esp);
 void task_switch_from_to(task_t* from, task_t* to);
 
 /**
- * @brief 切换任务，不使用硬件，在init/init_start.S中实现
+ * @brief 切换任务，不使用硬件，在core/task.S中实现
  */
 void simple_switch(uint32_t** from, uint32_t* to);
 
