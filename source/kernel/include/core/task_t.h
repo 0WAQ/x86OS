@@ -32,6 +32,8 @@ typedef struct _task_t {
         TASK_WAITTING
     }state;
 
+    int pid;
+
     tss_t tss;
     int tss_sel;    // 该任务对应的tss段的选择子
 

@@ -106,4 +106,9 @@ void task_time_tick();
  */
 void sys_sleep(uint32_t ms);
 
+/**
+ * @brief 获取任务的pid
+ */
+int sys_getpid();
+
 #endif // TASK_H

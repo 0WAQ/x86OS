@@ -7,6 +7,7 @@
 #include "applib/lib_syscall.h"
 
 void first_task_main() {
+    int pid = getpid();
     for(;;) {
         msleep(10);
     }

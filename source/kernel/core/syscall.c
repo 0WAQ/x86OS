@@ -10,11 +10,13 @@
 static const 
 syscall_handler_t sys_table[] = {
     [SYS_sleep] = (syscall_handler_t)sys_sleep,
+    [SYS_getpid] = (syscall_handler_t)sys_getpid,
 };
 
 void do_handler_syscall(syscall_frame_t* frame) {
 
     task_t* task = get_curr_task();
+    frame->eax = -1;
 
     if(frame->id >= sizeof(sys_table) / sizeof(sys_table[0])) {
         goto syscall_id_error;
@@ -26,6 +28,7 @@ void do_handler_syscall(syscall_frame_t* frame) {
     }
 
     int ret = handler(frame->arg0, frame->arg1, frame->arg2, frame->arg3);
+    frame->eax = ret;
     return;
 
 

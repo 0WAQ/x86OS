@@ -39,6 +39,7 @@ int task_init(task_t* task, const char* name, uint32_t flag, uint32_t entry, uin
 
     // 设置任务的各种属性
     kernel_strncpy(task->name, name, TASK_NAME_SIZE);
+    task->pid = (uint32_t)task;
     task->state = TASK_CREATED;
     task->time_ticks = TASK_TIME_SLICE_DEFAULT;
     task->slice_ticks = task->time_ticks;
@@ -370,4 +371,8 @@ void sys_sleep(uint32_t ms) {
     irq_leave_protectoin(state);
     /////////////////////////////////////////// 退出临界区
 
+}
+
+int sys_getpid() {
+    return get_curr_task()->pid;
 }

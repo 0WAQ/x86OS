@@ -1,6 +1,6 @@
 /***
  * 
- * 系统调用实现相关头文件
+ * 系统调用的外部相关头文件
  * 
  */
 #ifndef LIB_SYSCALL_H
@@ -17,6 +17,7 @@
 static inline 
 int sys_call (syscall_args_t * args) {
 	uint32_t addr[] = {0, SELECTOR_SYSCALL | 0};
+    int ret;
     __asm__ __volatile__(
         "push %[arg3]\n\t"
         "push %[arg2]\n\t"
@@ -24,10 +25,11 @@ int sys_call (syscall_args_t * args) {
         "push %[arg0]\n\t"
         "push %[id]\n\t"
         "lcalll *(%[a])"
-        :
+        :"=a"(ret)
         :[arg3]"r"(args->arg3), [arg2]"r"(args->arg2), [arg1]"r"(args->arg1),
          [arg0]"r"(args->arg0), [id]"r"(args->id), [a]"r"(addr)
     );
+    return ret;
 }
 
 
@@ -44,6 +46,16 @@ int msleep(int ms) {
     args.id = SYS_sleep;
     args.arg0 = ms;
 
+    return sys_call(&args);
+}
+
+/**
+ * @brief
+ */
+static inline
+int getpid() {
+    syscall_args_t args;
+    args.id = SYS_getpid;
     return sys_call(&args);
 }
 
