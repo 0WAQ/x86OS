@@ -5,6 +5,7 @@
  */
 #include "cpu/cpu.h"
 #include "cpu/irq.h"
+#include "core/syscall.h"
 #include "ipc/mutex.h"
 #include "common/cpu_instr.h"
 #include "os_cfg.h"
@@ -38,6 +39,12 @@ void gdt_init() {
     segment_desc_set(KERNEL_SELECTOR_CS, 0, 0xFFFFFFFF, 
         DESC_ATTR_P | DESC_ATTR_DPL0 | DESC_ATTR_S_USR | DESC_ATTR_D |
         DESC_ATTR_TYPE_CODE | DESC_ATTR_TYPE_ER
+    );
+
+    // 设置调用门
+    gate_desc_set((gate_desc_t*)(gdt_table + (SELECTOR_SYSCALL >> 3)),
+        KERNEL_SELECTOR_CS, (uint32_t)exception_handler_syscall, 
+        GATE_ATTR_P | GATE_ATTR_DPL3 | GATE_ATTR_TYPE_SYSCALL | SYSCALL_PARAM_COUNT 
     );
 
     lgdt((uint32_t)gdt_table, sizeof(gdt_table));

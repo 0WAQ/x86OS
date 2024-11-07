@@ -4,11 +4,10 @@
  * 
  */
 
-#include "tools/log.h"
-#include "core/task.h"
+#include "applib/lib_syscall.h"
 
 void first_task_main() {
     for(;;) {
-        sys_sleep(1000);
+        msleep(10);
     }
 }

@@ -67,3 +67,8 @@ exception_handler virtual_exception, 20, 0
 
 # 定时器的中断处理函数
 exception_handler timer, 0x20, 0
+
+# 系统调用的处理函数
+    .global exception_handler_syscall
+exception_handler_syscall:
+    retf $(5 * 4)

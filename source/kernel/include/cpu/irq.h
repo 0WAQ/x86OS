@@ -60,7 +60,7 @@ void do_default_handler(exception_frame_t* frame, const char* msg);
 void dump_core_regs(exception_frame_t* frame);
 
 /**
- * @brief 异常处理程序，在init/start.S中实现，与异常号绑定
+ * @brief 异常处理程序，在cpu/irq.S中实现，与异常号绑定
  */
 void exception_handler_unknown();
 void exception_handler_divider();

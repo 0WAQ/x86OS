@@ -75,10 +75,10 @@
 #define GATE_ATTR_D         (1 << 11)
 
 // 调用门类型
-#define GATE_ATTR_TYPE_TASK (5 << 8)    // 任务门
-#define GATE_ATTR_TYPE_INTR (6 << 8)    // 中断门
-#define GATE_ATTR_TYPE_TRAP (7 << 8)    // 陷阱门
-
+#define GATE_ATTR_TYPE_TASK     (5 << 8)    // 任务门
+#define GATE_ATTR_TYPE_INTR     (0xE << 8)    // 中断门
+#define GATE_ATTR_TYPE_TRAP     (7 << 8)    // 陷阱门
+#define GATE_ATTR_TYPE_SYSCALL  (0xC << 8)    // 调用门
 
 // 初始化tss时eflags的状态
 #define EFLAGS_DEFAULT      (1 << 1)
