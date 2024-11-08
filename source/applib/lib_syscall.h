@@ -59,4 +59,16 @@ int getpid() {
     return sys_call(&args);
 }
 
+/**
+ * @brief
+ */
+static inline
+int print(const char* fmt, int arg) {
+    syscall_args_t args;
+    args.id = SYS_print;
+    args.arg0 = (uint32_t)fmt;
+    args.arg1 = arg;
+    return sys_call(&args);
+}
+
 #endif // LIB_SYSCALL_H

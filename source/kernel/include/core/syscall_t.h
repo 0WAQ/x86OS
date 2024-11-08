@@ -13,6 +13,7 @@
 // 系统调用号
 #define SYS_sleep       0
 #define SYS_getpid      1
+#define SYS_print       100
 
 
 typedef int(*syscall_handler_t)(uint32_t, uint32_t, uint32_t, uint32_t);

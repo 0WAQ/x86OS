@@ -9,6 +9,7 @@
 void first_task_main() {
     int pid = getpid();
     for(;;) {
+        print("pid = %d", pid);
         msleep(10);
     }
 }

@@ -7,10 +7,16 @@
 #include "core/task.h"
 #include "tools/log.h"
 
+// 临时
+void sys_print(char* fmt, int arg) {
+    log_print(fmt, arg);
+}
+
 static const 
 syscall_handler_t sys_table[] = {
     [SYS_sleep] = (syscall_handler_t)sys_sleep,
     [SYS_getpid] = (syscall_handler_t)sys_getpid,
+    [SYS_print] = (syscall_handler_t)sys_print,
 };
 
 void do_handler_syscall(syscall_frame_t* frame) {
