@@ -10,8 +10,14 @@
 
 /**
  * @brief 初始化任务
+ * @param esp 内核栈的栈顶
  */
 int task_init(task_t* task, const char* name, uint32_t flag, uint32_t entry, uint32_t esp);
+
+/**
+ * @brief 反初始化任务
+ */
+int task_uninit(task_t* task);
 
 /**
  * @brief 初始化任务状态段
@@ -110,5 +116,21 @@ void sys_sleep(uint32_t ms);
  * @brief 获取任务的pid
  */
 int sys_getpid();
+
+/**
+ * @brief 创建子进程
+ */
+int sys_fork();
+
+/**
+ * @brief 分配一个任务块
+ */
+static task_t* alloc_task();
+
+/**
+ * @brief 释放任务块
+ */
+static void free_task(task_t* task);
+
 
 #endif // TASK_H

@@ -9,6 +9,7 @@
 #include "common/types.h"
 
 #define PDE_CNT     (1024)
+#define PTE_CNT     (1024)
 
 #define PDE_P       (1 << 0)
 #define PTE_P       (1 << 0)

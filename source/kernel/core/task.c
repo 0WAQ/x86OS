@@ -5,6 +5,7 @@
  */
 #include "core/task.h"
 #include "core/memory.h"
+#include "core/syscall.h"
 #include "tools/log.h"
 #include "tools/klib.h"
 #include "common/cpu_instr.h"
@@ -17,6 +18,10 @@ static task_manager_t task_manager;
 
 // 空闲任务的栈
 static uint32_t idle_task_stack[IDLE_STACK_SIZE];
+
+// 任务控制块
+static task_t task_table[TASK_NR];
+static mutex_t task_table_mutex;
 
 int task_init(task_t* task, const char* name, uint32_t flag, uint32_t entry, uint32_t esp) {
     ASSERT(task != NULL);
@@ -40,6 +45,7 @@ int task_init(task_t* task, const char* name, uint32_t flag, uint32_t entry, uin
     // 设置任务的各种属性
     kernel_strncpy(task->name, name, TASK_NAME_SIZE);
     task->pid = (uint32_t)task;
+    task->parent = task_manager.curr_task;
     task->state = TASK_CREATED;
     task->time_ticks = TASK_TIME_SLICE_DEFAULT;
     task->slice_ticks = task->time_ticks;
@@ -64,6 +70,22 @@ int task_init(task_t* task, const char* name, uint32_t flag, uint32_t entry, uin
     /////////////////////////////////////////// 退出临界区
 
     return 0;
+}
+
+int task_uninit(task_t* task) {
+    if(task->tss_sel) {
+        gdt_free_desc(task->tss_sel);
+    }
+
+    if(task->tss.esp0) {
+        memory_free_page(task->tss.esp - MEM_PAGE_SIZE);
+    }
+
+    if(task->tss.cr3) {
+        memory_destory_uvm(task->tss.cr3);
+    }
+
+    kernel_memset(task, 0, sizeof(task_t));
 }
 
 int tss_init(task_t* task, uint32_t flag, uint32_t entry, uint32_t esp) {
@@ -120,7 +142,7 @@ int tss_init(task_t* task, uint32_t flag, uint32_t entry, uint32_t esp) {
     task->tss.iomap = 0;
 
     // 创建用户自己的页目录表
-    uint32_t page_dir = memory_create_user_vm();
+    uint32_t page_dir = memory_create_uvm();
     if(page_dir == 0) {
         goto tss_init_failed;
     }
@@ -146,6 +168,9 @@ void task_switch_from_to(task_t* from, task_t* to) {
 
 
 void task_manager_init() {
+
+    kernel_memset(task_table, 0, sizeof(task_table));
+    mutex_init(&task_table_mutex);
 
     // 创建两个特权级为3的段
     int data_sel = gdt_alloc_desc();
@@ -375,4 +400,80 @@ void sys_sleep(uint32_t ms) {
 
 int sys_getpid() {
     return get_curr_task()->pid;
+}
+
+int sys_fork() {
+
+    task_t* parent = get_curr_task();
+
+    // 分配任务结构
+    task_t* child = alloc_task();
+    if(child == NULL) {
+        goto sys_fork_failed;
+    }
+
+    // 获取当前任务的栈0的esp寄存器(只有在切换走时才被更新), 强转为syscall_frame_t*
+    syscall_frame_t* frame = (syscall_frame_t*)(parent->tss.esp0 - sizeof(syscall_frame_t));
+
+    // 初始化子进程
+    // 子进程的栈顶: 要算上系统调用的总参数大小, 模拟子进程从sys_call返回的过程
+    int ret = task_init(child, parent->name, 0, frame->eip,
+                        frame->esp + sizeof(uint32_t) * SYSCALL_PARAM_COUNT);
+    if(ret < 0) {
+        goto sys_fork_failed;
+    }
+
+    // 从父进程的栈中获取状态, 写入tss
+    tss_t* tss = &child->tss;
+    tss->eax = 0;   // 子进程返回0
+    tss->ebx = frame->ebx;
+    tss->edx = frame->edx;
+    tss->ecx = frame->ecx;
+    tss->esi = frame->esi;
+    tss->edi = frame->edi;
+    tss->ebp = frame->ebp;
+    tss->cs = frame->cs;
+    tss->ds = frame->ds;
+    tss->es = frame->es;
+    tss->fs = frame->fs;
+    tss->gs = frame->gs;
+    tss->eflags = frame->eflags;
+
+    child->parent = parent;
+
+    // 复制父进程的内存空间到子进程
+    if((tss->cr3 = memory_copy_uvm(parent->tss.cr3)) < 0) {
+        goto sys_fork_failed;
+    }
+
+    // 创建成功, 返回子进程的pid
+    return child->pid;
+
+sys_fork_failed:
+    if(child) {
+        task_uninit(child);
+        free_task(child);
+    }
+    return -1;
+}
+
+static task_t* alloc_task() {
+    task_t* task = NULL;
+    
+    mutex_lock(&task_table_mutex);
+    for(int i = 0; i < TASK_NR; i++) {
+        task_t* curr = task_table + i;
+        if(curr->name[0] == '\0') {
+            task = curr;
+            break;
+        }
+    }
+    mutex_unlock(&task_table_mutex);
+    return task;
+}
+
+static void free_task(task_t* task) {
+    mutex_lock(&task_table_mutex);
+    task->name[0] = '\0';
+    mutex_unlock(&task_table_mutex);
 }

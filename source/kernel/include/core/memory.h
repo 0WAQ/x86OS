@@ -30,7 +30,7 @@ int memory_create_map(pde_t* page_dir, uint32_t vaddr, uint32_t paddr, uint32_t 
 /**
  * @brief 创建用户虚拟内存空间
  */
-uint32_t memory_create_user_vm();
+uint32_t memory_create_uvm();
 
 /**
  * @brief 为vaddr分配页
@@ -120,5 +120,15 @@ static uint32_t total_mem_size(boot_info_t* boot_info) {
 static pde_t* curr_page_dir() {
     return (pde_t*)(get_curr_task()->tss.cr3);
 }
+
+/**
+ * @brief 为子进程拷贝父进程的代码和数据
+ */
+uint32_t memory_copy_uvm(uint32_t page_dir);
+
+/**
+ * @brief 销毁子进程创建过的代码和数据
+ */
+void memory_destory_uvm(uint32_t page_dir);
 
 #endif // MEMORY_H

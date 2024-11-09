@@ -99,7 +99,7 @@ int memory_create_map(pde_t* page_dir, uint32_t vaddr, uint32_t paddr, uint32_t 
     return 0;
 }
 
-uint32_t memory_create_user_vm() {
+uint32_t memory_create_uvm() {
     
     // 分配一页物理内存, 用于放置用户的页目录表
     pde_t* page_dir = (pde_t*)addr_alloc_page(&paddr_alloc, 1);
@@ -199,4 +199,88 @@ void show_mem_info(boot_info_t* boot_info) {
             boot_info->ram_region_cfg[i].size);
     }
     log_print("");
+}
+
+uint32_t memory_copy_uvm(uint32_t page_dir) {
+
+    // 创建页目录表, 并将内核映射过去 
+    // TODO: Here!
+    uint32_t to_page_dir = memory_create_uvm();
+    if(to_page_dir == 0) {
+        goto copy_uvm_failed;
+    }
+
+    // 复制用户空间的页表
+    uint32_t user_pde_start = pde_index(MEMORY_TASK_BASE);
+    pde_t* pde = (pde_t*)page_dir + user_pde_start; // 用户空间的起始页目录项
+    
+    // 遍历用户空间的页目录项
+    for(int i = user_pde_start; i < PDE_CNT; ++i, ++pde) {
+        if(!pde->present) {
+            continue;
+        }
+
+        // 起始页表项
+        pte_t* pte = (pte_t*)pde_addr(pde);
+        
+        // 遍历该页目录项中的所有页表项
+        for(int j = 0; j < PTE_CNT; ++j, ++pte) {
+            if(!pte->present) {
+                continue;
+            }
+
+            // 分配一个物理页作为页表项
+            uint32_t page = addr_alloc_page(&paddr_alloc, 1);
+            if(page == 0) {
+                goto copy_uvm_failed;
+            }
+
+            // 建立映射关系
+            uint32_t vaddr = (i << 22) | (j << 12);
+            int ret = memory_create_map((pde_t*)to_page_dir, vaddr, page, 1, get_pte_perm(pte));
+            if(ret < 0) {
+                goto copy_uvm_failed;
+            }
+
+            // 复制内容
+            kernel_memcpy((void*)page, (void*)vaddr, MEM_PAGE_SIZE);
+        }
+    }
+
+    return to_page_dir;
+
+copy_uvm_failed:
+
+    if(to_page_dir) {
+        memory_destory_uvm(to_page_dir);
+    }
+
+    return 0;
+}
+
+void memory_destory_uvm(uint32_t page_dir) {
+    uint32_t user_pde_start = pde_index(MEMORY_TASK_BASE);
+    pde_t* pde = (pde_t*)page_dir + user_pde_start;
+
+    for(int i = user_pde_start; i < PDE_CNT; ++i, ++pde) {
+        if(!pde->present) {
+            continue;
+        }
+
+        pte_t* pte = (pte_t*)pde_addr(pde);
+        for(int j = 0; j < PTE_CNT; ++j, ++pte) {
+            if(!pte->present) {
+                continue;
+            }
+            
+            // 释放页
+            addr_free_page(&paddr_alloc, pte_addr(pte), 1);
+        }
+
+        // 释放页目录项
+        addr_free_page(&paddr_alloc, pde_addr(pde), 1);
+    }
+
+    // 释放页目录表
+    addr_free_page(&paddr_alloc, page_dir, 1);
 }

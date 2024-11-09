@@ -11,7 +11,8 @@
 #include "os_cfg.h"
 
 // 全局段描述符表
-static segment_desc_t gdt_table[GDT_TABLE_SIZE];
+// static 
+segment_desc_t gdt_table[GDT_TABLE_SIZE];
 
 // 互斥锁
 static mutex_t mutex;

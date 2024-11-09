@@ -72,6 +72,7 @@ void detect_memory() {
 }
 
 // 临时的GDT表
+static
 uint16_t gdt_table[][4] = {
     {0, 0, 0, 0},
     {0xFFFF, 0x0000, 0x9A00, 0x00CF},

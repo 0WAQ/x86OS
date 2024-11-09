@@ -25,7 +25,7 @@ int sys_call (syscall_args_t * args) {
         "push %[arg0]\n\t"
         "push %[id]\n\t"
         "lcalll *(%[a])"
-        :"=a"(ret)
+        :"=a"(ret)  // 返回值通过eax寄存器传递给ret
         :[arg3]"r"(args->arg3), [arg2]"r"(args->arg2), [arg1]"r"(args->arg1),
          [arg0]"r"(args->arg0), [id]"r"(args->id), [a]"r"(addr)
     );
@@ -34,7 +34,7 @@ int sys_call (syscall_args_t * args) {
 
 
 /**
- * @brief
+ * @brief 让当前进程进入sleep
  */
 static inline
 int msleep(int ms) {
@@ -50,7 +50,7 @@ int msleep(int ms) {
 }
 
 /**
- * @brief
+ * @brief 获取当前进程的pid
  */
 static inline
 int getpid() {
@@ -60,7 +60,7 @@ int getpid() {
 }
 
 /**
- * @brief
+ * @brief 打印, 临时
  */
 static inline
 int print(const char* fmt, int arg) {
@@ -68,6 +68,16 @@ int print(const char* fmt, int arg) {
     args.id = SYS_print;
     args.arg0 = (uint32_t)fmt;
     args.arg1 = arg;
+    return sys_call(&args);
+}
+
+/**
+ * @brief 创建子进程
+ */
+static inline
+int fork() {
+    syscall_args_t args;
+    args.id = SYS_fork;
     return sys_call(&args);
 }
 

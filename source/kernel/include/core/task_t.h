@@ -33,6 +33,7 @@ typedef struct _task_t {
     }state;
 
     int pid;
+    struct _task_t* parent; // 父进程
 
     tss_t tss;
     int tss_sel;    // 该任务对应的tss段的选择子
