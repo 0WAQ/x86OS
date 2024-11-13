@@ -1,0 +1,16 @@
+/***
+ * 
+ * 进程启动的汇编部分代码
+ * 
+ */
+    .text
+    .extern cstart
+    .global _start
+_start:
+    mov %ss, %ax
+    mov %ax, %ds
+    mov %ax, %es
+    mov %ax, %fs
+    mov %ax, %gs
+
+    jmp cstart
