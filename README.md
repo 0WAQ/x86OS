@@ -17,6 +17,8 @@ x86OS/
 |
 |-- image/      # 虚拟硬盘文件
 |
+|-- release/    # 生成的二进制或elf文件
+|
 |-- script/     # 运行脚本
 |
 |-- source/
