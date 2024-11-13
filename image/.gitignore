@@ -1,8 +1,0 @@
-
-*.bin
-*.elf
-*.img
-*.vhd
-*.dmg
-/boot.bin
-win_error.txt

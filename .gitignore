@@ -1,2 +1,5 @@
 build/
 newlib/
+image/*.vhd
+release/*.bin
+release/*.elf
