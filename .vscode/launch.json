@@ -8,10 +8,10 @@
             "name": "(gdb) 启动",
             "type": "cppdbg",
             "request": "launch",
+            "cwd": "${workspaceRoot}",
             "program": "${workspaceRoot}/build/source/boot/boot.elf",
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${workspaceRoot}",
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",
@@ -27,6 +27,9 @@
             "linux": {
                 "preLaunchTask": "调试准备", // 仅在windows下可自动运行
                 "miDebuggerPath": "gdb", // linux下的特殊配置
+            },
+            "osx": {
+                "preLaunchTask": "调试准备", // 仅在osx下可自动运行
             },
             "customLaunchSetupCommands": [],
             "setupCommands": [
