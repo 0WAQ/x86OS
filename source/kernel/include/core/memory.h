@@ -124,7 +124,7 @@ static pde_t* curr_page_dir() {
 /**
  * @brief 为子进程拷贝父进程的代码和数据
  */
-uint32_t memory_copy_uvm(uint32_t page_dir);
+uint32_t memory_copy_uvm(uint32_t page_dir, uint32_t to_page_dir);
 
 /**
  * @brief 销毁子进程创建过的代码和数据

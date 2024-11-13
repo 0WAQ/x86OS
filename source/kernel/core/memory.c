@@ -201,20 +201,13 @@ void show_mem_info(boot_info_t* boot_info) {
     log_print("");
 }
 
-uint32_t memory_copy_uvm(uint32_t page_dir) {
-
-    // 创建页目录表, 并将内核映射过去 
-    // TODO: Here!
-    uint32_t to_page_dir = memory_create_uvm();
-    if(to_page_dir == 0) {
-        goto copy_uvm_failed;
-    }
+uint32_t memory_copy_uvm(uint32_t page_dir, uint32_t to_page_dir) {
 
     // 复制用户空间的页表
     uint32_t user_pde_start = pde_index(MEMORY_TASK_BASE);
-    pde_t* pde = (pde_t*)page_dir + user_pde_start; // 用户空间的起始页目录项
+    pde_t* pde = (pde_t*)page_dir + user_pde_start; // 父进程用户空间的起始页目录项
     
-    // 遍历用户空间的页目录项
+    // 遍历父进程的用户空间的页目录项
     for(int i = user_pde_start; i < PDE_CNT; ++i, ++pde) {
         if(!pde->present) {
             continue;

@@ -441,8 +441,8 @@ int sys_fork() {
 
     child->parent = parent;
 
-    // 复制父进程的内存空间到子进程
-    if((tss->cr3 = memory_copy_uvm(parent->tss.cr3)) < 0) {
+    // 将父进程的页表映射复制到子进程
+    if((tss->cr3 = memory_copy_uvm(parent->tss.cr3, child->tss.cr3)) == 0) {
         goto sys_fork_failed;
     }
 
