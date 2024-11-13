@@ -132,5 +132,9 @@ static task_t* alloc_task();
  */
 static void free_task(task_t* task);
 
+/**
+ * @brief
+ */
+int sys_execve(char* path, char** argv, char** env);
 
 #endif // TASK_H

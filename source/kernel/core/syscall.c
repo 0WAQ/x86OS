@@ -17,6 +17,7 @@ syscall_handler_t sys_table[] = {
     [SYS_sleep]  = (syscall_handler_t)sys_sleep,
     [SYS_getpid] = (syscall_handler_t)sys_getpid,
     [SYS_fork]   = (syscall_handler_t)sys_fork,
+    [SYS_execve] = (syscall_handler_t)sys_execve,
     [SYS_print]  = (syscall_handler_t)sys_print,
 };
 

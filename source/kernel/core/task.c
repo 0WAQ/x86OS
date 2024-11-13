@@ -477,3 +477,7 @@ static void free_task(task_t* task) {
     task->name[0] = '\0';
     mutex_unlock(&task_table_mutex);
 }
+
+int sys_execve(char* path, char** argv, char** env) {
+    return -1;
+}
