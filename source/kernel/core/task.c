@@ -479,5 +479,24 @@ static void free_task(task_t* task) {
 }
 
 int sys_execve(char* path, char** argv, char** env) {
+    task_t* task = get_curr_task();
+    uint32_t page_dir = task->tss.cr3;
+    
+    // 
+    uint32_t entry = load_elf_file(task, "1", page_dir);
+    if(!entry) {
+        goto sys_execve_failed;
+    }
+
+    // TODO: for Debug
+    mmu_set_page_dir(page_dir);
+
+    return 0;
+
+sys_execve_failed:
     return -1;
+}
+
+static uint32_t load_elf_file(task_t* task, const char* filename, uint32_t page_dir) {
+    return 1;
 }

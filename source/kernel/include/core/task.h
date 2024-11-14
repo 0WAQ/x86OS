@@ -137,4 +137,9 @@ static void free_task(task_t* task);
  */
 int sys_execve(char* path, char** argv, char** env);
 
+/**
+ * @brief 将elf文件加载到task中
+ */
+static uint32_t load_elf_file(task_t* task, const char* filename, uint32_t page_dir);
+
 #endif // TASK_H
