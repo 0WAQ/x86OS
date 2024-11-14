@@ -219,3 +219,29 @@ void panic(const char* file, int line, const char* func, const char* msg) {
     log_print("file: %s\r\nline: %s\r\nfunc: %s\r\n", file, line, func);
     for(;;) { hlt(); }
 }
+
+
+int strings_count(char** addr) {
+    int cnt = 0;
+    if(addr) {
+        while(*addr++) {
+            ++cnt;
+        }
+    }
+    return cnt;
+}
+
+
+char* get_filename_from_path(const char* path) {
+    char* s = (char*)path;
+    
+    while(*s != '\0') {
+        ++s;
+    }
+
+    while((*s != '/') && (s >= path)) {
+        --s;
+    }
+
+    return s + 1;
+}

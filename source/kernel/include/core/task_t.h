@@ -69,4 +69,13 @@ typedef struct _task_manager_t {
 
 }task_manager_t;
 
+/**
+ * @brief 用于给执行execve的进程传递参数
+ */
+typedef struct _task_args_t {
+    uint32_t ret_addr;
+    uint32_t argc;
+    char** argv;
+}task_args_t;
+
 #endif // TASK_T_H

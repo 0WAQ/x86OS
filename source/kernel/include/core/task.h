@@ -7,6 +7,7 @@
 #define TASK_H
 
 #include "task_t.h"
+#include "common/elf.h"
 
 /**
  * @brief 初始化任务
@@ -133,7 +134,8 @@ static task_t* alloc_task();
 static void free_task(task_t* task);
 
 /**
- * @brief
+ * @brief execve系统调用
+ * @attention 会涉及到不同进程空间中数据的传递
  */
 int sys_execve(char* path, char** argv, char** env);
 
@@ -141,5 +143,16 @@ int sys_execve(char* path, char** argv, char** env);
  * @brief 将elf文件加载到task中
  */
 static uint32_t load_elf_file(task_t* task, const char* filename, uint32_t page_dir);
+
+/**
+ * @brief 加载程序头
+ */
+static int load_phdr(int fd, Elf32_Phdr* phdr, uint32_t page_dir);
+
+/**
+ * @brief 复制进程参数到栈中
+ * @attention argv与env在另一个页表里
+ */
+static int copy_args(char* to, uint32_t page_dir, int argc, char** argv);
 
 #endif // TASK_H

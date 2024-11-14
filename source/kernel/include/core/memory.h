@@ -131,4 +131,14 @@ uint32_t memory_copy_uvm(uint32_t page_dir, uint32_t to_page_dir);
  */
 void memory_destory_uvm(uint32_t page_dir);
 
+/**
+ * @brief 将vaddr通过page_dir转换成物理地址
+ */
+uint32_t memory_vaddr_to_paddr(uint32_t page_dir, uint32_t vaddr);
+
+/**
+ * @brief 在不同页表间拷贝数据
+ */
+int memory_copy_uvm_data(uint32_t to, uint32_t page_dir, uint32_t from, uint32_t size);
+
 #endif // MEMORY_H

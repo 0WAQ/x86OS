@@ -78,4 +78,14 @@ void panic(const char* file, int line, const char* func, const char* msg);
     #define ASSERT(expr)    ((void)0)
 #endif // RELEASE
 
+/**
+ * @brief 计算字符串的个数
+ */
+int strings_count(char** addr);
+
+/**
+ * @brief 从路径中解析文件名
+ */
+char* get_filename_from_path(const char* path);
+
 #endif // KLIB_H

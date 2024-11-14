@@ -6,6 +6,7 @@
 
 #include "fs/fs.h"
 #include "tools/klib.h"
+#include "common/cpu_instr.h"
 
 // TODO: 临时使用
 void read_disk(uint32_t sector, uint32_t sector_cnt, uint8_t* buffer) {
@@ -33,7 +34,7 @@ void read_disk(uint32_t sector, uint32_t sector_cnt, uint8_t* buffer) {
         while((inb(0x1F7) & 0x88) != 0x08);
 
         // 读取数据并将其写入到缓存中
-        for(int i = 0; i < SECTOR_SIZE / 2; i++) {
+        for(int i = 0; i < 512 / 2; i++) {
             *buf++ = inw(0x1F0);
         }
     }

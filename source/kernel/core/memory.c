@@ -277,3 +277,35 @@ void memory_destory_uvm(uint32_t page_dir) {
     // 释放页目录表
     addr_free_page(&paddr_alloc, page_dir, 1);
 }
+
+uint32_t memory_vaddr_to_paddr(uint32_t page_dir, uint32_t vaddr) {
+    
+    // 
+    pte_t* pte = find_pte((pde_t*)page_dir, vaddr, 0);
+    if(pte == NULL) {
+        return 0;
+    }
+
+    return pte_addr(pte) + (vaddr & (MEM_PAGE_SIZE - 1));
+}
+
+int memory_copy_uvm_data(uint32_t to, uint32_t page_dir, uint32_t from, uint32_t size) {
+    while(size > 0) {
+        uint32_t to_paddr = memory_vaddr_to_paddr(page_dir, to);
+        if(to_paddr == 0) {
+            return -1;
+        }
+
+        uint32_t offset = to_paddr & (MEM_PAGE_SIZE - 1);
+        uint32_t cur_size = MEM_PAGE_SIZE - offset;
+        if(cur_size > size) {
+            cur_size = size;
+        }
+
+        kernel_memcpy((void*)to_paddr, (void*)from, cur_size);
+    
+        size -= cur_size;
+        to += cur_size;
+        from += cur_size;
+    }
+}
