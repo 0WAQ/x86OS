@@ -94,4 +94,14 @@ int execve(const char* path, char* const* argv, char* const* env) {
     return sys_call(&args);
 }
 
+/**
+ * @brief 让进程主动释放cpu
+ */
+static inline
+int yield() {
+    syscall_args_t args;
+    args.id = SYS_yield;
+    return sys_call(&args); 
+}
+
 #endif // LIB_SYSCALL_H

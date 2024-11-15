@@ -8,11 +8,11 @@
 
 int main(int argc, char** argv) {
 
-    for(int i = 0; i < argc; ++i) {
-        print("arg: %s", (int)argv[i]);
-    }
+    fork();
+    yield();
 
     for(;;) {
+        print("shell pid=%d", getpid());
         msleep(1000);
     }
 }

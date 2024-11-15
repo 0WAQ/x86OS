@@ -16,6 +16,11 @@
 int task_init(task_t* task, const char* name, uint32_t flag, uint32_t entry, uint32_t esp);
 
 /**
+ * @brief 将任务加入到运行队列中
+ */
+void task_start(task_t* task);
+
+/**
  * @brief 反初始化任务
  */
 int task_uninit(task_t* task);

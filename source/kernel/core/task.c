@@ -56,6 +56,11 @@ int task_init(task_t* task, const char* name, uint32_t flag, uint32_t entry, uin
     list_node_init(&task->wait_node);
     list_node_init(&task->run_node);
 
+    return 0;
+}
+
+void task_start(task_t* task) {
+
     /////////////////////////////////////////// 进入临界区
     irq_state_t state = irq_enter_protection();
 
@@ -70,7 +75,6 @@ int task_init(task_t* task, const char* name, uint32_t flag, uint32_t entry, uin
     irq_leave_protectoin(state);
     /////////////////////////////////////////// 退出临界区
 
-    return 0;
 }
 
 int task_uninit(task_t* task) {
@@ -198,6 +202,8 @@ void task_manager_init() {
         (uint32_t)idle_task_entry, (uint32_t)(idle_task_stack + IDLE_STACK_SIZE));
 
     task_manager.curr_task = NULL;
+
+    task_start(&task_manager.idle_task);
 }
 
 void first_task_init() {
@@ -236,6 +242,9 @@ void first_task_init() {
 
     // 将first_task从内核移指用户
     kernel_memcpy(first_task_entry, s_first_task, copy_size);
+
+    // 启动一号进程
+    task_start(&task_manager.first_task);
 }
 
 task_t* get_first_task() {
@@ -446,6 +455,9 @@ int sys_fork() {
     if((tss->cr3 = memory_copy_uvm(parent->tss.cr3, child->tss.cr3)) == 0) {
         goto sys_fork_failed;
     }
+
+    // 将子进程加入到就绪队列
+    task_start(child);
 
     // 创建成功, 返回子进程的pid
     return child->pid;
