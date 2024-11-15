@@ -16,6 +16,13 @@
 #define SYS_fork        2
 #define SYS_execve      3
 #define SYS_yield       4
+
+#define SYS_open        50
+#define SYS_read        51
+#define SYS_write       52
+#define SYS_lseek       53
+#define SYS_close       54
+
 #define SYS_print       100
 
 
