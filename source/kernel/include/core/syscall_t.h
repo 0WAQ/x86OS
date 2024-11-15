@@ -22,6 +22,9 @@
 #define SYS_write       52
 #define SYS_lseek       53
 #define SYS_close       54
+#define SYS_isatty      55
+#define SYS_fstat       56
+#define SYS_sbrk        57
 
 #define SYS_print       100
 

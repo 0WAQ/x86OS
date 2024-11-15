@@ -33,4 +33,15 @@ int sys_lseek(int fd, int offset, int dir);
  */
 int sys_close(int fd);
 
+/**
+ * @brief
+ */
+int sys_isatty(int fd);
+
+/**
+ * @brief
+ */
+struct stat;
+int sys_fstat(int fd, struct stat* st);
+
 #endif // FS_H

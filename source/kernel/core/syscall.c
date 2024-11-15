@@ -5,6 +5,7 @@
  */
 #include "core/syscall.h"
 #include "core/task.h"
+#include "core/memory.h"
 #include "fs/fs.h"
 #include "tools/log.h"
 
@@ -26,6 +27,9 @@ syscall_handler_t sys_table[] = {
     [SYS_write]  = (syscall_handler_t)sys_write,
     [SYS_lseek]  = (syscall_handler_t)sys_lseek,
     [SYS_close]  = (syscall_handler_t)sys_close,
+    [SYS_isatty] = (syscall_handler_t)sys_isatty,
+    [SYS_fstat]  = (syscall_handler_t)sys_fstat,
+    [SYS_sbrk]   = (syscall_handler_t)sys_sbrk,
     
     [SYS_print]  = (syscall_handler_t)sys_print,
 };

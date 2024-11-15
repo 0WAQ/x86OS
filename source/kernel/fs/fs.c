@@ -7,6 +7,7 @@
 #include "fs/fs.h"
 #include "tools/klib.h"
 #include "common/cpu_instr.h"
+#include <sys/stat.h>
 
 // TODO: 临时使用
 void read_disk(uint32_t sector, uint32_t sector_cnt, uint8_t* buffer) {
@@ -75,4 +76,12 @@ int sys_lseek(int fd, int offset, int dir) {
 
 int sys_close(int fd) {
     return 0;
+}
+
+int sys_isatty(int fd) {
+    return -1;
+}
+
+int sys_fstat(int fd, struct stat* st) {
+    return -1;
 }

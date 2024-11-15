@@ -141,4 +141,9 @@ uint32_t memory_vaddr_to_paddr(uint32_t page_dir, uint32_t vaddr);
  */
 int memory_copy_uvm_data(uint32_t to, uint32_t page_dir, uint32_t from, uint32_t size);
 
+/**
+ * @brief
+ */
+char* sys_sbrk(int incr);
+
 #endif // MEMORY_H

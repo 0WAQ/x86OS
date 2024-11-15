@@ -113,3 +113,25 @@ int close(int fd) {
     args.arg0 = fd;
     return sys_call(&args);
 }
+
+int isatty(int fd) {
+    syscall_args_t args;
+    args.id = SYS_isatty;
+    args.arg0 = fd;
+    return sys_call(&args);
+}
+
+int fstat(int fd, struct stat* st) {
+    syscall_args_t args;
+    args.id = SYS_fstat;
+    args.arg0 = fd;
+    args.arg1 = (int)st;
+    return sys_call(&args);
+}
+
+void* sbrk (ptrdiff_t incr) {
+    syscall_args_t args;
+    args.id = SYS_sbrk;
+    args.arg0 = (int)incr;
+    return (void*)sys_call(&args);
+}

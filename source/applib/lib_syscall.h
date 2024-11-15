@@ -7,6 +7,7 @@
 #define LIB_SYSCALL_H
 
 #include "lib_syscall_t.h"
+#include <sys/stat.h>
 
 /**
  * @brief 系统调用的统一入口
@@ -68,5 +69,20 @@ int lseek(int fd, int offset, int dir);
  * @brief 关闭文件
  */
 int close(int fd);
+
+/**
+ * @brief TODO: 
+ */
+int isatty(int fd);
+
+/**
+ * @brief
+ */
+int fstat(int fd, struct stat* st);
+
+/**
+ * @brief
+ */
+void* sbrk (ptrdiff_t incr);
 
 #endif // LIB_SYSCALL_H
