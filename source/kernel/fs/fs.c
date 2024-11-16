@@ -61,7 +61,11 @@ int sys_read(int fd, char* buf, int len) {
     return -1;
 }
 
+#include "tools/log.h"
+
 int sys_write(int fd, char* buf, int len) {
+    buf[len] = '\0';
+    log_print("%s", buf);
     return 0;
 }
 
