@@ -101,7 +101,7 @@ void kernel_itoa(char* dest, int num, uint32_t base) {
     // 转换表
     static const char* num2ch = {"0123456789ABCDEF"};
 
-    uint32_t unum = num < 0 ? -num : num;
+    uint32_t unum = (uint32_t)num;
     do {
         *p++ = num2ch[unum % base];
         unum /= base;
@@ -215,8 +215,8 @@ int kernel_memcmp(void* d1, void* d2, int size) {
 }
 
 void panic(const char* file, int line, const char* func, const char* msg) {
-    log_print("assert failed! %s", msg);
-    log_print("file: %s\r\nline: %s\r\nfunc: %s\r\n", file, line, func);
+    log_print("ERROR ASSERT(%s)", msg);
+    log_print("file: %s\r\nline: %d\r\nfunc: %s\r\n", file, line, func);
     for(;;) { hlt(); }
 }
 

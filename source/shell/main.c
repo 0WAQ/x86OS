@@ -9,6 +9,12 @@
 
 int main(int argc, char** argv) {
 
+    void* ret = sbrk(0);
+    ret = sbrk(100);
+    ret = sbrk(200);
+    ret = sbrk(4096 * 2 + 200);
+    ret = sbrk(4096 * 5 + 1234);
+
     printf("Hello from shell\n");
 
     fork();

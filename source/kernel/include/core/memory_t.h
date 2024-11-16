@@ -16,7 +16,7 @@
 #define MEM_EBDA_START      (0x80000)
 #define MEMORY_TASK_BASE    (0x80000000)    // 用户空间的起始虚拟地址, 以下是内核
 #define MEM_TASK_STACK_TOP  (0xE0000000)    // 任务的栈顶地址
-#define MEM_TASK_STACK_SIZE (MEM_PAGE_SIZE * 50)    // 栈大小
+#define MEM_TASK_STACK_SIZE (MEM_PAGE_SIZE * 500)    // 栈大小
 #define MEM_TASK_ARG_SIZE   (MEM_PAGE_SIZE * 4)
 
 /**

@@ -75,9 +75,9 @@ static void addr_alloc_init(addr_alloc_t* alloc, uint8_t* bits,
  * @brief 分配多页内存
  */
 static uint32_t addr_alloc_page(addr_alloc_t* alloc, int page_count) {
-    mutex_lock(&alloc->mutex);
-
     uint32_t addr = 0;
+
+    mutex_lock(&alloc->mutex);
 
     // 分配连续的多个空闲页
     int page_index = bitmap_alloc_nbits(&alloc->bitmap, page_count, 0);
@@ -142,7 +142,9 @@ uint32_t memory_vaddr_to_paddr(uint32_t page_dir, uint32_t vaddr);
 int memory_copy_uvm_data(uint32_t to, uint32_t page_dir, uint32_t from, uint32_t size);
 
 /**
- * @brief
+ * @brief 控制堆的增长
+ * @param incr increment, 堆增长的字节
+ * @return 成功返回新分配空间的起始地址(原堆的结束地址), 失败返回-1
  */
 char* sys_sbrk(int incr);
 

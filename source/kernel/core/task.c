@@ -45,6 +45,8 @@ int task_init(task_t* task, const char* name, uint32_t flag, uint32_t entry, uin
 
     // 设置任务的各种属性
     kernel_strncpy(task->name, name, TASK_NAME_SIZE);
+    task->heap_start = 0;
+    task->heap_end = 0;
     task->pid = (uint32_t)task;
     task->parent = task_manager.curr_task;
     task->state = TASK_CREATED;
@@ -229,6 +231,9 @@ void first_task_init() {
     task_init(&task_manager.first_task, "first task", flag, 
             (uint32_t)first_task_entry, (uint32_t)first_task_entry + alloc_size);
     
+    task_manager.first_task.heap_start = (uint32_t)e_first_task;
+    task_manager.first_task.heap_end = (uint32_t)e_first_task;
+
     task_manager.curr_task = &task_manager.first_task;
 
     // 加载tss到tr寄存器中
@@ -628,6 +633,10 @@ static uint32_t load_elf_file(task_t* task, const char* filename, uint32_t page_
             log_print("load program failed.");
             goto load_elf_file_failed;;
         }
+
+        // 设置堆的位置(在bss区后边, bss区是最后一个节)
+        task->heap_start = elf_phdr.p_vaddr + elf_phdr.p_memsz;
+        task->heap_end  = task->heap_start;
     }
 
     sys_close(fd);

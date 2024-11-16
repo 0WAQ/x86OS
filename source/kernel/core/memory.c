@@ -132,6 +132,8 @@ int _memory_alloc_page_for(uint32_t page_dir, uint32_t vaddr, uint32_t size, uin
 
     // 需要分配的页数
     uint32_t page_count = up2(size, MEM_PAGE_SIZE) / MEM_PAGE_SIZE;
+    vaddr = down2(vaddr, MEM_PAGE_SIZE);
+
     // 逐一分配页, 而不是一次分配, 因为需要对每一页建立映射
     for(uint32_t i = 0; i < page_count; ++i) {
 
@@ -148,10 +150,10 @@ int _memory_alloc_page_for(uint32_t page_dir, uint32_t vaddr, uint32_t size, uin
             log_print("memory_create_map failed. errno: %d", errno);
             
             // 将前边分配的页全部释放
-            // addr_free_page(&paddr_alloc, vaddr, i + 1);
+            addr_free_page(&paddr_alloc, vaddr, i + 1);
             
             // 断开映射关系
-            // 
+            // TODO:
 
             return -1;
         }
@@ -311,5 +313,53 @@ int memory_copy_uvm_data(uint32_t to, uint32_t page_dir, uint32_t from, uint32_t
 }
 
 char* sys_sbrk(int incr) {
-    return NULL;
+    
+    task_t* task = get_curr_task();
+    char* pre_head_end = (char*)task->heap_end;
+    int pre_incr = incr;
+
+    // TODO: 暂不处理incr小于0的情况
+    ASSERT(incr >= 0);
+
+    if(incr == 0) {
+        log_print("sbrk(0), end=0x%x", pre_head_end);
+        return pre_head_end;
+    }
+
+    // 从原堆的结束地址开始分配
+    uint32_t alloc_start = task->heap_end;  // 从该地址处开始分配
+    uint32_t alloc_end = alloc_start + incr;
+
+    uint32_t start_offset = alloc_start % MEM_PAGE_SIZE;  // alloc_start在一页中的偏移量
+    
+    // 若偏移量为0, 则要么heap_end为0, 要么为页的倍数, 相当于没有空闲的页了, 则直接去按页分配
+    if(start_offset != 0) {
+        // 若加上incr不超过一页, 则就在本页面内分配
+        if(start_offset + incr <= MEM_PAGE_SIZE) {
+            goto sys_sbrk_normal;
+        }
+        else {  // 若超过一页, 先将本页面剩余的空间分配出去, 在去下面按页分配
+            uint32_t curr_size = MEM_PAGE_SIZE - start_offset;
+            alloc_start += curr_size;
+            incr -= curr_size;
+        }
+    }
+
+    // 按页分配
+    if(incr != 0) {
+        uint32_t curr_size = alloc_end - alloc_start;
+        int ret = memory_alloc_page_for(alloc_start, curr_size, PTE_P | PTE_U | PTE_W);
+        if(ret < 0) {
+            log_print("sbrk: alloc mem failed.");
+            goto sys_sbrk_failed;
+        }
+    }
+
+sys_sbrk_normal:
+    log_print("sbrk(%d), end=0x%x", pre_incr, alloc_end);
+    task->heap_end = alloc_end;
+    return (char*)pre_head_end;
+
+sys_sbrk_failed:
+    return (char*)-1;
 }

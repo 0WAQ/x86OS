@@ -12,14 +12,14 @@ extern addr_alloc_t paddr_alloc;
 
 pte_t* find_pte(pde_t* page_dir, uint32_t vaddr, int is_alloc) {
 
-    pte_t* ret_pte; // 页目录项的首地址
+    pte_t* page_table; // 页目录项的首地址
 
     // vaddr对应的页目录项
     pde_t* pde = page_dir + pde_index(vaddr);
 
     // 页目录项是否存在
     if(pde->present) {
-        ret_pte = (pte_t*)pde_addr(pde);
+        page_table = (pte_t*)pde_addr(pde);
     }
     else {
         // 如果不存在, 则考虑分配一个
@@ -36,10 +36,10 @@ pte_t* find_pte(pde_t* page_dir, uint32_t vaddr, int is_alloc) {
         // 更新对应的页目录项
         pde->v = pg_paddr | PTE_P | PDE_W | PDE_U;
 
-        ret_pte = (pte_t*)pg_paddr;
-        kernel_memset(ret_pte, 0, MEM_PAGE_SIZE);
+        page_table = (pte_t*)pg_paddr;
+        kernel_memset(page_table, 0, MEM_PAGE_SIZE);
     }
 
     // 返回对应的页表项
-    return ret_pte + pte_index(vaddr);
+    return page_table + pte_index(vaddr);
 }

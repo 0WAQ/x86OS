@@ -32,6 +32,10 @@ typedef struct _task_t {
         TASK_WAITTING
     }state;
 
+    // 记录堆区的位置
+    uint32_t heap_start;
+    uint32_t heap_end;
+
     int pid;
     struct _task_t* parent; // 父进程
 
