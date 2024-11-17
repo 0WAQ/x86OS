@@ -5,6 +5,7 @@
  */
 
 #include "fs/fs.h"
+#include "dev/console.h"
 #include "tools/klib.h"
 #include "common/cpu_instr.h"
 #include <sys/stat.h>
@@ -64,8 +65,11 @@ int sys_read(int fd, char* buf, int len) {
 #include "tools/log.h"
 
 int sys_write(int fd, char* buf, int len) {
-    buf[len] = '\0';
-    log_print("%s", buf);
+    if(fd == 1) {
+        console_write(0, buf, len);
+        // log_print("%s", buf);
+    }
+
     return 0;
 }
 

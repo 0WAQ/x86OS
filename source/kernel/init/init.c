@@ -9,6 +9,7 @@
 #include "cpu/irq.h"
 #include "ipc/sem.h"
 #include "dev/time.h"
+#include "dev/console.h"
 #include "tools/log.h"
 #include "tools/klib.h"
 #include "tools/list.h"
@@ -26,6 +27,9 @@ void kernel_init(boot_info_t* boot_info) {
 
     // 初始化日志
     log_init();
+
+    // 初始化终端
+    console_init();
 
     // 初始化内存
     memroy_init(boot_info);

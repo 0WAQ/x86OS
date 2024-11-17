@@ -16,12 +16,13 @@ int main(int argc, char** argv) {
     ret = sbrk(4096 * 5 + 1234);
 
     printf("Hello from shell\n");
+    printf("OS Version: %s\n", "1.0.0");
 
     fork();
     yield();
 
     for(;;) {
-        print("shell pid=%d", getpid());
+        printf("shell pid=%d\n", getpid());
         msleep(1000);
     }
 }

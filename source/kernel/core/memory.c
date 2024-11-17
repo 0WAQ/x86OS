@@ -4,6 +4,7 @@
  * 
  */
 #include "core/memory.h"
+#include "dev/console.h"
 #include "tools/log.h"
 #include "tools/klib.h"
 
@@ -23,7 +24,7 @@
         {0,         s_text,                      0,        PTE_W},   // 内核栈区, 64KB以下
         {s_text,    e_text,                      s_text,   0},       // 内核代码区, 从64KB开始
         {s_data,    (void*)(MEM_EBDA_START - 1), s_data,   PTE_W},   // 内核数据区
-        
+        {(void*)CONSOLE_DISP_ADDR_START, (void*)CONSOLE_DISP_ADDR_END, (void*)CONSOLE_DISP_ADDR_START, PTE_W},  // 显存
         // 将1MB以后的所有内存也直接映射
         {(void*)MEM_EXT_START, (void*)MEM_EXT_END, (void*)MEM_EXT_START, PTE_W}
     };
