@@ -322,14 +322,13 @@ char* sys_sbrk(int incr) {
     // TODO: 暂不处理incr小于0的情况
     ASSERT(incr >= 0);
 
-    if(incr == 0) {
-        log_print("sbrk(0), end=0x%x", pre_head_end);
-        return pre_head_end;
-    }
-
     // 从原堆的结束地址开始分配
     uint32_t alloc_start = task->heap_end;  // 从该地址处开始分配
     uint32_t alloc_end = alloc_start + incr;
+
+    if(incr == 0) {
+        goto sys_sbrk_normal;
+    }
 
     uint32_t start_offset = alloc_start % MEM_PAGE_SIZE;  // alloc_start在一页中的偏移量
     

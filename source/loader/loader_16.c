@@ -80,7 +80,7 @@ uint16_t gdt_table[][4] = {
 };
 
 void enter_protect_mode() {
-    show_msg("...Entering Protect Mode...");
+    show_msg("...Entering Protect Mode...\n\r");
 
     // 关中断
     cli();

@@ -5,6 +5,7 @@
  */
 #include "dev/console.h"
 #include "tools/klib.h"
+#include "common/cpu_instr.h"
 
 /**
  * @brief
@@ -16,12 +17,14 @@ int console_init() {
     for(int i = 0; i < CONSOLE_NR; i++) {
         console_t* console = console_buf + i;
 
-        // 初始化光标
-        cursor_t* cursor = &console->cursor;
-        cursor->row = cursor->col = 0;
-
         console->rows = CONSOLE_ROW_MAX;
         console->cols = CONSOLE_COL_MAX;
+
+        // 初始化光标
+        cursor_t* cursor = &console->cursor;
+        uint16_t pos = read_cursor_pos();
+        cursor->row = pos / console->cols;
+        cursor->col = pos % console->cols;
 
         // 设置颜色
         console->foreground = COLOR_WHITE;
@@ -32,7 +35,7 @@ int console_init() {
                                 i * (CONSOLE_ROW_MAX * CONSOLE_COL_MAX);
 
         // 清空当前终端
-        clear_display(console);
+        // clear_display(console);
     }
     return 0;
 }
@@ -54,6 +57,7 @@ int console_write(int console, char* data, int size) {
             show_char(c, ch);    
         }
     }
+    update_cursor_pos(c);
     return len;
 }
 
@@ -135,7 +139,7 @@ static void scroll_up(console_t* console, uint32_t lines) {
 
 static void erase_row(console_t* console, uint32_t start, uint32_t lines) {
     disp_char_t* dstart = console->disp_base + console->cols * start;
-    disp_char_t* dend   = console->disp_base + console->cols * (start + lines - 1);
+    disp_char_t* dend   = console->disp_base + console->cols * (start + lines);
     while(dstart < dend) {
         dstart->ch = ' ';
         dstart->foreground = console->foreground;
@@ -143,4 +147,24 @@ static void erase_row(console_t* console, uint32_t start, uint32_t lines) {
 
         ++dstart;
     }
+}
+
+static uint16_t read_cursor_pos() {
+    uint16_t pos;
+    outb(0x3D4, 0xF);
+    pos = inb(0x3D5);
+    outb(0x3D4, 0xE);
+    pos |= inb(0x3D5) << 8;
+    return pos;
+}
+
+static uint16_t update_cursor_pos(console_t* console) {
+    cursor_t* cursor = &console->cursor;
+    uint16_t pos = cursor->row * console->cols + cursor->col;
+
+    outb(0x3D4, 0xF);
+    outb(0x3D5, (uint8_t)(pos & 0xFF));
+    outb(0x3D4, 0xE);
+    outb(0x3D5, (uint8_t)((pos >> 8) & 0xFF));
+    return pos;
 }

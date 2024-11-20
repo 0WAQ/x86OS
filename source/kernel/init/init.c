@@ -22,14 +22,14 @@ void kernel_init(boot_info_t* boot_info) {
 
     ASSERT(boot_info->ram_region_count != 0);
 
-    // 初始化cpu
-    cpu_init();
-
     // 初始化日志
     log_init();
 
     // 初始化终端
     console_init();
+
+    // 初始化cpu
+    cpu_init();
 
     // 初始化内存
     memroy_init(boot_info);

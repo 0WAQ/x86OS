@@ -58,4 +58,14 @@ static void scroll_up(console_t* console, uint32_t lines);
  */
 static void erase_row(console_t* console, uint32_t start, uint32_t lines);
 
+/**
+ * @brief
+ */
+static uint16_t read_cursor_pos();
+
+/**
+ * @brief
+ */
+static uint16_t update_cursor_pos(console_t* console);
+
 #endif // CONSOLE_H

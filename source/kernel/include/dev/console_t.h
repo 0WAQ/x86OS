@@ -14,7 +14,7 @@
 #define CONSOLE_ROW_MAX             (25)
 #define CONSOLE_COL_MAX             (80)
 
-#define CONSOLE_NR                  (8)
+#define CONSOLE_NR                  (1)
 
 // 每个字符使用16位控制. 低8位表示字符; 高8位是属性, 其中低4位是前景色, 4~6位是背景色, // TODO:
 typedef union _disp_char_t {

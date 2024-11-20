@@ -14,7 +14,7 @@ int first_task_main() {
     }
 
     for(;;) {
-        print("pid = %d", getpid());
+        print("first task pid = %d", getpid());
         msleep(1000);
     }
     return 0;
