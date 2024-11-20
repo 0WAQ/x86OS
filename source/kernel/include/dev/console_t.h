@@ -16,6 +16,9 @@
 
 #define CONSOLE_NR                  (1)
 
+#define ASCII_ESC                   0x1B    // \033
+#define ESC_PARAM_MAX               (10)
+
 // 每个字符使用16位控制. 低8位表示字符; 高8位是属性, 其中低4位是前景色, 4~6位是背景色, // TODO:
 typedef union _disp_char_t {
     uint16_t v;
@@ -44,7 +47,7 @@ typedef enum {
     COLOR_LIGHT_CYAN        = 11,
     COLOR_LIGHT_RED         = 12,
     COLOR_LIGHT_MAGENTA     = 13,
-    COLOR_LIGHT_YELLOW      = 14,
+    COLOR_YELLOW            = 14,
     COLOR_WHITE             = 15,
 }color_t;
 
@@ -59,10 +62,26 @@ typedef struct _cursor_t {
  * @brief 终端结构体
  */
 typedef struct _console_t {
+
+    enum {
+        CONSOLE_WRITE_NORMAL,
+        CONSOLE_WRITE_ESC,
+        CONSOLE_WRITE_SQUARE,
+    }write_state;
+
     disp_char_t* disp_base;
-    cursor_t cursor;    // 光标
     uint32_t rows, cols;
     color_t foreground, background;    // 当前终端的前景色和背景色
+
+    cursor_t cursor;        // 光标
+    
+    // 保存光标的位置, 与ESC 7,8 有关
+    cursor_t old_cursor;    
+
+    // esc序列的参数缓冲区
+    uint32_t esc_param_buf[ESC_PARAM_MAX];
+    uint32_t esc_param_index;
+
 }console_t;
 
 #endif // CONSOLE_T_H
