@@ -10,6 +10,7 @@
 #include "ipc/sem.h"
 #include "dev/time.h"
 #include "dev/console.h"
+#include "dev/kbd.h"
 #include "tools/log.h"
 #include "tools/klib.h"
 #include "tools/list.h"
@@ -42,6 +43,9 @@ void kernel_init(boot_info_t* boot_info) {
 
     // 初始化任务管理器
     task_manager_init();
+
+    // 初始化键盘
+    kbd_init();
 }
 
 void kernel_main() {

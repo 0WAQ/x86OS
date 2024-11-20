@@ -175,9 +175,9 @@ typedef	__pid_t		pid_t;		/* process id */
 #define	_PID_T_DECLARED
 #endif
 
-#ifndef _KEY_T_DECLARED
+#ifndef _KBD_KEY_T_DECLARED
 typedef	__key_t		key_t;		/* IPC key */
-#define	_KEY_T_DECLARED
+#define	_KBD_KEY_T_DECLARED
 #endif
 
 #ifndef _SSIZE_T_DECLARED

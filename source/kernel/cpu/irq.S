@@ -67,3 +67,6 @@ exception_handler virtual_exception, 20, 0
 
 # 定时器的中断处理函数
 exception_handler timer, 0x20, 0
+
+# 键盘的终中断处理函数
+exception_handler kbd, 0x21, 0
