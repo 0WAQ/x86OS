@@ -8,7 +8,7 @@
 
 #include "common/types.h"
 
-static uint8_t TEMP_ADDR[100*1024];
+#define TEMP_ADDR           (8*1024*1024)
 
 static uint8_t* temp_pos;
 

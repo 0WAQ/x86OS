@@ -10,7 +10,7 @@
 #include "common/types.h"
 
 /**
- * @brief 将size向下对齐到bound的整数倍
+ * @brief 将size向下(小)对齐到bound的整数倍
  */
 static inline 
 uint32_t down2(uint32_t size, uint32_t bound) {
@@ -18,7 +18,7 @@ uint32_t down2(uint32_t size, uint32_t bound) {
 }
 
 /**
- * @brief 将size向上对齐到bound的整数倍
+ * @brief 将size向上(大)对齐到bound的整数倍
  */
 static inline 
 uint32_t up2(uint32_t size, uint32_t bound) {

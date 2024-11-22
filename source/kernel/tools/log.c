@@ -20,9 +20,6 @@ void log_init() {
     // 初始化锁
     mutex_init(&mutex);
 
-    // 打开一个tty
-    log_dev_id = dev_open(DEV_TTY, 0, NULL); 
-
 #if LOG_USE_COM
     // 将串行接口相关的中断关闭
     outb(COM1_PORT + 1, 0x00);
@@ -32,7 +29,13 @@ void log_init() {
     outb(COM1_PORT + 3, 0x03);
     outb(COM1_PORT + 2, 0xC7);
     outb(COM1_PORT + 4, 0x0F);
-#endif
+
+#else // !LOG_USE_COM
+
+    // 打开一个tty
+    log_dev_id = dev_open(DEV_TTY, 0, NULL); 
+
+#endif // LOG_USE_COM
 }
 
 void log_print(const char* fmt, ...) {

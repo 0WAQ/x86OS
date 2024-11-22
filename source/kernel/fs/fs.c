@@ -44,8 +44,8 @@ void read_disk(uint32_t sector, uint32_t sector_cnt, uint8_t* buffer) {
 
 int sys_open(const char* filename, int flags, ...) {
     if(filename[0] == '/') {
-        read_disk(5000, 80, TEMP_ADDR);
-        temp_pos = TEMP_ADDR;
+        read_disk(5000, 80, (uint8_t*)TEMP_ADDR);
+        temp_pos = (uint8_t*)TEMP_ADDR;
         return TEMP_FILE_ID;
     }
 
