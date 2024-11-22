@@ -14,7 +14,7 @@
 #define CONSOLE_ROW_MAX             (25)
 #define CONSOLE_COL_MAX             (80)
 
-#define CONSOLE_NR                  (1)
+#define CONSOLE_NR                  (8)
 
 #define ASCII_ESC                   0x1B    // \033
 #define ESC_PARAM_MAX               (10)

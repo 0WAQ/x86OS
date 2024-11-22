@@ -106,12 +106,16 @@ static const key_map_t map_table[256] = {
 
 void kbd_init() {
     
-    // 初始化led灯
-    update_capslk_led_status();
-    update_numlk_led_status();
+    // 只初始化一次
+    static int is_init = 0;
+    if(!is_init) {
+        // 初始化led灯
+        update_capslk_led_status();
+        update_numlk_led_status();
 
-    irq_install(IRQ1_KEYBOARD, (irq_handler_t)exception_handler_kbd);
-    irq_enable(IRQ1_KEYBOARD);
+        irq_install(IRQ1_KEYBOARD, (irq_handler_t)exception_handler_kbd);
+        irq_enable(IRQ1_KEYBOARD);
+    }
 }
 
 void do_handler_kbd(exception_frame_t* frame) {

@@ -11,7 +11,7 @@
 /**
  * @brief 初始化终端
  */
-int console_init();
+int console_init(int idx);
 
 /**
  * @brief 向终端写数据

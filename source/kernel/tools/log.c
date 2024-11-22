@@ -8,14 +8,20 @@
 #include "common/cpu_instr.h"
 #include "cpu/irq.h"
 #include "ipc/mutex.h"
-#include "dev/console.h"
+#include "dev/dev.h"
 
 // 互斥锁
 static mutex_t mutex;
 
+// log的输出设备的dev_id
+static int log_dev_id;
+
 void log_init() {
     // 初始化锁
     mutex_init(&mutex);
+
+    // 打开一个tty
+    log_dev_id = dev_open(DEV_TTY, 0, NULL); 
 
 #if LOG_USE_COM
     // 将串行接口相关的中断关闭
@@ -61,8 +67,9 @@ void log_print(const char* fmt, ...) {
 
 #else   // !LOG_USE_COM
 
-    console_write(0, buf, kernel_strlen(buf));
-    console_write(0, "\n", 1);
+    // 向 log_dev 输出设备
+    dev_write(log_dev_id, 0, buf, kernel_strlen(buf));
+    dev_write(log_dev_id, 0, "\n", 1);
 
 #endif  // LOG_USE_COM
 

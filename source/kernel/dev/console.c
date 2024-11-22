@@ -8,40 +8,43 @@
 #include "common/cpu_instr.h"
 
 /**
- * @brief
+ * @brief console表
  */
 static console_t console_buf[CONSOLE_NR];
 
 
-int console_init() {
-    for(int i = 0; i < CONSOLE_NR; i++) {
-        console_t* console = console_buf + i;
+int console_init(int idx) {
+    console_t* console = console_buf + idx;
 
-        console->rows = CONSOLE_ROW_MAX;
-        console->cols = CONSOLE_COL_MAX;
+    console->rows = CONSOLE_ROW_MAX;
+    console->cols = CONSOLE_COL_MAX;
 
-        // 初始化光标
-        cursor_t* cursor = &console->cursor;
+    // 设置颜色
+    console->foreground = COLOR_WHITE;
+    console->background = COLOR_BLACK;
+
+    // 当前终端的起始地址
+    console->disp_base = (disp_char_t*)CONSOLE_DISP_ADDR_START + 
+                            idx * (CONSOLE_ROW_MAX * CONSOLE_COL_MAX);
+
+    // 初始化光标
+    cursor_t* cursor = &console->cursor;
+    if(idx == 0) {
         uint16_t pos = read_cursor_pos();
         cursor->row = pos / console->cols;
         cursor->col = pos % console->cols;
-
-        cursor_t* old_cursor = &console->old_cursor;
-        old_cursor->col = console->cols;
-        old_cursor->row = console->rows;
-        console->write_state = CONSOLE_WRITE_NORMAL;
-
-        // 设置颜色
-        console->foreground = COLOR_WHITE;
-        console->background = COLOR_BLACK;
-
-        // 当前终端的起始地址
-        console->disp_base = (disp_char_t*)CONSOLE_DISP_ADDR_START + 
-                                i * (CONSOLE_ROW_MAX * CONSOLE_COL_MAX);
-
-        // 清空当前终端
-        // clear_display(console);
+    } else {
+        cursor->row = cursor->col = 0;
+        clear_display(console);
+        update_cursor_pos(console);
     }
+
+    // 初始化old光标
+    cursor_t* old_cursor = &console->old_cursor;
+    old_cursor->col = console->cols;
+    old_cursor->row = console->rows;
+    console->write_state = CONSOLE_WRITE_NORMAL;
+    
     return 0;
 }
 
