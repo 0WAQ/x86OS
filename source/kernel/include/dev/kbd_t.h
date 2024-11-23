@@ -44,7 +44,7 @@
 #define KBD_KEY_F12			    (0x58)
 
 #define KBD_KEY_NUM_LOCK        (0x45)
-#define	KBD_KEY_SCROLL_LOCK		(0x46)
+#define	KBD_KEY_SCROLL_LOCK		(0x46)          // 未使用
 #define KBD_KEY_HOME			(0x47)
 #define KBD_KEY_END				(0x4F)
 #define KBD_KEY_PAGE_UP			(0x49)
@@ -55,7 +55,7 @@
 #define KBD_KEY_CURSOR_LEFT		(0x4B)
 #define KBD_KEY_INSERT			(0x52)
 #define KBD_KEY_DELETE			(0x53)
-#define KBD_KEY_BACKSPACE		(0x0E)
+#define KBD_KEY_BACKSPACE		(0x0E)          // 在映射表中设置
 
 /**
  * @brief 键值映射结构

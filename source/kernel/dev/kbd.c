@@ -31,7 +31,7 @@ static const key_map_t map_table[256] = {
         [0x0B] = {'0', ')'},
         [0x0C] = {'-', '_'},
         [0x0D] = {'=', '+'},
-        [0x0E] = {0x7F, 0x7F},
+        [0x0E] = {KBD_ASCII_DEL, KBD_ASCII_DEL},
         [0x0F] = {'\t', '\t'},
         [0x10] = {'q', 'Q'},
         [0x11] = {'w', 'W'},
@@ -87,19 +87,19 @@ static const key_map_t map_table[256] = {
      // [0x44] = F10,
      // [0x45] = NumberLock,
      // [0x46] = ScrollLock
-        [0x47] = {'7', '7'},    // 以下为到0x53为keypad
-        [0x48] = {'8', '8'},
-        [0x49] = {'9', '9'},
+     // [0x47] = '7', Home,    // 以下为到0x53为keypad
+     // [0x48] = '8', Up,
+     // [0x49] = '9', PageUp,
         [0x4A] = {'-', '-'},
-        [0x4B] = {'4', '4'},
+     // [0x4B] = '4', Left,
         [0x4C] = {'5', '5'},
-        [0x4D] = {'6', '6'},
+     // [0x4D] = '6', Right,
         [0x4E] = {'+', '+'},
-        [0x4F] = {'1', '1'},
-        [0x50] = {'2', '2'},
-        [0x51] = {'3', '3'},
-        [0x52] = {'0', '0'},
-        [0x53] = {'.', '.'},
+     // [0x4F] = '1', End,
+     // [0x50] = '2', Down,
+     // [0x51] = '3', PageDown,
+     // [0x52] = '0', Insert,
+     // [0x53] = '.', Delete,
      // [0x57] = F11,
      // [0x58] = F12,
      // [0xE0] = rctrl
@@ -140,6 +140,9 @@ void do_handler_kbd(exception_frame_t* frame) {
     // 读取完成后发送EOI, 方便后续继续响应键盘中断
     pic_send_eoi(IRQ1_KEYBOARD);
 
+    /**
+     * qemu下收不到E0和E1
+     */
     if(raw == KBD_KEY_E0) {
         recv_state = BEGIN_E0;
     }
