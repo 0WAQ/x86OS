@@ -23,7 +23,7 @@ dev_desc_t dev_tty_desc = {
     .close = tty_close,
 };
 
-static tty_t ttys_devs[TTY_NR];
+static tty_t tty_devs[TTY_NR];
 
 void tty_fifo_init(tty_fifo_t* fifo, char* buf, int len) {
     fifo->buf = buf;
@@ -40,17 +40,20 @@ int tty_open(device_t* dev) {
         return -1;
     }
 
-    tty_t* tty =  ttys_devs + idx;
+    tty_t* tty =  tty_devs + idx;
     tty_fifo_init(&tty->ofifo, tty->obuf, TTY_OBUF_SIZE);
     tty_fifo_init(&tty->ififo, tty->ibuf, TTY_IBUF_SIZE);
     tty->console_index = idx;
 
         // 默认开启
     tty->oflags = TTY_OCRLF;
+    tty->iflags = TTY_ICRLF | TTY_IECHO;
 
         // 资源是输出缓冲区中可写的字节数, 初始大小为缓冲区的大小
     sem_init(&tty->osem, TTY_OBUF_SIZE);
-    // sem_init(&tty->isem, TTY_IBUF_SIZE);
+    
+        // 资源是输入缓冲区需要读的字节数, 初始大小为0
+    sem_init(&tty->isem, 0);
 
     kbd_init();
     console_init(idx);
@@ -59,7 +62,46 @@ int tty_open(device_t* dev) {
 }
 
 int tty_read(device_t* dev, int addr , char* buf , int size) {
-    return size;
+    if(size < 0) {
+        return -1;
+    }
+
+    tty_t* tty = get_tty(dev);
+    char* p = buf;
+
+    int len = 0;
+    while(len < size) {
+
+            // 这里是消费者, 会消耗资源(输入缓冲区中的有效载荷), 没有资源会睡眠, 默认为0
+        sem_wait(&tty->isem);
+    
+        char ch;
+        tty_fifo_get(&tty->ififo, &ch);
+        
+        // 根据配置, 决定是否将 \n 转换为 \r\n
+        if(ch == '\n' && (tty->iflags & TTY_ICRLF)) {
+            // 还要确保缓冲区大小足够
+            if(len < size - 1) {
+                *p++ = '\r';
+                len++;
+            }
+        }
+
+        *p++ = ch;
+        len++;
+
+        // 若开启回显
+        if(tty->iflags & TTY_IECHO) {
+            tty_write(dev, 0, &ch, 1);
+        }
+
+        // 碰到回车或者换行, 提前终止, 是输入缓冲区回显
+        if((ch == '\n') || (ch == '\r')) {
+            break;
+        }
+    }
+
+    return len;
 }
 
 int tty_write(device_t* dev, int addr , char* buf , int size) {
@@ -117,7 +159,7 @@ static tty_t* get_tty(device_t* dev) {
         log_print("tty is not opened. tty = %d.", minor);
         return NULL;
     }
-    return ttys_devs + minor;
+    return tty_devs + minor;
 }
 
 int tty_fifo_put(tty_fifo_t* fifo, char ch) {
@@ -144,4 +186,17 @@ int tty_fifo_get(tty_fifo_t* fifo, char* ch) {
     }
     fifo->cnt--;
     return 0;
+}
+
+void tty_in(int idx, char ch) {
+    tty_t* tty = tty_devs + idx;
+
+    // 输入缓冲区的有效字节数等于缓冲区大小, 那么满, 直接返回
+    if(sem_count(&tty->isem) >= TTY_IBUF_SIZE) {
+        return;
+    }
+
+    // 否则将ch放入到输入缓冲区
+    tty_fifo_put(&tty->ififo, ch);
+    sem_notify(&tty->isem);
 }

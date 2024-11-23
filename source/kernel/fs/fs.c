@@ -109,6 +109,7 @@ sys_open_failed:
     }
     else
     {
+        // TODO:
         if(filename[0] == '/') {
             read_disk(5000, 80, (uint8_t*)TEMP_ADDR);
             temp_pos = (uint8_t*)TEMP_ADDR;
@@ -119,10 +120,19 @@ sys_open_failed:
 }
 
 int sys_read(int fd, char* buf, int len) {
+    // TODO: 
     if(fd == TEMP_FILE_ID) {
         kernel_memcpy(buf, temp_pos, len);
         temp_pos += len;
         return len;
+    } else {
+        fd = 0;
+        file_t* p = get_task_file(fd);
+        if(!p) {
+            log_print("file not opened.");
+            return -1;
+        }
+        return dev_read(p->dev_id, 0, buf, len);
     }
 
     return -1;

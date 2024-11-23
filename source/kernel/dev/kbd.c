@@ -4,6 +4,7 @@
  * 
  */
 #include "dev/kbd.h"
+#include "dev/tty.h"
 #include "cpu/irq.h"
 #include "common/cpu_instr.h"
 #include "tools/klib.h"
@@ -30,7 +31,7 @@ static const key_map_t map_table[256] = {
         [0x0B] = {'0', ')'},
         [0x0C] = {'-', '_'},
         [0x0D] = {'=', '+'},
-        [0x0E] = {'\b', '\b'},
+        [0x0E] = {0x7F, 0x7F},
         [0x0F] = {'\t', '\t'},
         [0x10] = {'q', 'Q'},
         [0x11] = {'w', 'W'},
@@ -259,7 +260,8 @@ void do_normal_key(uint8_t raw) {
 
             }
 
-            log_print("key: %c", key); // TODO: 待删除
+            // 将输入交给tty设备
+            tty_in(0, key);
         }
 
         break;

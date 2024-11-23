@@ -14,8 +14,12 @@
 #define TTY_OBUF_SIZE       (512)       // tty输出缓冲大小
 #define TTY_IBUF_SIZE       (512)       // tty输入缓冲大侠奥
 
-// 输出标志位的宏
-#define TTY_OCRLF           (1 << 0)    // 开启后,打印会将\n缓缓为\r\n
+// 输出标志位的相关宏
+#define TTY_OCRLF           (1 << 0)    // 开启后,打印会将 \n 转湖岸为 \r\n
+
+// 输入标志位的相关宏
+#define TTY_ICRLF           (1 << 0)    // 开启后,输入会将 \n 转换为 \r\n
+#define TTY_IECHO           (1 << 1)    // 开启后,输入还会回显
 
 /**
  * @brief tty缓冲区
@@ -35,11 +39,12 @@ typedef struct _tty_t {
     char ibuf[TTY_IBUF_SIZE];
     tty_fifo_t ofifo;
     tty_fifo_t ififo;
-    sem_t osem;
-    int console_index;          // 控制台索引号
-
+    sem_t osem;                 // 输出相关信号量
+    sem_t isem;                 // 输入相关信号量
     int oflags;                 // 输出标志位
+    int iflags;                 // 输入标志位
 
+    int console_index;          // 控制台索引号
 }tty_t;
 
 #endif // TTY_T_H

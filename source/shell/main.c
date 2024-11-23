@@ -35,15 +35,10 @@ int main(int argc, char** argv) {
     int fd = open("tty:0", 0);
     printf("Hello from shell\n");
 
-    if(fork() > 0) {
-        for(;;) {
-            printf("child shell pid = %d\n", getpid());
-            msleep(1000);
-        }
-    }
-
+    char buf[256] = {0};
     for(;;) {
         printf("shell pid = %d\n", getpid());
-        msleep(1000);
+        gets(buf);
+        puts(buf);
     }
 }
