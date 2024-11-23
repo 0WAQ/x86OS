@@ -4,6 +4,8 @@
  * 
  */
 #include "dev/console.h"
+#include "dev/tty.h"
+#include "ipc/sem.h"
 #include "tools/klib.h"
 #include "common/cpu_instr.h"
 
@@ -48,30 +50,43 @@ int console_init(int idx) {
     return 0;
 }
 
-int console_write(int console, char* data, int size) {
-    console_t* c = console_buf + console;
+int console_write(tty_t* tty) {
+    console_t* c = console_buf + tty->console_index;
     
-    int len;
-    for(len = 0; len < size; len++) {
-        char ch = *data++;
+    int len = 0;
+
+    while (1)
+    {
+        char ch;
+        int ret = tty_fifo_get(&tty->ofifo, &ch);   // 从输出缓冲读取一个字节
+        if(ret < 0) {
+            break;
+        }
+
+            // 这里是生产者, 会从输出缓冲区中读取字符, 若队列上有任务, 会唤醒任务去消耗资源 
+        sem_notify(&tty->osem);
+
         switch (c->write_state)
         {
         case CONSOLE_WRITE_NORMAL:
             write_normal(c, ch);
-        break;
+            break;
         
         case CONSOLE_WRITE_ESC:
             write_esc(c, ch);
-        break;
+            break;
 
         case CONSOLE_WRITE_SQUARE:
             write_esc_square(c, ch);
-        break;
+            break;
 
         default:
-        break;
+            break;
         }
+
+        ++len;
     }
+    
     update_cursor_pos(c);
     return len;
 }
@@ -96,7 +111,6 @@ static int write_normal(console_t* c, char ch) {
     break;
 
     case '\n':
-        move_to_col0(c);  // 移动光标
         move_next_row(c); // 移动到下一行
     break;
 

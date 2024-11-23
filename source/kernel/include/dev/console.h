@@ -7,6 +7,7 @@
 #define CONSOLE_H
 
 #include "console_t.h"
+#include "dev/tty_t.h"
 
 /**
  * @brief 初始化终端
@@ -16,7 +17,7 @@ int console_init(int idx);
 /**
  * @brief 向终端写数据
  */
-int console_write(int console, char* data, int size);
+int console_write(tty_t* tty);
 
 /**
  * @brief 写普通数据

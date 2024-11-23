@@ -66,8 +66,9 @@ int sys_read(int fd, char* buf, int len) {
 
 int sys_write(int fd, char* buf, int len) {
     if(fd == 1) {
-        console_write(0, buf, len);
-        // log_print("%s", buf);
+        // console_write(0, buf, len);
+        buf[len] = '\0';
+        log_print("%s", buf);
     }
 
     return 0;
