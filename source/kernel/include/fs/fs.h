@@ -9,6 +9,11 @@
 #include "fs_t.h"
 
 /**
+ * @brief 初始化文件系统
+ */
+void fs_init();
+
+/**
  * @brief
  */
 int sys_open(const char* filename, int flags, ...);

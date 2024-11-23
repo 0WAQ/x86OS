@@ -8,6 +8,7 @@
 #include "cpu/cpu.h"
 #include "cpu/irq.h"
 #include "ipc/sem.h"
+#include "fs/fs.h"
 #include "dev/time.h"
 #include "dev/console.h"
 #include "dev/kbd.h"
@@ -34,6 +35,9 @@ void kernel_init(boot_info_t* boot_info) {
 
     // 初始化内存
     memroy_init(boot_info);
+
+    // 初始化文件系统
+    fs_init();
 
     // 初始化定时器
     time_init();

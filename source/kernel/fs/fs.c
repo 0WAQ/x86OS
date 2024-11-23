@@ -5,10 +5,17 @@
  */
 
 #include "fs/fs.h"
+#include "fs/file.h"
 #include "dev/console.h"
 #include "tools/klib.h"
 #include "common/cpu_instr.h"
 #include <sys/stat.h>
+
+void fs_init() {
+
+    // 初始化文件表
+    file_table_init();
+}
 
 // TODO: 临时使用
 void read_disk(uint32_t sector, uint32_t sector_cnt, uint8_t* buffer) {
