@@ -33,6 +33,9 @@ int main(int argc, char** argv) {
 #endif
 
     int fd = open("tty:0", 0);
+    dup(fd);
+    dup(fd);
+
     printf("Hello from shell\n");
 
     char buf[256] = {0};

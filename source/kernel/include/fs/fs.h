@@ -14,17 +14,17 @@
 void fs_init();
 
 /**
- * @brief
+ * @brief 打开一个文件
  */
 int sys_open(const char* filename, int flags, ...);
 
 /**
- * @brief
+ * @brief 从fd对应的文件中读取
  */
 int sys_read(int fd, char* buf, int len);
 
 /**
- * @brief
+ * @brief 向fd对应的文件写
  */
 int sys_write(int fd, char* buf, int len);
 
@@ -34,7 +34,7 @@ int sys_write(int fd, char* buf, int len);
 int sys_lseek(int fd, int offset, int dir);
 
 /**
- * @brief
+ * @brief 关闭fd
  */
 int sys_close(int fd);
 
@@ -48,5 +48,10 @@ int sys_isatty(int fd);
  */
 struct stat;
 int sys_fstat(int fd, struct stat* st);
+
+/**
+ * @brief 系统调用dup
+ */
+int sys_dup(int fd);
 
 #endif // FS_H

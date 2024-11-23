@@ -81,8 +81,13 @@ int isatty(int fd);
 int fstat(int fd, struct stat* st);
 
 /**
- * @brief
+ * @brief 动态分配堆内存
  */
 void* sbrk (ptrdiff_t incr);
+
+/**
+ * @brief 为进程创建一个空闲的文件描述符分配给fd对应的文件
+ */
+int dup(int fd);
 
 #endif // LIB_SYSCALL_H

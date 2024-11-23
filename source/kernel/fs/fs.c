@@ -126,7 +126,6 @@ int sys_read(int fd, char* buf, int len) {
         temp_pos += len;
         return len;
     } else {
-        fd = 0;
         file_t* p = get_task_file(fd);
         if(!p) {
             log_print("file not opened.");
@@ -167,4 +166,27 @@ int sys_isatty(int fd) {
 
 int sys_fstat(int fd, struct stat* st) {
     return -1;
+}
+
+int sys_dup(int fd) {
+    if((fd < 0) || (fd >= TASK_OFILE_NR)) {
+        log_print("file %d is invalid.", fd);
+        return -1;
+    }
+
+    file_t* p = get_task_file(fd);
+    if(!p) {
+        log_print("file not opened.");
+        return -1;
+    }
+
+    // 新创建一个fd与p相同
+    int new = task_alloc_fd(p);
+    if(new < 0) {
+        log_print("no task file avaliable.");
+        return -1;
+    }
+    
+    p->ref++;
+    return new;
 }

@@ -30,6 +30,7 @@ syscall_handler_t sys_table[] = {
     [SYS_isatty] = (syscall_handler_t)sys_isatty,
     [SYS_fstat]  = (syscall_handler_t)sys_fstat,
     [SYS_sbrk]   = (syscall_handler_t)sys_sbrk,
+    [SYS_dup]    = (syscall_handler_t)sys_dup,
     
     [SYS_print]  = (syscall_handler_t)sys_print,
 };
