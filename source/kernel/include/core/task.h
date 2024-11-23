@@ -160,4 +160,21 @@ static int load_phdr(int fd, Elf32_Phdr* phdr, uint32_t page_dir);
  */
 static int copy_args(char* to, uint32_t page_dir, int argc, char** argv);
 
+/**
+ * @brief 获取当前任务文件打开表的第fd项
+ */
+file_t* get_task_file(int fd);
+
+/**
+ * @brief 将file分配给当前任务的file_table, 并返回fd
+ */
+int task_alloc_fd(file_t* file);
+
+/**
+ * @brief 将当前任务的文件打开表的第fd项置空
+ */
+void task_remove_fd(int fd);
+
+
+
 #endif // TASK_H

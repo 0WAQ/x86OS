@@ -58,6 +58,9 @@ int task_init(task_t* task, const char* name, uint32_t flag, uint32_t entry, uin
     list_node_init(&task->wait_node);
     list_node_init(&task->run_node);
 
+    // 初始化文件表
+    kernel_memset((void*)&task->file_table, 0, sizeof(task->file_table));
+
     return 0;
 }
 
@@ -720,4 +723,29 @@ static int copy_args(char* to, uint32_t page_dir, int argc, char** argv) {
 
     // 写入task_args
     return memory_copy_uvm_data((uint32_t)to, page_dir, (uint32_t)&task_args, sizeof(task_args_t));
+}
+
+file_t* get_task_file(int fd) {
+    if((fd < 0) || (fd >= TASK_OFILE_NR)) {
+        return NULL;
+    }
+    return get_curr_task()->file_table[0];
+}
+
+int task_alloc_fd(file_t* file) {
+    task_t* task = get_curr_task();
+    for(int i = 0; i < TASK_OFILE_NR; i++) {
+        file_t* p = task->file_table[i];
+        if(p == NULL) {
+            task->file_table[i] = file;
+            return i;
+        }
+    }
+    return -1;
+}
+
+void task_remove_fd(int fd) {
+    if((fd >= 0) && (fd < TASK_OFILE_NR)) {
+        get_curr_task()->file_table[fd] = NULL;
+    }
 }

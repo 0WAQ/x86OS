@@ -9,9 +9,11 @@
 #include "common/types.h"
 #include "tools/list.h"
 #include "cpu/cpu_t.h"
+#include "fs/file_t.h"
 
-#define TASK_NAME_SIZE      (32)
+#define TASK_NAME_SIZE              (32)
 #define TASK_TIME_SLICE_DEFAULT     (10)
+#define TASK_OFILE_NR               (128)
 
 // 任务工作模式
 #define TASK_FLAGS_SYSTEM       (1 << 0)
@@ -52,6 +54,8 @@ typedef struct _task_t {
     uint32_t slice_ticks;   // 时间片计数(递减)
     uint32_t time_ticks;    // 时间片
     uint32_t sleep_ticks;   // 
+
+    file_t* file_table[TASK_OFILE_NR];      // 任务打开的文件表
 
 }task_t;
 
