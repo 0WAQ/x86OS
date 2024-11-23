@@ -9,6 +9,8 @@
 
 int main(int argc, char** argv) {
 
+#if 0
+
     void* ret = sbrk(0);
     ret = sbrk(100);
     ret = sbrk(200);
@@ -28,6 +30,10 @@ int main(int argc, char** argv) {
     printf("\033[32;25;39m123\n");  // ESC [pn m, Hello,world红色，其余绿色
     printf("\033[2J");
 
+#endif
+
+    int fd = open("tty:0", 0);
+    printf("Hello from shell\n");
 
     if(fork() > 0) {
         for(;;) {

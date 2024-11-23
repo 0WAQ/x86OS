@@ -726,10 +726,11 @@ static int copy_args(char* to, uint32_t page_dir, int argc, char** argv) {
 }
 
 file_t* get_task_file(int fd) {
-    if((fd < 0) || (fd >= TASK_OFILE_NR)) {
-        return NULL;
+    if((fd >= 0) && (fd < TASK_OFILE_NR)) {
+        file_t* file = get_curr_task()->file_table[fd];
+        return file;
     }
-    return get_curr_task()->file_table[0];
+    return NULL;
 }
 
 int task_alloc_fd(file_t* file) {

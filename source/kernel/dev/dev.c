@@ -34,7 +34,7 @@ int dev_open(int major, int minor, void* data) {
             fdev = dev;
         }
         // 找到相同的设备, 直接返回其dev_id
-        else if((dev->desc->major == major) && (dev->minor = minor)) {
+        else if((dev->desc->major == major) && (dev->minor == minor)) {
             dev->open_cnt++;
             irq_leave_protectoin(state);
             return i;

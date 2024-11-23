@@ -6,8 +6,11 @@
 
 #include "fs/fs.h"
 #include "fs/file.h"
+#include "dev/dev.h"
 #include "dev/console.h"
+#include "core/task.h"
 #include "tools/klib.h"
+#include "tools/log.h"
 #include "common/cpu_instr.h"
 #include <sys/stat.h>
 
@@ -49,13 +52,69 @@ void read_disk(uint32_t sector, uint32_t sector_cnt, uint8_t* buffer) {
     }
 }
 
-int sys_open(const char* filename, int flags, ...) {
-    if(filename[0] == '/') {
-        read_disk(5000, 80, (uint8_t*)TEMP_ADDR);
-        temp_pos = (uint8_t*)TEMP_ADDR;
-        return TEMP_FILE_ID;
+// TODO: TEMP
+static int is_path_valid(const char* path) {
+    if((path == NULL) || (path[0] == '\0')) {
+        return 0;
     }
+    return 1;
+}
 
+int sys_open(const char* filename, int flags, ...) {
+
+    if(kernel_strncmp(filename, "tty", 3) == 0) {
+        if(!is_path_valid(filename)) {
+            log_print("path is not valid.");
+            return -1;
+        }
+
+        int fd = -1;
+        file_t* file = file_alloc();
+        if(file) {
+            fd = task_alloc_fd(file);
+            if(fd < 0) {
+                goto sys_open_failed;
+            }
+        }
+        else {
+            goto sys_open_failed;
+        }
+
+        if(kernel_strlen(filename) < 5) {
+            goto sys_open_failed;
+        }
+        int idx = filename[4] - '0';
+        int dev_id = dev_open(DEV_TTY, idx, 0);
+        if(dev_id < 0) {
+            goto sys_open_failed;
+        }
+
+        file->dev_id = dev_id;
+        file->mode = 0;
+        file->pos = 0;
+        file->ref = 1;
+        file->type = FILE_TTY;
+
+        kernel_strncpy(file->filename, filename, FILENAME_SIZE);
+        return fd;
+
+sys_open_failed:
+        if(file) {
+            file_free(file);
+        }
+
+        if(fd >= 0) {
+            task_remove_fd(fd);
+        }
+    }
+    else
+    {
+        if(filename[0] == '/') {
+            read_disk(5000, 80, (uint8_t*)TEMP_ADDR);
+            temp_pos = (uint8_t*)TEMP_ADDR;
+            return TEMP_FILE_ID;
+        }
+    }
     return -1;
 }
 
@@ -69,16 +128,14 @@ int sys_read(int fd, char* buf, int len) {
     return -1;
 }
 
-#include "tools/log.h"
-
 int sys_write(int fd, char* buf, int len) {
-    if(fd == 1) {
-        // console_write(0, buf, len);
-        buf[len] = '\0';
-        log_print("%s", buf);
+    fd = 0;
+    file_t* p = get_task_file(fd);
+    if(!p) {
+        log_print("file not opened.");
+        return -1;
     }
-
-    return 0;
+    return dev_write(p->dev_id, 0, buf, len);
 }
 
 int sys_lseek(int fd, int offset, int dir) {
