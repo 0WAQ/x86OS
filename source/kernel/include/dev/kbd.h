@@ -31,6 +31,11 @@ void do_e0_key(uint8_t raw);
 void do_normal_key(uint8_t raw);
 
 /**
+ * @brief 切换tty设备
+ */
+void do_fx_key(char key);
+
+/**
  * @brief 更新Caps Lock键的led灯
  */
 static void update_capslk_led_status();

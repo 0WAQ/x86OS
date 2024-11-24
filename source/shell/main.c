@@ -32,7 +32,7 @@ int main(int argc, char** argv) {
 
 #endif
 
-    int fd = open("tty:0", 0);
+    int fd = open(argv[0], 0);
     dup(fd);
     dup(fd);
 

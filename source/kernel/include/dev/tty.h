@@ -55,8 +55,13 @@ int tty_fifo_put(tty_fifo_t* fifo, char ch);
 int tty_fifo_get(tty_fifo_t* fifo, char* ch);
 
 /**
- * @brief 键盘通过该函数, 将要打印的字符交给tty_tbl[idx]
+ * @brief 键盘通过该函数, 将要打印的字符交给合适的tty设备
  */
-void tty_in(int idx, char ch);
+void tty_in(char ch);
+
+/**
+ * @brief
+ */
+void tty_switch(int idx);
 
 #endif // TTY_H

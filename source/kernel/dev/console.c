@@ -6,6 +6,7 @@
 #include "dev/console.h"
 #include "dev/tty.h"
 #include "ipc/sem.h"
+#include "cpu/irq.h"
 #include "tools/klib.h"
 #include "common/cpu_instr.h"
 
@@ -13,6 +14,7 @@
  * @brief console表
  */
 static console_t console_buf[CONSOLE_NR];
+static int curr_console_idx = 0;
 
 
 int console_init(int idx) {
@@ -38,7 +40,6 @@ int console_init(int idx) {
     } else {
         cursor->row = cursor->col = 0;
         clear_display(console);
-        update_cursor_pos(console);
     }
 
     // 初始化old光标
@@ -87,7 +88,9 @@ int console_write(tty_t* tty) {
         ++len;
     }
     
-    update_cursor_pos(c);
+    if(tty->console_index == curr_console_idx) {
+        update_cursor_pos(c);
+    }
     return len;
 }
 
@@ -299,21 +302,33 @@ static void erase_row(console_t* console, uint32_t start, uint32_t lines) {
 
 static uint16_t read_cursor_pos() {
     uint16_t pos;
+
+    irq_state_t state = irq_enter_protection();
+
     outb(0x3D4, 0xF);
     pos = inb(0x3D5);
     outb(0x3D4, 0xE);
     pos |= inb(0x3D5) << 8;
+
+    irq_leave_protectoin(state);
+
     return pos;
 }
 
 static uint16_t update_cursor_pos(console_t* console) {
     cursor_t* cursor = &console->cursor;
-    uint16_t pos = cursor->row * console->cols + cursor->col;
+    uint16_t pos = (console - console_buf) * console->rows * console->cols;
+    pos += cursor->row * console->cols + cursor->col;
+
+    irq_state_t state = irq_enter_protection();
 
     outb(0x3D4, 0xF);
     outb(0x3D5, (uint8_t)(pos & 0xFF));
     outb(0x3D4, 0xE);
     outb(0x3D5, (uint8_t)((pos >> 8) & 0xFF));
+
+    irq_leave_protectoin(state);
+
     return pos;
 }
 
@@ -411,4 +426,20 @@ static void move_right_esc(console_t* c, int n) {
     else {
         c->cursor.col = col;
     }
+}
+
+void console_switch(int idx) {
+    console_t* c = console_buf + idx;
+    if(c->disp_base == 0) {
+        console_init(idx);
+    }
+
+    uint16_t pos = idx * c->rows * c->cols;
+    outb(0x3D4, 0xC);
+    outb(0x3D5, (uint8_t)((pos >> 8) & 0xFF));
+    outb(0x3D4, 0xD);
+    outb(0x3D5, (uint8_t)(pos & 0xFF));
+
+    curr_console_idx = idx;
+    update_cursor_pos(c);
 }

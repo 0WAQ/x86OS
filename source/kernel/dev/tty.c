@@ -8,6 +8,7 @@
 #include "dev/console.h"
 #include "dev/kbd.h"
 #include "ipc/sem.h"
+#include "cpu/irq.h"
 #include "tools/log.h"
 
 /**
@@ -24,6 +25,7 @@ dev_desc_t dev_tty_desc = {
 };
 
 static tty_t tty_devs[TTY_NR];
+static int curr_tty_idx = 0;
 
 void tty_fifo_init(tty_fifo_t* fifo, char* buf, int len) {
     fifo->buf = buf;
@@ -163,7 +165,11 @@ static tty_t* get_tty(device_t* dev) {
 }
 
 int tty_fifo_put(tty_fifo_t* fifo, char ch) {
+
+    irq_state_t state = irq_enter_protection();
+
     if(fifo->cnt >= fifo->size) {
+        irq_leave_protectoin(state);
         return -1;
     }
 
@@ -172,11 +178,18 @@ int tty_fifo_put(tty_fifo_t* fifo, char ch) {
         fifo->write = 0;
     }
     fifo->cnt++;
+
+    irq_leave_protectoin(state);
+
     return 0;
 }
 
 int tty_fifo_get(tty_fifo_t* fifo, char* ch) {
+
+    irq_state_t state = irq_enter_protection();
+
     if(fifo->cnt <= 0) {
+        irq_state_t state = irq_enter_protection();
         return -1;
     }
 
@@ -185,11 +198,14 @@ int tty_fifo_get(tty_fifo_t* fifo, char* ch) {
         fifo->read = 0;
     }
     fifo->cnt--;
+
+    irq_leave_protectoin(state);
+
     return 0;
 }
 
-void tty_in(int idx, char ch) {
-    tty_t* tty = tty_devs + idx;
+void tty_in(char ch) {
+    tty_t* tty = tty_devs + curr_tty_idx;
 
     // 输入缓冲区的有效字节数等于缓冲区大小, 那么满, 直接返回
     if(sem_count(&tty->isem) >= TTY_IBUF_SIZE) {
@@ -199,4 +215,11 @@ void tty_in(int idx, char ch) {
     // 否则将ch放入到输入缓冲区
     tty_fifo_put(&tty->ififo, ch);
     sem_notify(&tty->isem);
+}
+
+void tty_switch(int idx) {
+    if(idx != curr_tty_idx) {
+        console_switch(idx);
+        curr_tty_idx = idx;
+    }
 }

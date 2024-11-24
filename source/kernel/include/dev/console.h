@@ -129,4 +129,9 @@ static void move_left_esc(console_t* c, int n);
  */
 static void move_right_esc(console_t* c, int n);
 
+/**
+ * @brief 切换console设备
+ */
+void console_switch(int idx);
+
 #endif // CONSOLE_H

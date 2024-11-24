@@ -356,7 +356,7 @@ char* sys_sbrk(int incr) {
     }
 
 sys_sbrk_normal:
-    log_print("sbrk(%d), end=0x%x", pre_incr, alloc_end);
+    // log_print("sbrk(%d), end=0x%x", pre_incr, alloc_end);
     task->heap_end = alloc_end;
     return (char*)pre_head_end;
 

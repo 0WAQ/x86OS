@@ -226,6 +226,8 @@ void do_normal_key(uint8_t raw) {
     case KBD_KEY_F6:
     case KBD_KEY_F7:
     case KBD_KEY_F8:
+        do_fx_key(key);
+        break;
     case KBD_KEY_F9:
     case KBD_KEY_F10:
     case KBD_KEY_F11:
@@ -264,10 +266,19 @@ void do_normal_key(uint8_t raw) {
             }
 
             // 将输入交给tty设备
-            tty_in(0, key);
+            tty_in(key);
         }
 
         break;
+    }
+}
+
+void do_fx_key(char key) {
+    int idx = key - KBD_KEY_F1;
+    
+    // 若同时按下ctrl, 那么执行切换
+    if(kbd_stat.lctrl || kbd_stat.rctrl) {
+        tty_switch(idx);
     }
 }
 
