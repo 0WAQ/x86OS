@@ -80,17 +80,36 @@ int tty_read(device_t* dev, int addr , char* buf , int size) {
         char ch;
         tty_fifo_get(&tty->ififo, &ch);
         
-        // 根据配置, 决定是否将 \n 转换为 \r\n
-        if(ch == '\n' && (tty->iflags & TTY_ICRLF)) {
-            // 还要确保缓冲区大小足够
-            if(len < size - 1) {
-                *p++ = '\r';
-                len++;
-            }
-        }
 
-        *p++ = ch;
-        len++;
+        switch (ch)
+        {
+        case '\n':
+            // 根据配置, 决定是否将 \n 转换为 \r\n
+            if(tty->iflags & TTY_ICRLF) {
+                // 还要确保缓冲区大小足够
+                if(len < size - 1) {
+                    *p++ = '\r';
+                    len++;
+                }
+            }
+            *p++ = ch;
+            len++;
+            break;
+        
+        case 0x7F:
+            if(len == 0) {
+                continue;
+            }
+            p--;
+            len--;
+
+            break;
+
+        default:
+            *p++ = ch;
+            len++;
+            break;
+        }
 
         // 若开启回显
         if(tty->iflags & TTY_IECHO) {
