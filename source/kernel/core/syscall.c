@@ -21,6 +21,7 @@ syscall_handler_t sys_table[] = {
     [SYS_fork]   = (syscall_handler_t)sys_fork,
     [SYS_execve] = (syscall_handler_t)sys_execve,
     [SYS_yield]  = (syscall_handler_t)sys_yield,
+    [SYS_exit]   = (syscall_handler_t)sys_exit,
     
     [SYS_open]   = (syscall_handler_t)sys_open,
     [SYS_read]   = (syscall_handler_t)sys_read,

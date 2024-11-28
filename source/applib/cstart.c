@@ -3,12 +3,13 @@
  * 
  * 
  */
-
-int main(int, char**);
-
 #include <stdint.h>
+#include <stdlib.h>
+#include "lib_syscall.h"
 
 extern uint8_t __bss_start__[], __bss_end__[];
+
+int main(int, char**);
 
 void cstart(int argc, char** argv) {
 
@@ -18,5 +19,5 @@ void cstart(int argc, char** argv) {
         *start++ = 0;
     }
 
-    main(argc, argv);
+    exit(main(argc, argv));
 }

@@ -31,7 +31,8 @@ typedef struct _task_t {
         TASK_READY,
         TASK_RUNNING,
         TASK_SLEEP,
-        TASK_WAITTING
+        TASK_WAITTING,
+        TASK_ZOMBIE
     }state;
 
     // 记录堆区的位置
@@ -56,6 +57,8 @@ typedef struct _task_t {
     uint32_t sleep_ticks;   // 
 
     file_t* file_table[TASK_OFILE_NR];      // 任务打开的文件表
+
+    int status;             // 进程退出时的状态
 
 }task_t;
 

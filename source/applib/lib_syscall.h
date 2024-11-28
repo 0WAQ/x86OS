@@ -90,4 +90,9 @@ void* sbrk (ptrdiff_t incr);
  */
 int dup(int fd);
 
+/**
+ * @brief sys_exit的外部实现
+ */
+void _exit(int status);
+
 #endif // LIB_SYSCALL_H

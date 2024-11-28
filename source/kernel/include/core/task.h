@@ -175,6 +175,9 @@ int task_alloc_fd(file_t* file);
  */
 void task_remove_fd(int fd);
 
-
+/**
+ * @brief exit系统调用的内部实现
+ */
+void sys_exit(int status);
 
 #endif // TASK_H

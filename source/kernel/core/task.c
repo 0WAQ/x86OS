@@ -53,6 +53,7 @@ int task_init(task_t* task, const char* name, uint32_t flag, uint32_t entry, uin
     task->time_ticks = TASK_TIME_SLICE_DEFAULT;
     task->slice_ticks = task->time_ticks;
     task->sleep_ticks = 0;
+    task->status = 0;
 
     list_node_init(&task->all_node);
     list_node_init(&task->wait_node);
@@ -749,4 +750,26 @@ void task_remove_fd(int fd) {
     if((fd >= 0) && (fd < TASK_OFILE_NR)) {
         get_curr_task()->file_table[fd] = NULL;
     }
+}
+
+void sys_exit(int status) {
+
+    // 清空任务相关的资源
+    task_t* task = get_curr_task();
+    for(int fd = 0; fd < TASK_OFILE_NR; fd++) {
+        file_t* file = task->file_table[fd];
+        if(file) {
+            sys_close(fd);
+            task->file_table[fd] = NULL;
+        }
+    }
+    task->state = TASK_ZOMBIE;
+    task->status = status;      // 保存进程退出时的状态
+
+    irq_state_t state = irq_enter_protection();
+
+    set_task_block(task);
+    task_dispatch();
+
+    irq_leave_protectoin(state);
 }

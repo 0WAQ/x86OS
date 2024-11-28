@@ -83,6 +83,12 @@ static int do_echo(int argc, char** argv) {
     return 0;
 }
 
+// TODO:
+static int do_quit(int argc, char** argv) {
+    exit(0);
+    return 0;
+}
+
 static cli_cmd_t cmd_table[] = {
     {
         .name = "help",
@@ -99,6 +105,12 @@ static cli_cmd_t cmd_table[] = {
         .usage = "[-n count] msg -- echo something",
         .func = do_echo,
     },
+    // TODO:  测试
+    {
+        .name = "quit",
+        .usage = "quit from shell",
+        .func = do_quit,
+    }
 };
 
 int main(int argc, char** argv) {

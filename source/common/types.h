@@ -6,7 +6,9 @@
 #ifndef TYPES_H
 #define TYPES_H
 
+#ifndef NULL
 #define NULL        ((void*)0)
+#endif  // NULL
 
 /**
  * 使用宏处理的原因:
