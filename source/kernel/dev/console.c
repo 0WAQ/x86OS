@@ -16,7 +16,6 @@
 static console_t console_buf[CONSOLE_NR];
 static int curr_console_idx = 0;
 
-
 int console_init(int idx) {
     console_t* console = console_buf + idx;
 
@@ -48,6 +47,8 @@ int console_init(int idx) {
     old_cursor->row = console->rows;
     console->write_state = CONSOLE_WRITE_NORMAL;
     
+    mutex_init(&console->mtx);
+
     return 0;
 }
 
@@ -55,6 +56,8 @@ int console_write(tty_t* tty) {
     console_t* c = console_buf + tty->console_index;
     
     int len = 0;
+
+    mutex_lock(&c->mtx);
 
     while (1)
     {
@@ -88,6 +91,8 @@ int console_write(tty_t* tty) {
         ++len;
     }
     
+    mutex_unlock(&c->mtx);
+
     if(tty->console_index == curr_console_idx) {
         update_cursor_pos(c);
     }

@@ -23,4 +23,10 @@ file_t* file_alloc();
  */
 void file_free(file_t* file);
 
+/**
+ * @brief 增加file的引用计数
+ */
+void file_inc_ref(file_t* file);
+
+
 #endif // FILE_H

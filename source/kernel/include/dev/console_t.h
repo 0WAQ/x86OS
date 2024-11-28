@@ -7,6 +7,7 @@
 #define CONSOLE_T_H
 
 #include "common/types.h"
+#include "ipc/mutex.h"
 
 #define CONSOLE_DISP_ADDR_START     (0xB8000)
 #define CONSOLE_DISP_ADDR_END       (0xB8000 + 32 * 1024)    
@@ -81,6 +82,8 @@ typedef struct _console_t {
     // esc序列的参数缓冲区
     uint32_t esc_param_buf[ESC_PARAM_MAX];
     uint32_t esc_param_index;
+
+    mutex_t mtx;
 
 }console_t;
 

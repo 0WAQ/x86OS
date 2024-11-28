@@ -45,3 +45,10 @@ void file_free(file_t* file) {
 
     mutex_unlock(&mtx_file_alloc);
 }
+
+
+void file_inc_ref(file_t* file) {
+    mutex_lock(&mtx_file_alloc);
+    file->ref++;
+    mutex_unlock(&mtx_file_alloc);
+}

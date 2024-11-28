@@ -185,4 +185,9 @@ void sys_exit(int status);
  */
 int sys_wait(int* status);
 
+/**
+ * @brief 复制父进程的文件描述符表
+ */
+static void copy_opened_files(task_t* child);
+
 #endif // TASK_H

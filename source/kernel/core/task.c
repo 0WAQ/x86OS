@@ -9,6 +9,7 @@
 #include "cpu/cpu.h"
 #include "cpu/irq.h"
 #include "fs/fs.h"
+#include "fs/file.h"
 #include "tools/log.h"
 #include "tools/klib.h"
 #include "common/cpu_instr.h"
@@ -442,6 +443,9 @@ int sys_fork() {
         goto sys_fork_failed;
     }
 
+    // 拷贝父进程的文件描述符表
+    copy_opened_files(child);
+
     // 从父进程的栈中获取状态, 写入tss
     tss_t* tss = &child->tss;
     tss->eax = 0;   // 子进程返回0
@@ -477,6 +481,17 @@ sys_fork_failed:
         free_task(child);
     }
     return -1;
+}
+
+static void copy_opened_files(task_t* child) {
+    task_t* parent = get_curr_task();
+    for(int i = 0; i < TASK_OFILE_NR; i++) {
+        file_t* file = parent->file_table[i];
+        if(file) {
+            file_inc_ref(file);
+            child->file_table[i] = file;
+        }
+    }
 }
 
 static task_t* alloc_task() {
