@@ -95,4 +95,9 @@ int dup(int fd);
  */
 void _exit(int status);
 
+/**
+ * @brief sys_wait的外部实现
+ */
+int wait(int* status);
+
 #endif // LIB_SYSCALL_H

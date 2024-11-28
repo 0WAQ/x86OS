@@ -28,8 +28,8 @@ int first_task_main() {
     }
 
     for(;;) {
-        // print("first task pid = %d", getpid());
-        msleep(1000);
+        int status;
+        wait(&status);
     }
     return 0;
 }

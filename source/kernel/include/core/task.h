@@ -180,4 +180,9 @@ void task_remove_fd(int fd);
  */
 void sys_exit(int status);
 
+/**
+ * @brief 实现wait系统调用
+ */
+int sys_wait(int* status);
+
 #endif // TASK_H

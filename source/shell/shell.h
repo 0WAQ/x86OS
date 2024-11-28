@@ -28,4 +28,9 @@ static const cli_cmd_t* find_builtin(char* name);
  */
 static void run_builtin(const cli_cmd_t* cmd, int argc, char** argv);
 
+/**
+ * @brief 执行磁盘上的命令
+ */
+static void run_exec_file(const char* path, int argc, char** argv);
+
 #endif // SHELL_H
