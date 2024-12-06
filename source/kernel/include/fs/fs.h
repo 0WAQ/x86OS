@@ -29,7 +29,7 @@ int sys_read(int fd, char* buf, int len);
 int sys_write(int fd, char* buf, int len);
 
 /**
- * @brief
+ * @brief 定位fd的读取写入位置
  */
 int sys_lseek(int fd, int offset, int dir);
 
@@ -53,5 +53,20 @@ int sys_fstat(int fd, struct stat* st);
  * @brief 系统调用dup
  */
 int sys_dup(int fd);
+
+/**
+ * @brief 初始化空闲与挂载链表
+ */
+static void mount_list_init();
+
+/**
+ * @brief 根据fs类型, 获取对应的操作函数
+ */
+static fs_op_t* get_fs_op(fs_type_t type, int major);
+
+/**
+ * @brief 将一个type类型的fs挂载到mount_point
+ */
+static fs_t* mount(fs_type_t type, char* mount_point, int dev_major, int dev_minor);
 
 #endif // FS_H

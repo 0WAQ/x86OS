@@ -11,13 +11,26 @@
 #include "core/task.h"
 #include "tools/klib.h"
 #include "tools/log.h"
+#include "tools/list.h"
 #include "common/cpu_instr.h"
 #include <sys/stat.h>
 
+static list_t mounted_list;             // 挂载链表
+static list_t free_list;                // 空闲链表
+static fs_t fs_table[FS_TABLE_SIZE];    // fs表
+extern fs_op_t devfs_op;                // TODO: 临时的
+
 void fs_init() {
+
+    // 初始化文件系统的链表
+    mount_list_init();
 
     // 初始化文件表
     file_table_init();
+
+    // 挂载devfs
+    fs_t* fs = mount(FS_DEVFS, "/dev", 0, 0);
+    ASSERT(fs != NULL);
 }
 
 // TODO: 临时使用
@@ -189,4 +202,80 @@ int sys_dup(int fd) {
     
     p->ref++;
     return new;
+}
+
+static void mount_list_init() {
+    
+    // 初始化空闲链表
+    list_init(&free_list);
+    for(int i = 0; i < FS_TABLE_SIZE; i++) {
+        list_insert_first(&free_list, &fs_table[i].node);
+    }
+
+    // 初始化挂载链表
+    list_init(&mounted_list);
+}
+
+static fs_op_t* get_fs_op(fs_type_t type, int major) {
+    switch (type)
+    {
+    case FS_DEVFS:
+        return &(devfs_op);
+    default:
+        return NULL;
+    }
+    return NULL;
+}
+
+static fs_t* mount(fs_type_t type, char* mount_point, int dev_major, int dev_minor) {
+    fs_t* fs = NULL;
+    log_print("mount file system, name: %s, dev: %x,", mount_point, dev_major);
+
+    // 判断当前文件是否挂载过
+    list_node_t* curr = list_first(&mounted_list);      // 遍历挂载链表
+    while(curr != NULL) {
+        fs_t* p = list_entry_of(curr, fs_t, node);
+        if(kernel_strncmp(fs->mount_point, mount_point, FS_MOUNTP_SIZE) == 0) {
+            log_print("fs already mounted.");
+            goto mount_failed;
+        }
+        curr = list_node_next(curr);
+    }
+
+    // 取出空闲链表的一个节点, 将其分配给fs
+    list_node_t* free_node = list_remove_first(&free_list);
+    if(free_node == NULL) {
+        log_print("no free fs, mount failed.");
+        goto mount_failed;
+    }
+    fs = list_entry_of(free_node, fs_t, node);
+
+    kernel_memset(fs, 0, sizeof(fs_t));
+    kernel_strncpy(fs->mount_point, mount_point, FS_MOUNTP_SIZE);
+    // fs->node = free_node;
+
+    // 获取当前fs的操作函数
+    fs_op_t* op = get_fs_op(type, dev_major);
+    if(op == NULL) {
+        log_print("unsupport fs type: %d", type);
+        goto mount_failed;
+    }
+    fs->op = op;
+
+    // 执行挂载
+    if(op->mount(fs, dev_major, dev_minor) < 0) {
+        log_print("mount fs %s failed.", mount_point);
+        goto mount_failed;
+    }
+
+    // 将节点移至挂载链表中
+    list_insert_last(&mounted_list, &fs->node);
+    return fs;
+
+mount_failed:
+    if(fs) {
+        list_insert_last(&free_list, &fs->node);
+    }
+
+    return NULL;
 }
