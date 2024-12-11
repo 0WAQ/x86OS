@@ -69,4 +69,34 @@ static fs_op_t* get_fs_op(fs_type_t type, int major);
  */
 static fs_t* mount(fs_type_t type, char* mount_point, int dev_major, int dev_minor);
 
+/**
+ * @brief
+ */
+const char* path_next_child(const char* path);
+
+/**
+ * @brief
+ */
+int path_to_num(const char* path, int* num);
+
+/**
+ * @brief 判断path是否以str开头
+ */
+int path_begin_with(const char* path, const char* str);
+
+/**
+ * @brief 判断fd是否有效
+ */
+static int is_fd_bad(int fd);
+
+/**
+ * @brief 为fs上锁
+ */
+static void fs_lock(fs_t* fs);
+
+/**
+ * @brief 为fs释放锁
+ */
+static void fs_unlock(fs_t* fs);
+
 #endif // FS_H

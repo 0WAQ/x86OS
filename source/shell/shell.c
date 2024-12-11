@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <getopt.h>
+#include <sys/file.h>
 
 static cli_t cli;
 static const char* promot = "sh >> ";
@@ -114,7 +115,7 @@ static cli_cmd_t cmd_table[] = {
 };
 
 int main(int argc, char** argv) {
-    int fd = open(argv[0], 0);
+    int fd = open(argv[0], O_RDWR);
     dup(fd);
     dup(fd);
 

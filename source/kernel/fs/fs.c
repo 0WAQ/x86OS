@@ -14,6 +14,7 @@
 #include "tools/list.h"
 #include "common/cpu_instr.h"
 #include <sys/stat.h>
+#include <sys/file.h>
 
 static list_t mounted_list;             // 挂载链表
 static list_t free_list;                // 空闲链表
@@ -75,59 +76,61 @@ static int is_path_valid(const char* path) {
 
 int sys_open(const char* filename, int flags, ...) {
 
-    if(kernel_strncmp(filename, "tty", 3) == 0) {
-        if(!is_path_valid(filename)) {
-            log_print("path is not valid.");
-            return -1;
-        }
+    // TODO: 暂且用于execve以打开shell
+    if(kernel_strncmp(filename, "/shell.elf", 10) == 0) {
+        read_disk(5000, 80, (uint8_t*)TEMP_ADDR);
+        temp_pos = (uint8_t*)TEMP_ADDR;
+        return TEMP_FILE_ID;
+    }
 
-        int fd = -1;
-        file_t* file = file_alloc();
-        if(file) {
-            fd = task_alloc_fd(file);
-            if(fd < 0) {
-                goto sys_open_failed;
-            }
-        }
-        else {
-            goto sys_open_failed;
-        }
+    file_t* file = file_alloc();
+    if(file == NULL) {
+        goto sys_open_failed;
+    }
 
-        if(kernel_strlen(filename) < 5) {
-            goto sys_open_failed;
-        }
-        int idx = filename[4] - '0';
-        int dev_id = dev_open(DEV_TTY, idx, 0);
-        if(dev_id < 0) {
-            goto sys_open_failed;
-        }
+    int fd = task_alloc_fd(file);
+    if(fd < 0) {
+        goto sys_open_failed;
+    }
 
-        file->dev_id = dev_id;
-        file->mode = 0;
-        file->pos = 0;
-        file->ref = 1;
-        file->type = FILE_TTY;
+    fs_t* fs = NULL;
+    list_node_t* node = list_first(&mounted_list);
+    while(node) {
+        fs_t* curr = list_entry_of(node, fs_t, node);
+        if(path_begin_with(filename, curr->mount_point)) {
+            fs = curr;
+            break;
+        }
+        node = list_node_next(node);
+    }
 
-        kernel_strncpy(file->filename, filename, FILENAME_SIZE);
-        return fd;
+    if(fs) {
+        filename = path_next_child(filename);    
+    }
+    else {
+        // TODO: 缺省值
+    }
+
+    file->mode = flags;
+    file->fs = fs;
+    kernel_strncpy(file->filename, filename, FILENAME_SIZE);
+
+    fs_lock(fs);
+    int err = fs->op->open(fs, filename, file);
+    if(err < 0) {
+        fs_unlock(fs);
+        log_print("open %s failed.", filename);
+        goto sys_open_failed;
+    }
+    fs_unlock(fs);
+    return fd;
 
 sys_open_failed:
-        if(file) {
-            file_free(file);
-        }
-
-        if(fd >= 0) {
-            task_remove_fd(fd);
-        }
+    if(file) {
+        file_free(file);
     }
-    else
-    {
-        // TODO:
-        if(filename[0] == '/') {
-            read_disk(5000, 80, (uint8_t*)TEMP_ADDR);
-            temp_pos = (uint8_t*)TEMP_ADDR;
-            return TEMP_FILE_ID;
-        }
+    if(fd >= 0) {
+        task_remove_fd(fd);
     }
     return -1;
 }
@@ -138,26 +141,55 @@ int sys_read(int fd, char* buf, int len) {
         kernel_memcpy(buf, temp_pos, len);
         temp_pos += len;
         return len;
-    } else {
-        file_t* p = get_task_file(fd);
-        if(!p) {
-            log_print("file not opened.");
-            return -1;
-        }
-        return dev_read(p->dev_id, 0, buf, len);
     }
 
-    return -1;
-}
+    if(is_fd_bad(fd) || buf == NULL || len == 0) {
+        return 0;
+    }
 
-int sys_write(int fd, char* buf, int len) {
-    fd = 0;
     file_t* p = get_task_file(fd);
-    if(!p) {
+    if(p == NULL) {
         log_print("file not opened.");
         return -1;
     }
-    return dev_write(p->dev_id, 0, buf, len);
+
+    // 若文件是只写的
+    if(p->mode == O_WRONLY) {
+        log_print("file is write only");
+        return -1;
+    }
+
+    fs_t* fs = p->fs;
+    
+    fs_lock(fs);
+    int ret = fs->op->read(buf, len, p);
+    fs_unlock(fs);
+    return ret;
+}
+
+int sys_write(int fd, char* buf, int len) {
+    if(is_fd_bad(fd) || buf == NULL || len == 0) {
+        return 0;
+    }
+
+    file_t* p = get_task_file(fd);
+    if(p == NULL) {
+        log_print("file not opened.");
+        return -1;
+    }
+
+    // 若文件是只写的
+    if(p->mode == O_RDONLY) {
+        log_print("file is write only");
+        return -1;
+    }
+
+    fs_t* fs = p->fs;
+    
+    fs_lock(fs);
+    int ret = fs->op->write(buf, len, p);
+    fs_unlock(fs);
+    return ret;
 }
 
 int sys_lseek(int fd, int offset, int dir) {
@@ -166,23 +198,93 @@ int sys_lseek(int fd, int offset, int dir) {
         return 0;
     }
 
-    return -1;
+    if(is_fd_bad(fd)) {
+        log_print("file error");
+        return -1;
+    }
+
+    file_t* p = get_task_file(fd);
+    if(p == NULL) {
+        log_print("file not opened.");
+        return -1;
+    }
+
+    fs_t* fs = p->fs;
+    fs_lock(fs);
+    int ret = fs->op->seek(p, offset, dir);
+    fs_unlock(fs);
+    return ret;
 }
 
 int sys_close(int fd) {
+    if(fd == TEMP_FILE_ID) {
+        return 0;
+    }
+
+    if(is_fd_bad(fd)) {
+        log_print("file error");
+        return -1;
+    }
+
+    file_t* p = get_task_file(fd);
+    if(p == NULL) {
+        log_print("file not opened.");
+        return -1;        
+    }
+
+    // 要打开文件, 那么断言文件是打开的
+    ASSERT(p->ref > 0);
+
+    // 减少ref
+    if(--p->ref == 0) {
+        fs_t* fs = p->fs;
+        fs_lock(fs);
+        fs->op->close(p);
+        fs_unlock(fs);
+
+        file_free(p);
+    }
+    task_remove_fd(fd);
     return 0;
 }
 
 int sys_isatty(int fd) {
-    return -1;
+    if(is_fd_bad(fd)) {
+        log_print("file error");
+        return -1;
+    }
+
+    file_t* p = get_task_file(fd);
+    if(p == NULL) {
+        log_print("file not opened.");
+        return -1;        
+    }
+    return p->type == FILE_TTY;
 }
 
 int sys_fstat(int fd, struct stat* st) {
-    return -1;
+    if(is_fd_bad(fd)) {
+        log_print("file error");
+        return -1;
+    }
+
+    file_t* p = get_task_file(fd);
+    if(p == NULL) {
+        log_print("file not opened.");
+        return -1;        
+    }
+
+    fs_t* fs = p->fs;
+    kernel_memset(st, 0, sizeof(struct stat));
+
+    fs_lock(fs);
+    int ret = fs->op->stat(p, st);
+    fs_unlock(fs);
+    return ret;
 }
 
 int sys_dup(int fd) {
-    if((fd < 0) || (fd >= TASK_OFILE_NR)) {
+    if(is_fd_bad(fd)) {
         log_print("file %d is invalid.", fd);
         return -1;
     }
@@ -200,7 +302,7 @@ int sys_dup(int fd) {
         return -1;
     }
     
-    p->ref++;
+    file_inc_ref(p);
     return new;
 }
 
@@ -278,4 +380,49 @@ mount_failed:
     }
 
     return NULL;
+}
+
+
+const char* path_next_child(const char* path) {
+    const char* p = path;
+    while(*p && (*p++ == '/'));
+    while(*p && (*p++ != '/'));
+    return *p ? p : NULL;
+}
+
+int path_to_num(const char* path, int* num) {
+    int x = 0;
+
+    const char* p = path;
+    while(*p) {
+        x = x * 10 + (*p - '0');
+        p++;
+    }
+    *num = x;
+    return 0;
+}
+
+int path_begin_with(const char* path, const char* str) {
+    const char* i = path, *j = str;
+    while(*i && *j && (*i == *j)) {
+        *i++;
+        *j++;
+    }
+    return *j == '\0';
+}
+
+static int is_fd_bad(int fd) {
+    return (fd < 0) || (fd >= TASK_OFILE_NR);
+}
+
+static void fs_lock(fs_t* fs) {
+    if(fs->mtx) {
+        mutex_lock(fs->mtx);
+    }
+}
+
+static void fs_unlock(fs_t* fs) {
+    if(fs->mtx) {
+        mutex_unlock(fs->mtx);
+    }
 }

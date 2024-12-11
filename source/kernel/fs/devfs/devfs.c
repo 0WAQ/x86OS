@@ -4,7 +4,21 @@
  * 
  */
 #include "fs/devfs/devfs.h"
+#include "fs/fs.h"
 #include "dev/dev.h"
+#include "tools/klib.h"
+#include "tools/log.h"
+
+/**
+ * @brief
+ */
+static devfs_type_t dev_type_table[] = {
+    {
+        .name = "tty",
+        .dev_type = DEV_TTY,
+        .file_type = FILE_TTY,
+    },
+};
 
 /**
  * @brief 设置devfs的回调函数
@@ -29,6 +43,37 @@ void devfs_umount(fs_t* fs) {
 }
 
 int devfs_open(fs_t* fs, const char* filepath, file_t* file) {
+
+    // 从devfs_type_table中查找相同的文件路径
+    for(int i = 0; i < sizeof(dev_type_table)/sizeof(devfs_type_t); i++) {
+        devfs_type_t* type = dev_type_table + i;
+        int type_name_len = kernel_strlen(type->name);
+        
+        // 若相同
+        if(kernel_strncmp(filepath, type->name, type_name_len) == 0) {
+            int minor;
+            if((kernel_strlen(filepath) > type_name_len) && 
+               (path_to_num(filepath + type_name_len, &minor) < 0)) {
+                
+                log_print("Get device num failed. %s", filepath);
+                break;
+            }
+
+            int dev_id = dev_open(type->dev_type, minor, NULL);
+            if(dev_id < 0) {
+                log_print("Open device failed: %s.", filepath);
+                break;
+            }
+
+            file->dev_id = dev_id;
+            file->fs = fs;
+            file->pos = 0;
+            file->size = 0;
+            file->type = type->file_type;
+            return 0;
+        }
+    }
+
     return 0;
 }
 

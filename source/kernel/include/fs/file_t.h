@@ -19,6 +19,8 @@ typedef enum _file_type_t {
     FILE_TTY,
 }file_type_t;
 
+struct _fs_t;
+
 /**
  * @brief 文件结构
  */
@@ -30,6 +32,9 @@ typedef struct _file_t {
     int dev_id;                     // 该文件对应的设备id
     int pos;                        // 当前读取的位置
     int mode;                       // 文件相关属性
+
+    struct _fs_t* fs;               // 
+
 }file_t;
 
 #endif // FILE_T_H

@@ -9,7 +9,7 @@
 
 int first_task_main() {
 
-    char tty[5] = "tty:?";
+    char tty[] = "/dev/tty?";
     for(int i = 0; i < TTY_NR; i++) {
         int pid = fork();
         if(pid < 0) {
@@ -17,7 +17,7 @@ int first_task_main() {
             break;
         }
         else if(pid == 0) {
-            tty[4] = i + '0';
+            tty[sizeof(tty) - 2] = i + '0';
             char* argv[] = {tty, NULL};
             execve("/shell.elf", argv, NULL);
             while(1) {
