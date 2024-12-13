@@ -59,7 +59,7 @@ static inline void outb(uint16_t port, uint8_t data) {
 static inline uint16_t inw(uint16_t port) {
     uint16_t data;
     __asm__ __volatile__(
-        "inw %[p], %[v]"
+        "in %[p], %[v]"
         : [v]"=a" (data)    // 输出端口
         : [p]"d" (port)     // 输入端口
     );
@@ -71,7 +71,7 @@ static inline uint16_t inw(uint16_t port) {
  */
 static inline void outw(uint16_t port, uint16_t data) {
     __asm__ __volatile__(
-        "outw %[v], %[p]"
+        "out %[v], %[p]"
         :
         : [p]"d" (port), [v]"a" (data)
     );

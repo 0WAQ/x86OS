@@ -8,6 +8,7 @@
 #include "fs/file.h"
 #include "dev/dev.h"
 #include "dev/console.h"
+#include "dev/disk.h"
 #include "core/task.h"
 #include "tools/klib.h"
 #include "tools/log.h"
@@ -28,6 +29,9 @@ void fs_init() {
 
     // 初始化文件表
     file_table_init();
+
+    // 初始化磁盘
+    disk_init();
 
     // 挂载devfs
     fs_t* fs = mount(FS_DEVFS, "/dev", 0, 0);
