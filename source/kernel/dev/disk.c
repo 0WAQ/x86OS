@@ -74,6 +74,16 @@ static int identify_disk(disk_t* disk) {
     ata_read_data(disk, buf, sizeof(buf));
     disk->sector_count = *(uint32_t *)(buf + 100);
     disk->sector_size = SECTOR_SIZE;            // 固定为512字节大小
+
+    partinfo_t* part = disk->partinfo + 0;
+    part->disk = disk;
+    kernel_sprintf(part->name, "%s%d", disk->name, 0);  // sdx0
+    part->start_sector = 0;
+    part->total_sector = disk->sector_count;
+    part->type = FS_INVALID;
+
+    detect_part_info(disk);
+
     return 0;
 }
 
@@ -81,4 +91,41 @@ static void print_disk_info(disk_t* disk) {
     log_print("%s:", disk->name);
     log_print("  port_base: %x", disk->port_base);
     log_print("  total_size: %d m", disk->sector_count * disk->sector_size / 1024 /1024);
+    for(int i = 0; i < DISK_PRIMARY_PART_CNT; i++) {
+        partinfo_t* part_info = disk->partinfo + i;
+        if(part_info->type != FS_INVALID) {
+            log_print("     %s  type: %x, start_sector: %d, count: %d", 
+                                part_info->name, part_info->type, 
+                                part_info->start_sector, part_info->total_sector);
+        }
+    }
+}
+
+static int detect_part_info(disk_t* disk) {
+    mbr_t mbr;
+
+    ata_send_cmd(disk, 0, 1, DISK_CMD_READ);
+    int err = ata_wait_data(disk);
+    if(err < 0) {
+        log_print("read mbr failed.");
+        return err;
+    }
+
+    ata_read_data(disk, &mbr, sizeof(mbr_t));
+    part_item_t* item = mbr.part_time;
+    partinfo_t* part_info = disk->partinfo + 1;
+    for(int i = 0; i < MBR_PRIMARY_PART_NR; i++, item++, part_info++) {
+        part_info->type = item->system_id;
+        if(part_info->type == FS_INVALID) {
+            part_info->total_sector = 0;
+            part_info->start_sector = 0;
+            part_info->disk = NULL;
+        }
+        else {
+            kernel_sprintf(part_info->name, "%s%d", disk->name, i + 1);  // sdx0
+            part_info->start_sector = 0;
+            part_info->total_sector = disk->sector_count;
+            part_info->disk = disk;
+        }
+    }
 }

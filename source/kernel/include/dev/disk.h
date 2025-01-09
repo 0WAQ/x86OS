@@ -30,6 +30,11 @@ static void print_disk_info(disk_t* disk);
 static void ata_send_cmd(disk_t* disk, uint32_t start_sector, uint32_t sector_count, int cmd);
 
 /**
+ * @brief 检测分区表
+ */
+static int detect_part_info(disk_t* disk);
+
+/**
  * @brief 读取ATA数据端口
  */
 static inline void ata_read_data (disk_t* disk, void* buf, int size) {
