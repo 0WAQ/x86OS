@@ -82,6 +82,7 @@ void exception_handler_alignment_check (void);
 void exception_handler_machine_check (void);
 void exception_handler_smd_exception (void);
 void exception_handler_virtual_exception (void);
+void exception_handler_ide_primary (void);
 
 /**
  * @brief 异常处理程序，C实现
@@ -106,6 +107,7 @@ void do_handler_alignment_check(exception_frame_t * frame);
 void do_handler_machine_check(exception_frame_t * frame);
 void do_handler_smd_exception(exception_frame_t * frame);
 void do_handler_virtual_exception(exception_frame_t * frame);
+void do_handler_ide_primary(exception_frame_t* frame);
 
 
 /**

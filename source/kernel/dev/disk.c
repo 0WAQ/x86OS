@@ -5,6 +5,8 @@
  * 其中0对应的分区信息为整个磁盘的信息
  * 
  */
+#include "cpu/irq.h"
+#include "dev/dev.h"
 #include "dev/disk.h"
 #include "tools/log.h"
 #include "tools/klib.h"
@@ -15,10 +17,34 @@
  */
 static disk_t disk_table[DISK_CNT];
 
+// 互斥锁与信号量
+static mutex_t mtx;
+static sem_t sem;
+
+static int task_no_op;
+
+/**
+ * @brief disk的描述结构
+ */
+dev_desc_t dev_disk_desc = {
+    .name = "disk",
+    .major = DEV_DISK,
+    .open = disk_open,
+    .read = disk_read,
+    .write = disk_write,
+    .control = disk_control,
+    .close = disk_close,
+};
+
 void disk_init() {
     log_print("Check disk...");
     
     kernel_memset(disk_table, 0, sizeof(disk_table));
+    
+    mutex_init(&mtx);
+    sem_init(&sem, 0);
+    
+    // 检测各个硬盘, 读取相关信息
     for(int i = 0; i < DISK_PER_CHANNEL; i++) {
         disk_t* disk = disk_table + i;
 
@@ -27,28 +53,14 @@ void disk_init() {
         disk->drive = (i == 0 ? DISK_MASTER : DISK_SLAVE);
         disk->port_base = DISK_IOBASE_PRIMARY;
 
+        disk->mtx = &mtx;
+        disk->sem = &sem;
+
         int ret = identify_disk(disk);
         if(ret == 0) {
             print_disk_info(disk);
         }
     }
-}
-
-static void ata_send_cmd(disk_t* disk, uint32_t start_sector, uint32_t sector_count, int cmd) {
-    outb(DISK_DRIVE(disk), DISK_DRIVE_BASE | disk->drive);		    // 使用LBA寻址，并设置驱动器
-
-	// 必须先写高字节
-	outb(DISK_SECTOR_COUNT(disk), (uint8_t) (sector_count >> 8));	// 扇区数高8位
-	outb(DISK_LBA_LOW(disk), (uint8_t) (start_sector >> 24));		// LBA参数的24~31位
-	outb(DISK_LBA_MID(disk), 0);									// 高于32位不支持
-	outb(DISK_LBA_HIGH(disk), 0);								    // 高于32位不支持
-	outb(DISK_SECTOR_COUNT(disk), (uint8_t) (sector_count));		// 扇区数量低8位
-	outb(DISK_LBA_LOW(disk), (uint8_t) (start_sector >> 0));		// LBA参数的0-7
-	outb(DISK_LBA_MID(disk), (uint8_t) (start_sector >> 8));		// LBA参数的8-15位
-	outb(DISK_LBA_HIGH(disk), (uint8_t) (start_sector >> 16));		// LBA参数的16-23位
-
-	// 选择对应的主-从磁盘
-	outb(DISK_CMD(disk), (uint8_t)cmd);
 }
 
 static int identify_disk(disk_t* disk) {
@@ -127,5 +139,135 @@ static int detect_part_info(disk_t* disk) {
             part_info->total_sector = disk->sector_count;
             part_info->disk = disk;
         }
+    }
+}
+
+int disk_open(device_t* dev) {
+    // 0xa0 -- 磁盘编号: a, b, c 
+    //      -- 分区号: 0, 1, 2
+    int disk_idx = (dev->minor >> 4) - 0xa;
+    int part_idx = (dev->minor & 0xf);
+
+    if(disk_idx >= DISK_CNT || part_idx >= DISK_PRIMARY_PART_CNT) {
+        log_print("device minor error: %d", dev->minor);
+        return -1;
+    }
+
+    disk_t* disk = disk_table + disk_idx;
+    if(disk->sector_count == 0) {
+        log_print("disk doesn't exist, device: sd%x", dev->minor);
+        return -1;
+    }
+
+    partinfo_t* part_info = disk->partinfo + part_idx;
+    if(part_info->total_sector == 0) {
+        log_print("part dosen't exist, device: sd%x", dev->minor);
+        return -1;
+    }
+
+    dev->data = part_info;
+
+    // 安装并打开中断
+    irq_install(IRQ14_HARDDISK_PRIMARY, (irq_handler_t)exception_handler_ide_primary);
+    irq_enable(IRQ14_HARDDISK_PRIMARY);
+    return 0;
+}
+
+int disk_read(device_t* dev, int start_sector, char* buf, int count) {
+
+    // 获取分区信息
+    partinfo_t* part_info = (partinfo_t*)dev->data;
+    if(part_info == NULL) {
+        log_print("Get part info failed, device: sd%x", dev->minor);
+        return -1;
+    }
+
+    disk_t* disk = part_info->disk;
+    if(disk == NULL) {
+        log_print("No disk, device: sd%x", dev->minor);
+        return -1;
+    }
+
+    // 互斥锁, 两个主从硬盘都是通过同一端口号进行操作的
+    mutex_lock(disk->mtx);
+    task_no_op = 1;
+
+    // 发送命令
+    ata_send_cmd(disk, part_info->start_sector + start_sector, count, DISK_CMD_READ);
+
+    int cnt;
+    for(cnt = 0; cnt < count; cnt++, buf += disk->sector_size) {
+        // 等待硬盘的中断通知
+        sem_wait(disk->sem);
+
+        // 实际上在ata_wait_data中并不会等待
+        int err = ata_wait_data(disk);
+        if(err < 0) {
+            log_print("disk(%s), read error: start_sector: %d, count: %d", 
+                        disk->name, start_sector, count);
+            break;
+        }
+
+        // 读取数据
+        ata_read_data(disk, buf, disk->sector_count);
+    }
+
+    mutex_unlock(disk->mtx);
+
+    return count;
+}
+
+int disk_write(device_t* dev, int start_sector, char* buf, int count) {
+
+    partinfo_t* part_info = (partinfo_t*)dev->data;
+    if(part_info == NULL) {
+        log_print("Get part info failed, device: sd%x", dev->minor);
+        return -1;
+    }
+
+    disk_t* disk = part_info->disk;
+    if(disk == NULL) {
+        log_print("No disk, device: sd%x", dev->minor);
+        return -1;
+    }
+
+    // 互斥锁, 两个主从硬盘都是通过同一端口号进行操作的
+    mutex_lock(disk->mtx);
+    task_no_op = 1;
+
+    // 发送命令
+    ata_send_cmd(disk, part_info->start_sector + start_sector, count, DISK_CMD_WRITE);
+
+    int cnt;
+    for(cnt = 0; cnt < count; cnt++, buf += disk->sector_size) {
+        ata_write_data(disk, buf, disk->sector_count);
+        
+        sem_wait(disk->sem);
+
+        int err = ata_wait_data(disk);
+        if(err < 0) {
+            log_print("disk(%s), write error: start_sector: %d, count: %d", 
+                        disk->name, start_sector, count);
+            break;
+        }
+    }
+
+    mutex_unlock(disk->mtx);
+
+    return count;
+}
+
+int disk_control(device_t* dev, int cmd, int arg0, int arg1) {
+    return -1;
+}
+
+void disk_close(device_t* dev) {
+
+}
+
+void do_handler_ide_primary(exception_frame_t* frame) {
+    pic_send_eoi(IRQ14_HARDDISK_PRIMARY);
+    if(task_no_op)  {
+        sem_notify(&sem);
     }
 }

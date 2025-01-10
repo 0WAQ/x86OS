@@ -38,38 +38,6 @@ void fs_init() {
     ASSERT(fs != NULL);
 }
 
-// TODO: 临时使用
-void read_disk(uint32_t sector, uint32_t sector_cnt, uint8_t* buffer) {
-    
-    // 读取LBA参数
-    outb(0x1F6, (uint8_t) (0xE0));
-
-	outb(0x1F2, (uint8_t) (sector_cnt >> 8));
-    outb(0x1F3, (uint8_t) (sector >> 24));		// LBA参数的24~31位
-    outb(0x1F4, (uint8_t) (0));					// LBA参数的32~39位
-    outb(0x1F5, (uint8_t) (0));					// LBA参数的40~47位
-
-    outb(0x1F2, (uint8_t) (sector_cnt));
-	outb(0x1F3, (uint8_t) (sector));			// LBA参数的0~7位
-	outb(0x1F4, (uint8_t) (sector >> 8));		// LBA参数的8~15位
-	outb(0x1F5, (uint8_t) (sector >> 16));		// LBA参数的16~23位
-
-	outb(0x1F7, (uint8_t) 0x24);
-
-    // 读取数据
-    uint16_t* buf = (uint16_t*)buffer;
-    while(sector_cnt-- > 0) {
-
-        // 读前检查，等待数据就位
-        while((inb(0x1F7) & 0x88) != 0x08);
-
-        // 读取数据并将其写入到缓存中
-        for(int i = 0; i < 512 / 2; i++) {
-            *buf++ = inw(0x1F0);
-        }
-    }
-}
-
 // TODO: TEMP
 static int is_path_valid(const char* path) {
     if((path == NULL) || (path[0] == '\0')) {
@@ -82,7 +50,8 @@ int sys_open(const char* filename, int flags, ...) {
 
     // TODO: 暂且用于execve以打开shell
     if(kernel_strncmp(filename, "/shell.elf", 10) == 0) {
-        read_disk(5000, 80, (uint8_t*)TEMP_ADDR);
+        int dev_id = dev_open(DEV_DISK, 0xa0, NULL);
+        dev_read(dev_id, 5000, (uint8_t*)TEMP_ADDR, 80);
         temp_pos = (uint8_t*)TEMP_ADDR;
         return TEMP_FILE_ID;
     }

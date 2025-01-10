@@ -70,3 +70,6 @@ exception_handler timer, 0x20, 0
 
 # 键盘的终中断处理函数
 exception_handler kbd, 0x21, 0
+
+# 硬盘
+exception_handler ide_primary, 0x2E, 0

@@ -9,12 +9,14 @@
 
 // 带注册的设备
 extern dev_desc_t dev_tty_desc;
+extern dev_desc_t dev_disk_desc;
 
 /**
  * @brief 设备描述表
  */
 static dev_desc_t* dev_desc_tbl[] = {
-    &dev_tty_desc, 
+    &dev_tty_desc,
+    &dev_disk_desc,
 };
 
 /**
