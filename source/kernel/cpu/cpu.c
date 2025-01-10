@@ -31,13 +31,13 @@ void gdt_init() {
     }
 
     // 平坦模型的数据段
-    segment_desc_set(KERNEL_SELECTOR_DS, 0, 0xFFFFFFFF, 
+    segment_desc_set(KERNEL_SELECTOR_DS, 0x00000000, 0xFFFFFFFF, 
         DESC_ATTR_P | DESC_ATTR_DPL0 | DESC_ATTR_S_USR | DESC_ATTR_D |
         DESC_ATTR_TYPE_DATA | DESC_ATTR_TYPE_RW
     );
 
     // 平坦模型的代码段
-    segment_desc_set(KERNEL_SELECTOR_CS, 0, 0xFFFFFFFF, 
+    segment_desc_set(KERNEL_SELECTOR_CS, 0x00000000, 0xFFFFFFFF, 
         DESC_ATTR_P | DESC_ATTR_DPL0 | DESC_ATTR_S_USR | DESC_ATTR_D |
         DESC_ATTR_TYPE_CODE | DESC_ATTR_TYPE_ER
     );

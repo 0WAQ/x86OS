@@ -18,9 +18,6 @@
 // 任务管理器
 static task_manager_t task_manager;
 
-// 空闲任务的栈
-static uint32_t idle_task_stack[IDLE_STACK_SIZE];
-
 // 任务控制块
 static task_t task_table[TASK_NR];
 static mutex_t task_table_mutex;
@@ -205,8 +202,11 @@ void task_manager_init() {
 
     // 初始化空闲任务
     uint32_t flag = TASK_FLAGS_SYSTEM;
-    task_init(&task_manager.idle_task, "idle task", flag,
-        (uint32_t)idle_task_entry, (uint32_t)(idle_task_stack + IDLE_STACK_SIZE));
+    task_init(&task_manager.idle_task,
+              "idle task",
+              flag,
+              (uint32_t)idle_task_entry,
+              0);
 
     task_manager.curr_task = NULL;
 
@@ -220,7 +220,6 @@ void first_task_init() {
 
     // 在链接脚本kernel.lds中定义
     extern uint8_t s_first_task[], e_first_task[];
-    extern uint8_t* sssssss;
 
     // 将一号进程移指用户态
     // first_task需要使用的内存, 只包含 .text .data .bss .rodata
@@ -241,9 +240,6 @@ void first_task_init() {
 
     task_manager.curr_task = &task_manager.first_task;
 
-    // 加载tss到tr寄存器中
-    ltr(task_manager.first_task.tss_sel);
-
     // 加载cr3
     mmu_set_page_dir(task_manager.first_task.tss.cr3);
     
@@ -251,10 +247,13 @@ void first_task_init() {
     memory_alloc_page_for((uint32_t)first_task_entry, alloc_size, PTE_P | PTE_W | PTE_U);
 
     // 将first_task从内核移指用户
-    kernel_memcpy(first_task_entry, s_first_task, copy_size);
+    kernel_memcpy((void*)first_task_entry, (void*)&s_first_task, copy_size);
 
     // 启动一号进程
     task_start(&task_manager.first_task);
+
+    // 加载tss到tr寄存器中
+    ltr(task_manager.first_task.tss_sel);
 }
 
 task_t* get_first_task() {
