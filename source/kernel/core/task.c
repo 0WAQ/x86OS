@@ -240,6 +240,9 @@ void first_task_init() {
 
     task_manager.curr_task = &task_manager.first_task;
 
+    // 加载tss到tr寄存器中
+    ltr(task_manager.first_task.tss_sel);
+
     // 加载cr3
     mmu_set_page_dir(task_manager.first_task.tss.cr3);
     
@@ -251,9 +254,6 @@ void first_task_init() {
 
     // 启动一号进程
     task_start(&task_manager.first_task);
-
-    // 加载tss到tr寄存器中
-    ltr(task_manager.first_task.tss_sel);
 }
 
 task_t* get_first_task() {

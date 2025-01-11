@@ -15,7 +15,7 @@ static mutex_t mtx_file_alloc;
 
 void file_table_init() {
     mutex_init(&mtx_file_alloc);
-    kernel_memset((void*)&file_table, 0, sizeof(file_table));
+    kernel_memset(&file_table, 0, sizeof(file_table));
 }
 
 file_t* file_alloc() {
