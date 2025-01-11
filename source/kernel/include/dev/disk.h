@@ -99,14 +99,14 @@ static inline void ata_write_data (disk_t* disk, void* buf, int size) {
  */
 static inline int ata_wait_data (disk_t* disk) {
     uint8_t status;
-	while(1) {
+	do {
         // 等待数据或者有错误
         status = inb(DISK_STATUS(disk));
         if ((status & (DISK_STATUS_BUSY | DISK_STATUS_DRQ | DISK_STATUS_ERR))
                         != DISK_STATUS_BUSY) {
             break;
         }
-    }
+    }while(1);
 
     // 检查是否有错误
     return (status & DISK_STATUS_ERR) ? -1 : 0;

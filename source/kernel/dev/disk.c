@@ -87,6 +87,7 @@ static int identify_disk(disk_t* disk) {
     disk->sector_count = *(uint32_t *)(buf + 100);
     disk->sector_size = SECTOR_SIZE;            // 固定为512字节大小
 
+    // 分区0保存了整个磁盘的信息
     partinfo_t* part = disk->partinfo + 0;
     part->disk = disk;
     kernel_sprintf(part->name, "%s%d", disk->name, 0);  // sdx0
@@ -94,8 +95,8 @@ static int identify_disk(disk_t* disk) {
     part->total_sector = disk->sector_count;
     part->type = FS_INVALID;
 
+    // 接下来识别硬盘上的分区信息
     detect_part_info(disk);
-
     return 0;
 }
 
@@ -116,24 +117,29 @@ static void print_disk_info(disk_t* disk) {
 static int detect_part_info(disk_t* disk) {
     mbr_t mbr;
 
+    // 读取mbr区
     ata_send_cmd(disk, 0, 1, DISK_CMD_READ);
     int err = ata_wait_data(disk);
     if(err < 0) {
         log_print("read mbr failed.");
         return err;
     }
-
     ata_read_data(disk, &mbr, sizeof(mbr_t));
+
+    // 遍历4个主分区描述，不考虑支持扩展分区
     part_item_t* item = mbr.part_time;
     partinfo_t* part_info = disk->partinfo + 1;
     for(int i = 0; i < MBR_PRIMARY_PART_NR; i++, item++, part_info++) {
         part_info->type = item->system_id;
+
+        // 没有分区，清空part_info
         if(part_info->type == FS_INVALID) {
             part_info->total_sector = 0;
             part_info->start_sector = 0;
             part_info->disk = NULL;
         }
         else {
+            // 在主分区中找到，复制信息
             kernel_sprintf(part_info->name, "%s%d", disk->name, i + 1);  // sdx0
             part_info->start_sector = 0;
             part_info->total_sector = disk->sector_count;
@@ -174,7 +180,6 @@ int disk_open(device_t* dev) {
 }
 
 int disk_read(device_t* dev, int start_sector, char* buf, int count) {
-
     // 获取分区信息
     partinfo_t* part_info = (partinfo_t*)dev->data;
     if(part_info == NULL) {
@@ -211,14 +216,12 @@ int disk_read(device_t* dev, int start_sector, char* buf, int count) {
         // 读取数据
         ata_read_data(disk, buf, disk->sector_size);
     }
-
     mutex_unlock(disk->mtx);
-
     return cnt;
 }
 
 int disk_write(device_t* dev, int start_sector, char* buf, int count) {
-
+    // 获取分区信息
     partinfo_t* part_info = (partinfo_t*)dev->data;
     if(part_info == NULL) {
         log_print("Get part info failed, device: sd%x", dev->minor);
@@ -240,8 +243,11 @@ int disk_write(device_t* dev, int start_sector, char* buf, int count) {
 
     int cnt;
     for(cnt = 0; cnt < count; cnt++, buf += disk->sector_size) {
+
+        // 先写数据
         ata_write_data(disk, buf, disk->sector_size);
         
+        // 等待, 直到写完成
         sem_wait(disk->sem);
 
         int err = ata_wait_data(disk);
@@ -251,9 +257,7 @@ int disk_write(device_t* dev, int start_sector, char* buf, int count) {
             break;
         }
     }
-
     mutex_unlock(disk->mtx);
-
     return cnt;
 }
 

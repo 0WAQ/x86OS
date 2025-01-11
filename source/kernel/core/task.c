@@ -205,8 +205,11 @@ void task_manager_init() {
 
     // 初始化空闲任务
     uint32_t flag = TASK_FLAGS_SYSTEM;
-    task_init(&task_manager.idle_task, "idle task", flag,
-        (uint32_t)idle_task_entry, (uint32_t)(idle_task_stack + IDLE_STACK_SIZE));
+    task_init(&task_manager.idle_task,
+              "idle task",
+              flag,
+              (uint32_t)idle_task_entry,
+              (uint32_t)(idle_task_stack + IDLE_STACK_SIZE));
 
     task_manager.curr_task = NULL;
 
@@ -220,7 +223,6 @@ void first_task_init() {
 
     // 在链接脚本kernel.lds中定义
     extern uint8_t s_first_task[], e_first_task[];
-    extern uint8_t* sssssss;
 
     // 将一号进程移指用户态
     // first_task需要使用的内存, 只包含 .text .data .bss .rodata
@@ -251,7 +253,7 @@ void first_task_init() {
     memory_alloc_page_for((uint32_t)first_task_entry, alloc_size, PTE_P | PTE_W | PTE_U);
 
     // 将first_task从内核移指用户
-    kernel_memcpy(first_task_entry, s_first_task, copy_size);
+    kernel_memcpy((void*)first_task_entry, (void*)&s_first_task, copy_size);
 
     // 启动一号进程
     task_start(&task_manager.first_task);
@@ -824,9 +826,11 @@ void sys_exit(int status) {
 
 int sys_wait(int* status) {
     task_t* task = get_curr_task();
+
+    // 循环
     while(1) {
 
-        // 一直寻找处于zombie态的子进程
+        // 一直寻找处于zombie态的子进程, 若找不到则sleep
         mutex_lock(&task_table_mutex);
         for(int i = 0; i < TASK_NR; i++) {
             task_t* p = task_table + i;
@@ -844,7 +848,7 @@ int sys_wait(int* status) {
                 kernel_memset(p, 0, sizeof(task_t));
             
                 mutex_unlock(&task_table_mutex);
-                return p->pid;
+                return pid;
             }
         }
         mutex_unlock(&task_table_mutex);
@@ -853,10 +857,11 @@ int sys_wait(int* status) {
         irq_state_t state = irq_enter_protection();
         set_task_block(task);
         task->state = TASK_WAITTING;
-        irq_leave_protectoin(state);
 
         // 切换到其它进程
         task_dispatch();
+
+        irq_leave_protectoin(state);
     }
 
     return 0;

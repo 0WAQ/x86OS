@@ -7,13 +7,15 @@
 #include "ipc/mutex.h"
 #include "tools/klib.h"
 
+// 系统中可打开的文件表
 static file_t file_table[FILE_TABLE_NR];
 
+// 访问file_table的互斥锁
 static mutex_t mtx_file_alloc;
 
 void file_table_init() {
     mutex_init(&mtx_file_alloc);
-    kernel_memset((void*)file_table, 0, sizeof(file_table));
+    kernel_memset(&file_table, 0, sizeof(file_table));
 }
 
 file_t* file_alloc() {

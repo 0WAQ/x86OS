@@ -12,6 +12,7 @@
     // 链接脚本kernek.lds定义的变量
     extern uint8_t* mem_free_start;     // 为内核结束后的第一个字节
     extern uint8_t s_text[], e_text[], s_data[], e_data[];
+    extern uint8_t kernel_base[];
 
     // 全局物理内存分配器, 其管理1MB以上的所有物理内存
     addr_alloc_t paddr_alloc;
@@ -21,9 +22,9 @@
 
     // 地址映射表, 用于建立内核级的地址映射, 直接映射区
     static memory_map_t kernel_map[] = {
-        {0,         s_text,                      0,        PTE_W},   // 内核栈区, 64KB以下
-        {s_text,    e_text,                      s_text,   0},       // 内核代码区, 从64KB开始
-        {s_data,    (void*)(MEM_EBDA_START - 1), s_data,   PTE_W},   // 内核数据区
+        {kernel_base,  s_text,                      0,        PTE_W},   // 内核栈区, 64KB以下
+        {s_text,       e_text,                      s_text,   0},       // 内核代码区, 从64KB开始
+        {s_data,       (void*)(MEM_EBDA_START - 1), s_data,   PTE_W},   // 内核数据区
         {(void*)CONSOLE_DISP_ADDR_START, (void*)CONSOLE_DISP_ADDR_END, (void*)CONSOLE_DISP_ADDR_START, PTE_W},  // 显存
         // 将1MB以后的所有内存也直接映射
         {(void*)MEM_EXT_START, (void*)MEM_EXT_END, (void*)MEM_EXT_START, PTE_W}
