@@ -18,9 +18,6 @@
 // 任务管理器
 static task_manager_t task_manager;
 
-// 空闲任务的栈
-static uint32_t idle_task_stack[IDLE_STACK_SIZE];
-
 // 任务控制块
 static task_t task_table[TASK_NR];
 static mutex_t task_table_mutex;
@@ -145,7 +142,8 @@ int tss_init(task_t* task, uint32_t flag, uint32_t entry, uint32_t esp) {
         goto tss_init_failed;
     }
 
-    task->tss.esp = esp;
+    // 若未指定栈那么就用内核栈, 一般是特权级为0的进程, 如idle
+    task->tss.esp = esp ? esp : kernel_stack + MEM_PAGE_SIZE;
     task->tss.esp0 = kernel_stack + MEM_PAGE_SIZE;
 
     task->tss.eip = entry;
@@ -205,11 +203,7 @@ void task_manager_init() {
 
     // 初始化空闲任务
     uint32_t flag = TASK_FLAGS_SYSTEM;
-    task_init(&task_manager.idle_task,
-              "idle task",
-              flag,
-              (uint32_t)idle_task_entry,
-              (uint32_t)(idle_task_stack + IDLE_STACK_SIZE));
+    task_init(&task_manager.idle_task, "idle task", flag, (uint32_t)idle_task_entry, 0);
 
     task_manager.curr_task = NULL;
 
