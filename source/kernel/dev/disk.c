@@ -209,12 +209,12 @@ int disk_read(device_t* dev, int start_sector, char* buf, int count) {
         }
 
         // 读取数据
-        ata_read_data(disk, buf, disk->sector_count);
+        ata_read_data(disk, buf, disk->sector_size);
     }
 
     mutex_unlock(disk->mtx);
 
-    return count;
+    return cnt;
 }
 
 int disk_write(device_t* dev, int start_sector, char* buf, int count) {
@@ -240,7 +240,7 @@ int disk_write(device_t* dev, int start_sector, char* buf, int count) {
 
     int cnt;
     for(cnt = 0; cnt < count; cnt++, buf += disk->sector_size) {
-        ata_write_data(disk, buf, disk->sector_count);
+        ata_write_data(disk, buf, disk->sector_size);
         
         sem_wait(disk->sem);
 
@@ -254,7 +254,7 @@ int disk_write(device_t* dev, int start_sector, char* buf, int count) {
 
     mutex_unlock(disk->mtx);
 
-    return count;
+    return cnt;
 }
 
 int disk_control(device_t* dev, int cmd, int arg0, int arg1) {
