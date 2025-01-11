@@ -823,9 +823,11 @@ void sys_exit(int status) {
 
 int sys_wait(int* status) {
     task_t* task = get_curr_task();
+
+    // 循环
     while(1) {
 
-        // 一直寻找处于zombie态的子进程
+        // 一直寻找处于zombie态的子进程, 若找不到则sleep
         mutex_lock(&task_table_mutex);
         for(int i = 0; i < TASK_NR; i++) {
             task_t* p = task_table + i;
@@ -843,7 +845,7 @@ int sys_wait(int* status) {
                 kernel_memset(p, 0, sizeof(task_t));
             
                 mutex_unlock(&task_table_mutex);
-                return p->pid;
+                return pid;
             }
         }
         mutex_unlock(&task_table_mutex);
@@ -852,10 +854,11 @@ int sys_wait(int* status) {
         irq_state_t state = irq_enter_protection();
         set_task_block(task);
         task->state = TASK_WAITTING;
-        irq_leave_protectoin(state);
 
         // 切换到其它进程
         task_dispatch();
+
+        irq_leave_protectoin(state);
     }
 
     return 0;

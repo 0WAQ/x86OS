@@ -56,16 +56,19 @@ int sys_open(const char* filename, int flags, ...) {
         return TEMP_FILE_ID;
     }
 
+    // 分配文件描述符链接
     file_t* file = file_alloc();
     if(file == NULL) {
         goto sys_open_failed;
     }
 
+    // 分配文件描述符
     int fd = task_alloc_fd(file);
     if(fd < 0) {
         goto sys_open_failed;
     }
 
+    // 检查名称是否以挂载点开头, 若没有, 则认为filename在根目录下
     fs_t* fs = NULL;
     list_node_t* node = list_first(&mounted_list);
     while(node) {
