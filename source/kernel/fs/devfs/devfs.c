@@ -10,7 +10,7 @@
 #include "tools/log.h"
 
 /**
- * @brief
+ * @brief 设备类型表
  */
 static devfs_type_t dev_type_table[] = {
     {

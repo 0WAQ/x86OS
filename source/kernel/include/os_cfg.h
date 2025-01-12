@@ -27,4 +27,7 @@
 
 #define TASK_NR         128
 
+// 根文件系统的设备号(主设备号为DEV_DISK, 次设备号为FAT16)
+#define ROOT_DEV            (DEV_DISK, 0xB1)   
+
 #endif // OS_CFG_H

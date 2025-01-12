@@ -3,7 +3,6 @@
  * 文件系统C文件
  * 
  */
-
 #include "fs/fs.h"
 #include "fs/file.h"
 #include "dev/dev.h"
@@ -14,13 +13,17 @@
 #include "tools/log.h"
 #include "tools/list.h"
 #include "common/cpu_instr.h"
+#include "os_cfg.h"
 #include <sys/stat.h>
 #include <sys/file.h>
 
 static list_t mounted_list;             // 挂载链表
 static list_t free_list;                // 空闲链表
 static fs_t fs_table[FS_TABLE_SIZE];    // fs表
+static fs_t* root_fs;                   // 根文件系统
+
 extern fs_op_t devfs_op;                // TODO: 临时的
+extern fs_op_t fat16fs_op;              // FAT16
 
 void fs_init() {
 
@@ -36,6 +39,10 @@ void fs_init() {
     // 挂载devfs
     fs_t* fs = mount(FS_DEVFS, "/dev", 0, 0);
     ASSERT(fs != NULL);
+
+    // 挂载fat16到根文件系统
+    root_fs = mount(FS_FAT16, "/home", ROOT_DEV, 0);
+    ASSERT(root_fs != NULL);
 }
 
 // TODO: TEMP
@@ -44,38 +51,6 @@ static int is_path_valid(const char* path) {
         return 0;
     }
     return 1;
-}
-
-// TODO: 临时使用
-void read_disk(uint32_t sector, uint32_t sector_cnt, uint8_t* buffer) {
-    
-    // 读取LBA参数
-    outb(0x1F6, (uint8_t) (0xE0));
-
-	outb(0x1F2, (uint8_t) (sector_cnt >> 8));
-    outb(0x1F3, (uint8_t) (sector >> 24));		// LBA参数的24~31位
-    outb(0x1F4, (uint8_t) (0));					// LBA参数的32~39位
-    outb(0x1F5, (uint8_t) (0));					// LBA参数的40~47位
-
-    outb(0x1F2, (uint8_t) (sector_cnt));
-	outb(0x1F3, (uint8_t) (sector));			// LBA参数的0~7位
-	outb(0x1F4, (uint8_t) (sector >> 8));		// LBA参数的8~15位
-	outb(0x1F5, (uint8_t) (sector >> 16));		// LBA参数的16~23位
-
-	outb(0x1F7, (uint8_t) 0x24);
-
-    // 读取数据
-    uint16_t* buf = (uint16_t*)buffer;
-    while(sector_cnt-- > 0) {
-
-        // 读前检查，等待数据就位
-        while((inb(0x1F7) & 0x88) != 0x08);
-
-        // 读取数据并将其写入到缓存中
-        for(int i = 0; i < 512 / 2; i++) {
-            *buf++ = inw(0x1F0);
-        }
-    }
 }
 
 int sys_open(const char* filename, int flags, ...) {
@@ -116,7 +91,7 @@ int sys_open(const char* filename, int flags, ...) {
         filename = path_next_child(filename);    
     }
     else {
-        // TODO: 缺省值
+        fs = root_fs;
     }
 
     file->mode = flags;
@@ -330,7 +305,9 @@ static fs_op_t* get_fs_op(fs_type_t type, int major) {
     switch (type)
     {
     case FS_DEVFS:
-        return &(devfs_op);
+        return &devfs_op;
+    case FS_FAT16:
+        return &fat16fs_op;
     default:
         return NULL;
     }
