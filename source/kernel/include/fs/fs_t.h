@@ -10,6 +10,7 @@
 #include "file.h"
 #include "sys/stat.h"
 #include "ipc/mutex.h"
+#include "fs/fat16fs/fat16fs.h"
 #include "tools/list.h"
 
 #define FS_MOUNTP_SIZE      (512)
@@ -56,6 +57,11 @@ typedef struct _fs_t {
     int dev_id;
     list_node_t node;                   // fs在挂载链表中的节点
     mutex_t* mtx;
+
+    union {
+        fat16_t fat16_data;
+    };
+
 }fs_t;
 
 #endif // FS_T_H

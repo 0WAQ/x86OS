@@ -40,8 +40,8 @@ void fs_init() {
     fs_t* fs = mount(FS_DEVFS, "/dev", 0, 0);
     ASSERT(fs != NULL);
 
-    // 挂载fat16到根文件系统
-    root_fs = mount(FS_FAT16, "/home", ROOT_DEV, 0);
+    // 挂载根文件系统
+    root_fs = mount(FS_FAT16, "/home", ROOT_DEV);
     ASSERT(root_fs != NULL);
 }
 
@@ -329,7 +329,7 @@ static fs_t* mount(fs_type_t type, char* mount_point, int dev_major, int dev_min
         curr = list_node_next(curr);
     }
 
-    // 取出空闲链表的一个节点, 将其分配给fs
+    // 从空闲链表中分配新的fs
     list_node_t* free_node = list_remove_first(&free_list);
     if(free_node == NULL) {
         log_print("no free fs, mount failed.");
@@ -337,17 +337,18 @@ static fs_t* mount(fs_type_t type, char* mount_point, int dev_major, int dev_min
     }
     fs = list_entry_of(free_node, fs_t, node);
 
-    kernel_memset(fs, 0, sizeof(fs_t));
-    kernel_strncpy(fs->mount_point, mount_point, FS_MOUNTP_SIZE);
-    // fs->node = free_node;
-
     // 获取当前fs的操作函数
     fs_op_t* op = get_fs_op(type, dev_major);
     if(op == NULL) {
         log_print("unsupport fs type: %d", type);
         goto mount_failed;
     }
+
+    // 初始化fs
+    kernel_memset(fs, 0, sizeof(fs_t));
+    kernel_strncpy(fs->mount_point, mount_point, FS_MOUNTP_SIZE);
     fs->op = op;
+    fs->mtx = NULL;
 
     // 执行挂载
     if(op->mount(fs, dev_major, dev_minor) < 0) {
@@ -360,10 +361,10 @@ static fs_t* mount(fs_type_t type, char* mount_point, int dev_major, int dev_min
     return fs;
 
 mount_failed:
+    // 回收fs
     if(fs) {
         list_insert_last(&free_list, &fs->node);
     }
-
     return NULL;
 }
 

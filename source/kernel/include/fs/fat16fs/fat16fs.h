@@ -12,17 +12,17 @@
 /**
  * @brief fat16fs的挂载函数
  */
-int fat16fs_mount(fs_t* fs, int major, int minor);
+int fat16fs_mount(struct _fs_t* fs, int major, int minor);
 
 /**
  * @brief fat16fs的取消挂载函数
  */
-void fat16fs_umount(fs_t* fs);
+void fat16fs_umount(struct _fs_t* fs);
 
 /**
  * @brief fat16fs的打开函数
  */
-int fat16fs_open(fs_t* fs, const char* filepath, file_t* file);
+int fat16fs_open(struct _fs_t* fs, const char* filepath, file_t* file);
 
 /**
  * @brief fat16fs的读取函数

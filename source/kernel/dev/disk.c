@@ -141,7 +141,7 @@ static int detect_part_info(disk_t* disk) {
         else {
             // 在主分区中找到，复制信息
             kernel_sprintf(part_info->name, "%s%d", disk->name, i + 1);  // sdx0
-            part_info->start_sector = 0;
+            part_info->start_sector = item->relative_sectors;
             part_info->total_sector = disk->sector_count;
             part_info->disk = disk;
         }
@@ -160,7 +160,7 @@ int disk_open(device_t* dev) {
     }
 
     disk_t* disk = disk_table + disk_idx;
-    if(disk->sector_count == 0) {
+    if(disk->sector_size == 0) {
         log_print("disk doesn't exist, device: sd%x", dev->minor);
         return -1;
     }
@@ -203,7 +203,9 @@ int disk_read(device_t* dev, int start_sector, char* buf, int count) {
     int cnt;
     for(cnt = 0; cnt < count; cnt++, buf += disk->sector_size) {
         // 等待硬盘的中断通知
-        sem_wait(disk->sem);
+        if(get_curr_task() != NULL) {
+            sem_wait(disk->sem);
+        }
 
         // 实际上在ata_wait_data中并不会等待
         int err = ata_wait_data(disk);
@@ -248,7 +250,9 @@ int disk_write(device_t* dev, int start_sector, char* buf, int count) {
         ata_write_data(disk, buf, disk->sector_size);
         
         // 等待, 直到写完成
-        sem_wait(disk->sem);
+        if(get_curr_task() != NULL) {
+            sem_wait(disk->sem);
+        }
 
         int err = ata_wait_data(disk);
         if(err < 0) {
@@ -271,7 +275,7 @@ void disk_close(device_t* dev) {
 
 void do_handler_ide_primary(exception_frame_t* frame) {
     pic_send_eoi(IRQ14_HARDDISK_PRIMARY);
-    if(task_no_op)  {
+    if(task_no_op && get_curr_task() != NULL)  {
         sem_notify(&sem);
     }
 }
