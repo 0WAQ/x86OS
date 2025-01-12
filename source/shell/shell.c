@@ -190,7 +190,7 @@ static const cli_cmd_t* find_builtin(char* name) {
 static void run_builtin(const cli_cmd_t* cmd, int argc, char** argv) {
     int ret = cmd->func(argc, argv);
     if(ret < 0) {
-        fprintf(stderr, ESC_COLOR_ERROR"Error: %s\n"ESC_COLOR_DEFAULT, ret);
+        fprintf(stderr, ESC_COLOR_ERROR"Error: %d\n"ESC_COLOR_DEFAULT, ret);
     }
 }
 

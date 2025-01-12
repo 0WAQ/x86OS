@@ -16,6 +16,8 @@
         "types.h": "c",
         "fcntl.h": "c",
         "_default_fcntl.h": "c",
-        "cstdint": "c"
+        "cstdint": "c",
+        "random": "c",
+        "__node_handle": "c"
     },
 }
