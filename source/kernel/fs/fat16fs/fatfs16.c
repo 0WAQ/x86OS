@@ -66,6 +66,7 @@ int fat16fs_mount(struct _fs_t* fs, int major, int minor) {
     
     fat->fat_buffer = (uint8_t*)dbr;
     fat->clusters_byte_size = fat->sectors_per_clusters * dbr->BPB_BytsPerSec;
+    fat->last_sector = -1;
     fat->fs = fs;
 
     // 正确性检验
@@ -101,6 +102,7 @@ void fat16fs_umount(struct _fs_t* fs) {
     memory_free_page((uint32_t)fat->fat_buffer);
 }
 
+// TODO:
 int fat16fs_open(struct _fs_t* fs, const char* filepath, file_t* file) {
     return -1;
 }
@@ -131,15 +133,100 @@ int fat16fs_opendir(struct _fs_t* fs, const char* name, DIR* dir) {
 }
 
 int fat16fs_readdir(struct _fs_t* fs, DIR* dir, struct dirent* dirent) {
-    if(dir->index++ < 10) {
-        dirent->type = FILE_NORMAL;
-        dirent->size = 1000;
-        kernel_memcpy(dirent->name, "fat16fs", sizeof(dirent->name));
-        return 0;
+    fat16_t* fat = (fat16_t*)fs->data;
+
+    // 遍历所有目录项
+    while(dir->index < fat->root_entry_cnt) {
+        // 读取目录项
+        diritem_t* item = read_dir_entry(fat, dir->index);
+        if(item == NULL) {
+            return -1;
+        }
+
+        // 若当前目录项是空闲的并且后面没有目录项, 那么直接退出
+        if(item->DIR_Name[0] == DIRITEM_NAME_END) {
+            break;
+        }
+
+        // 当前目录项是空闲的, 但是后面还有目录项
+        if(item->DIR_Name[0] != DIRITEM_NAME_FREE) {
+            // 解析目录项类型
+            file_type_t type = diritem_parse_type(item);
+            if(type == FILE_NORMAL || type == FILE_DIR) {
+                // 解析name到dirent->name中
+                diritem_parse_name(item, dirent->name);
+                dirent->size = item->DIR_FileSize;
+                dirent->type = type;
+                dirent->index = dir->index++;
+                return 0;
+            }
+        }
+        dir->index++;
     }
     return -1;
 }
 
 int fat16fs_closedir(struct _fs_t* fs, DIR* dir) {
     return 0;
+}
+
+static diritem_t* read_dir_entry(fat16_t* fat, int index) {
+    if(index < 0 || index > fat->root_entry_cnt) {
+        return NULL;
+    }
+
+    int offset = index * sizeof(diritem_t);
+    int sector = fat->root_start + offset / fat->bytes_per_sectors;
+    
+    // 从缓冲中读取扇区
+    int ret = bread_sector(fat, sector);
+    if(ret < 0) {
+        return NULL;
+    }
+
+    return (diritem_t*)(fat->fat_buffer + offset % fat->bytes_per_sectors);
+}
+
+static file_type_t diritem_parse_type(diritem_t* item) {
+    if(item->DIR_Attr & (DIRITEM_ATTR_VOLUME_ID | DIRITEM_ATTR_HIDDEN | DIRITEM_ATTR_SYSTEM)) {
+        return FILE_UNKNOWN;
+    }
+    if((item->DIR_Attr & DIRITEM_ATTR_LONG_NAME) == DIRITEM_ATTR_LONG_NAME) {
+        return FILE_UNKNOWN;
+    }
+    return item->DIR_Attr & DIRITEM_ATTR_DIRECTORY ? FILE_DIR : FILE_NORMAL;
+}
+
+// file.c ===> FILE____C__ (_是空格)
+static void diritem_parse_name(diritem_t* item, char* dest) {
+    char* c = dest;
+    kernel_memset(dest, 0, sizeof(12));
+    
+    char* ext = NULL;
+    for(int i = 0; i < 11; i++) {
+        if(item->DIR_Name[i] != ' ') {
+            *c++ = item->DIR_Name[i];
+        }
+        if(i == 7) {
+            ext = c;
+            *c++ = '.';
+        }
+    }
+
+    if(ext && ext[1] == '\0') {
+        ext[0] = '\0';
+    }
+}
+
+static int bread_sector(fat16_t* fat, int sector) {
+    if(sector == fat->last_sector) {
+        return 0;
+    }
+
+    int cnt = dev_read(fat->fs->dev_id, sector, fat->fat_buffer, 1);
+    if(cnt == 1) {
+        fat->last_sector= sector;
+        return 0;
+    }
+    return -1;
 }

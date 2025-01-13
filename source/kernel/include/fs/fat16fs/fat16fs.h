@@ -64,4 +64,24 @@ int fat16fs_readdir(struct _fs_t* fs, DIR* dir, struct dirent* dirent);
  */
 int fat16fs_closedir(struct _fs_t* fs, DIR* dir);
 
+/**
+ * @brief 从fat16fs中读取第index个目录项
+ */
+static diritem_t* read_dir_entry(fat16_t* fat, int index);
+
+/**
+ * @brief 解析目录项类型
+ */
+static file_type_t diritem_parse_type(diritem_t* item);
+
+/**
+ * @brief 解析目录项名称
+ */
+static void diritem_parse_name(diritem_t* item, char* dest);
+
+/**
+ * @brief 从sector读取数据, 带缓冲
+ */
+static int bread_sector(fat16_t* fat, int sector);
+
 #endif // FAT16FS_H
