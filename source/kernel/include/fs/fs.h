@@ -7,6 +7,7 @@
 #define FS_H
 
 #include "fs_t.h"
+#include "applib/lib_syscall_t.h"
 
 /**
  * @brief 初始化文件系统
@@ -53,6 +54,22 @@ int sys_fstat(int fd, struct stat* st);
  * @brief 系统调用dup
  */
 int sys_dup(int fd);
+
+/**
+ * @brief 系统调用: 打开目录
+ */
+int sys_opendir(const char* path, DIR* dir);
+
+/**
+ * @brief 系统调用: 读取目录
+ */
+int sys_readdir(DIR* dir, struct dirent* dirent);
+
+/**
+ * @brief 系统调用: 关闭目录
+ */
+int sys_closedir(DIR* dir);
+
 
 /**
  * @brief 初始化空闲与挂载链表

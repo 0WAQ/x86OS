@@ -289,6 +289,18 @@ int sys_dup(int fd) {
     return new;
 }
 
+int sys_opendir(const char* path, DIR* dir) {
+    return -1;
+}
+
+int sys_readdir(DIR* dir, struct dirent* dirent) {
+    return -1;
+}
+
+int sys_closedir(DIR* dir) {
+    return -1;
+}
+
 static void mount_list_init() {
     
     // 初始化空闲链表

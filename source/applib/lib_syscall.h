@@ -100,4 +100,19 @@ void _exit(int status);
  */
 int wait(int* status);
 
+/**
+ * @brief 打开目录的外部实现
+ */
+DIR* opendir(const char* path);
+
+/**
+ * @brief 读取目录的外部实现
+ */
+struct dirent* readdir(DIR* dir);
+
+/**
+ * @brief 关闭目录的外部实现
+ */
+int closedir(DIR* dir);
+
 #endif // LIB_SYSCALL_H

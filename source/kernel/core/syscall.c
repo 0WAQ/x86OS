@@ -34,6 +34,10 @@ syscall_handler_t sys_table[] = {
     [SYS_sbrk]   = (syscall_handler_t)sys_sbrk,
     [SYS_dup]    = (syscall_handler_t)sys_dup,
     
+    [SYS_opendir]  = (syscall_handler_t)sys_opendir,
+    [SYS_readdir]  = (syscall_handler_t)sys_readdir,
+    [SYS_closedir] = (syscall_handler_t)sys_closedir,
+
     [SYS_print]  = (syscall_handler_t)sys_print,
 };
 
