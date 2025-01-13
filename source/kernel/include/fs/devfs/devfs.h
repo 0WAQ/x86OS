@@ -49,4 +49,19 @@ int devfs_seek(file_t* file, uint32_t offset, int dir);
  */
 int devfs_stat(file_t* file, struct stat* st);
 
+/**
+ * @brief devfs的打开目录函数
+ */
+int devfs_opendir(struct _fs_t* fs, const char* name, DIR* dir);
+
+/**
+ * @brief devfs的读取目录函数
+ */
+int devfs_readdir(struct _fs_t* fs, DIR* dir, struct dirent* dirent);
+
+/**
+ * @brief devfs的关闭目录函数
+ */
+int devfs_closedir(struct _fs_t* fs, DIR* dir);
+
 #endif // DEVFS_H

@@ -49,4 +49,19 @@ int fat16fs_seek(file_t* file, uint32_t offset, int dir);
  */
 int fat16fs_stat(file_t* file, struct stat* st);
 
+/**
+ * @brief fat16fs的打开目录函数
+ */
+int fat16fs_opendir(struct _fs_t* fs, const char* name, DIR* dir);
+
+/**
+ * @brief fat16fs的读取目录函数
+ */
+int fat16fs_readdir(struct _fs_t* fs, DIR* dir, struct dirent* dirent);
+
+/**
+ * @brief fat16fs的关闭目录函数
+ */
+int fat16fs_closedir(struct _fs_t* fs, DIR* dir);
+
 #endif // FAT16FS_H

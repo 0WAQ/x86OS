@@ -21,7 +21,10 @@ fs_op_t fat16fs_op = {
     .write = fat16fs_write,
     .close = fat16fs_close,
     .seek = fat16fs_seek,
-    .stat = fat16fs_stat
+    .stat = fat16fs_stat,
+    .opendir = fat16fs_opendir,
+    .readdir = fat16fs_readdir,
+    .closedir = fat16fs_closedir
 };
 
 int fat16fs_mount(struct _fs_t* fs, int major, int minor) {
@@ -120,4 +123,23 @@ int fat16fs_seek(file_t* file, uint32_t offset, int dir) {
 
 int fat16fs_stat(file_t* file, struct stat* st) {
     return -1;
+}
+
+int fat16fs_opendir(struct _fs_t* fs, const char* name, DIR* dir) {
+    dir->index = 0;
+    return 0;
+}
+
+int fat16fs_readdir(struct _fs_t* fs, DIR* dir, struct dirent* dirent) {
+    if(dir->index++ < 10) {
+        dirent->type = FILE_NORMAL;
+        dirent->size = 1000;
+        kernel_memcpy(dirent->name, "fat16fs", sizeof(dirent->name));
+        return 0;
+    }
+    return -1;
+}
+
+int fat16fs_closedir(struct _fs_t* fs, DIR* dir) {
+    return 0;
 }

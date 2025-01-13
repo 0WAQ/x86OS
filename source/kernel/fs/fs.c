@@ -290,15 +290,24 @@ int sys_dup(int fd) {
 }
 
 int sys_opendir(const char* path, DIR* dir) {
-    return -1;
+    fs_lock(root_fs);
+    int ret = root_fs->op->opendir(root_fs, path, dir);
+    fs_unlock(root_fs);
+    return ret;
 }
 
 int sys_readdir(DIR* dir, struct dirent* dirent) {
-    return -1;
+    fs_lock(root_fs);
+    int ret = root_fs->op->readdir(root_fs, dir, dirent);
+    fs_unlock(root_fs);
+    return ret;
 }
 
 int sys_closedir(DIR* dir) {
-    return -1;
+    fs_lock(root_fs);
+    int ret = root_fs->op->closedir(root_fs, dir);
+    fs_unlock(root_fs);
+    return ret;
 }
 
 static void mount_list_init() {

@@ -17,7 +17,7 @@ typedef struct _syscall_args_t {
 }syscall_args_t;
 
 /**
- * @brief
+ * @brief 描述目录项结构(文件, 目录, ...)
  */
 struct dirent {
     int index;
@@ -27,7 +27,7 @@ struct dirent {
 };
 
 /**
- * @brief
+ * @brief 描述目录结构
  */
 typedef struct _DIR {
     int index;

@@ -6,6 +6,7 @@
 
 #include "shell.h"
 #include "lib_syscall.h"
+#include "fs/file.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -84,6 +85,25 @@ static int do_echo(int argc, char** argv) {
     return 0;
 }
 
+static int do_ls(int argc, char** argv) {
+    // 打开目录
+    DIR* p = opendir("temp");
+    if(p == NULL) {
+        printf("open dir failed.\n");
+        return -1;
+    }
+
+    // 遍历目录项
+    struct dirent* entry;
+    while((entry = readdir(p)) != NULL) {
+        printf("%c %s %d\n", (entry->type == FILE_DIR ? 'd': 'f'), entry->name, entry->size);
+    }
+
+    // 关闭目录
+    closedir(p);
+    return 0;
+}
+
 // TODO:
 static int do_quit(int argc, char** argv) {
     exit(0);
@@ -105,6 +125,11 @@ static cli_cmd_t cmd_table[] = {
         .name = "echo",
         .usage = "[-n count] msg -- echo something",
         .func = do_echo,
+    },
+    {
+        .name = "ls",
+        .usage = "ls -- list directory",
+        .func = do_ls,
     },
     // TODO:  测试
     {

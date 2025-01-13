@@ -31,7 +31,10 @@ fs_op_t devfs_op = {
     .write = devfs_write,
     .close = devfs_close,
     .seek = devfs_seek,
-    .stat = devfs_stat
+    .stat = devfs_stat,
+    .opendir = devfs_opendir,
+    .readdir = devfs_readdir,
+    .closedir = devfs_closedir
 };
 
 int devfs_mount(fs_t* fs, int major, int minor) {
@@ -95,4 +98,23 @@ int devfs_seek(file_t* file, uint32_t offset, int dir) {
 
 int devfs_stat(file_t* file, struct stat* st) {
     return -1;
+}
+
+int devfs_opendir(struct _fs_t* fs, const char* name, DIR* dir) {
+    dir->index = 0;
+    return 0;
+}
+
+int devfs_readdir(struct _fs_t* fs, DIR* dir, struct dirent* dirent) {
+    if(dir->index++ < 10) {
+        dirent->type = FILE_NORMAL;
+        dirent->size = 1000;
+        kernel_memcpy(dirent->name, "devfs", sizeof(dirent->name));
+        return 0;
+    }
+    return -1;
+}
+
+int devfs_closedir(struct _fs_t* fs, DIR* dir) {
+    return 0;
 }
