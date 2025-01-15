@@ -33,7 +33,8 @@ syscall_handler_t sys_table[] = {
     [SYS_fstat]  = (syscall_handler_t)sys_fstat,
     [SYS_sbrk]   = (syscall_handler_t)sys_sbrk,
     [SYS_dup]    = (syscall_handler_t)sys_dup,
-    
+    [SYS_ioctl]  = (syscall_handler_t)sys_ioctl,
+
     [SYS_opendir]  = (syscall_handler_t)sys_opendir,
     [SYS_readdir]  = (syscall_handler_t)sys_readdir,
     [SYS_closedir] = (syscall_handler_t)sys_closedir,

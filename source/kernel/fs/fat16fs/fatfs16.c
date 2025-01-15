@@ -22,6 +22,7 @@ fs_op_t fat16fs_op = {
     .close = fat16fs_close,
     .seek = fat16fs_seek,
     .stat = fat16fs_stat,
+    .ioctl = NULL,
     .opendir = fat16fs_opendir,
     .readdir = fat16fs_readdir,
     .closedir = fat16fs_closedir

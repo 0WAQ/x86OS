@@ -145,6 +145,16 @@ int fstat(int fd, struct stat* st) {
     return sys_call(&args);
 }
 
+int ioctl(int fd, int cmd, int arg0, int arg1) {
+    syscall_args_t args;
+    args.id = SYS_ioctl;
+    args.arg0 = fd;
+    args.arg1 = (int)cmd;
+    args.arg2 = arg0;
+    args.arg3 = arg1;
+    return sys_call(&args);
+}
+
 void* sbrk (ptrdiff_t incr) {
     syscall_args_t args;
     args.id = SYS_sbrk;

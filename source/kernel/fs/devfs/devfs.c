@@ -32,6 +32,7 @@ fs_op_t devfs_op = {
     .close = devfs_close,
     .seek = devfs_seek,
     .stat = devfs_stat,
+    .ioctl = devfs_ioctl,
     .opendir = devfs_opendir,
     .readdir = devfs_readdir,
     .closedir = devfs_closedir
@@ -98,6 +99,10 @@ int devfs_seek(file_t* file, uint32_t offset, int dir) {
 
 int devfs_stat(file_t* file, struct stat* st) {
     return -1;
+}
+
+int devfs_ioctl(file_t* file, int cmd, int arg0, int arg1) {
+    return dev_control(file->dev_id, cmd, arg0, arg1);
 }
 
 int devfs_opendir(struct _fs_t* fs, const char* name, DIR* dir) {

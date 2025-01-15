@@ -81,6 +81,11 @@ int isatty(int fd);
 int fstat(int fd, struct stat* st);
 
 /**
+ * @brief io控制系统调用的用户接口
+ */
+int ioctl(int fd, int cmd, int arg0, int arg1);
+
+/**
  * @brief 动态分配堆内存
  */
 void* sbrk (ptrdiff_t incr);

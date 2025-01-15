@@ -28,6 +28,7 @@
 #define SYS_fstat       56
 #define SYS_sbrk        57
 #define SYS_dup         58
+#define SYS_ioctl       59
 
 #define SYS_opendir     60
 #define SYS_readdir     61

@@ -50,6 +50,11 @@ int devfs_seek(file_t* file, uint32_t offset, int dir);
 int devfs_stat(file_t* file, struct stat* st);
 
 /**
+ * @brief devfs的io控制函数
+ */
+int devfs_ioctl(file_t* file, int cmd, int arg0, int arg1);
+
+/**
  * @brief devfs的打开目录函数
  */
 int devfs_opendir(struct _fs_t* fs, const char* name, DIR* dir);

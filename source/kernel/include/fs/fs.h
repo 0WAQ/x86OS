@@ -51,6 +51,11 @@ struct stat;
 int sys_fstat(int fd, struct stat* st);
 
 /**
+ * @brief io控制系统调用
+ */
+int sys_ioctl(int fd, int cmd, int arg0, int arg1);
+
+/**
  * @brief 系统调用dup
  */
 int sys_dup(int fd);
