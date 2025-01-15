@@ -34,9 +34,11 @@ typedef struct _file_t {
     int dev_id;                     // 该文件对应的设备id
     int pos;                        // 当前读取的位置
     int mode;                       // 文件相关属性
+    int sblk;                       // 文件起始的块号
+    int cblk;                       // 当前读取的块号
 
     struct _fs_t* fs;               // 
-
+    int p_index;
 }file_t;
 
 #endif // FILE_T_H

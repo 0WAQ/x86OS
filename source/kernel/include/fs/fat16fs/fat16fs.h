@@ -84,4 +84,36 @@ static void diritem_parse_name(diritem_t* item, char* dest);
  */
 static int bread_sector(fat16_t* fat, int sector);
 
+/**
+ * @brief 
+ */
+static void read_from_diritem(fat16_t* fat, file_t* file, diritem_t* item, int index);
+
+/**
+ * @brief 比较name与目录项的Name
+ */
+static int diritem_name_match(diritem_t* item, const char* name);
+
+/**
+ * @brief 将diritem中的DIR_Name转换成正常
+ */
+static void to_sfn(char* dest, const char* src);
+
+/**
+ * @brief 调整文件的pos
+ */
+static int move_file_pos(file_t* file, fat16_t* fat, uint32_t move_bytes, int expand);
+
+/**
+ * @brief 判断簇是否有效
+ */
+static inline int cluster_is_valid(cluster_t cluster) {
+    return ((cluster < FAT_CLUSTER_INVALID) && (cluster >= 0x2));
+}
+
+/**
+ * @brief 获取下一簇
+ */
+static cluster_t cluster_get_next(fat16_t* fat, cluster_t curr);
+
 #endif // FAT16FS_H

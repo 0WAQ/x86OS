@@ -21,6 +21,13 @@
 
 #define SFN_LEN                    	 	11                  // sfn文件名长
 
+#define FAT_CLUSTER_INVALID             0xFFF8
+
+/**
+ * @brief 簇
+ */
+typedef uint16_t cluster_t;
+
 /**
  * @brief 目录项结构
  */
@@ -36,7 +43,7 @@ typedef struct _diritem_t {
     uint16_t DIR_FstClusHI;         // 簇号高16位
     uint16_t DIR_WrtTime;           // 修改时间
     uint16_t DIR_WrtDate;           // 修改时期
-    uint16_t DIR_FstClusL0;         // 簇号低16位
+    uint16_t DIR_FstClusLO;         // 簇号低16位
     uint32_t DIR_FileSize;          // 文件字节大小
 }diritem_t;
 #pragma pack()
@@ -78,12 +85,12 @@ typedef struct _fat16_t {
     uint32_t fat_tbl_start;             // FAT表起始地址
     uint32_t fat_tbl_cnt;               // FAT表数量
     uint32_t fat_tbl_sectors;           // 每FAT表扇区数
-    uint32_t bytes_per_sectors;         // 每扇区字节数
-    uint32_t sectors_per_clusters;      // 每簇扇区数
+    uint32_t bytes_per_sector;         // 每扇区字节数
+    uint32_t sectors_per_cluster;      // 每簇扇区数
     uint32_t root_start;                // 根目录扇区数
     uint32_t root_entry_cnt;            // 根目录的项数
     uint32_t data_start;                // 文件数据起始扇区
-    uint32_t clusters_byte_size;        // 一个簇的字节大小
+    uint32_t cluster_bytes_size;        // 一个簇的字节大小
 
     // 与文件系统读写相关信息
     uint8_t* fat_buffer;                // FAT表项缓冲

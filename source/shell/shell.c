@@ -96,11 +96,61 @@ static int do_ls(int argc, char** argv) {
     // 遍历目录项
     struct dirent* entry;
     while((entry = readdir(p)) != NULL) {
+        strlwr(entry->name);
         printf("%c %s %d\n", (entry->type == FILE_DIR ? 'd': 'f'), entry->name, entry->size);
     }
 
     // 关闭目录
     closedir(p);
+    return 0;
+}
+
+static int do_less(int argc, char** argv) {
+    char* opt = "l:h";
+
+    int ch;
+    while((ch = getopt(argc, argv, opt)) != -1) {
+        switch (ch)
+        {
+        case 'l':
+            puts("show file content.");
+            puts("Usage: less [-l] file.");
+            optind = 1;
+            return 0;
+        case '?':
+            if(optarg) {
+                fprintf(stderr, "Unknown option: -%s\n", optarg);
+            }
+            optind = 1;
+            return -1;
+        default:
+            break;
+        }
+    }
+
+    if(optind > argc - 1) {
+        fprintf(stderr, "File Not Found.\n");
+        optind = 1;
+        return -1;
+    }
+
+    // 打开文件
+    FILE* file = fopen(argv[optind], "r");
+    if(file == NULL) {
+        fprintf(stderr, "open file failed, %s\n", argv[optind]);
+        optind = 1;
+        return -1;
+    }
+
+    // 分配缓冲区, 将文件内容写入缓冲区
+    char* buf = (char*)malloc(255);
+    while(fgets(buf, 255, file) != NULL) {
+        fputs(buf, stdout);
+    }
+
+    free(buf);
+    fclose(file);
+    optind = 1;
     return 0;
 }
 
@@ -130,6 +180,11 @@ static cli_cmd_t cmd_table[] = {
         .name = "ls",
         .usage = "ls -- list directory",
         .func = do_ls,
+    },
+    {
+        .name = "less",
+        .usage = "less [-l] file -- show file",
+        .func = do_less,
     },
     // TODO:  测试
     {

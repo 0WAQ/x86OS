@@ -52,8 +52,8 @@ int fat16fs_mount(struct _fs_t* fs, int major, int minor) {
 
     // 解析DBR参数
     fat16_t* fat = &fs->fat16_data;
-    fat->bytes_per_sectors = dbr->BPB_BytsPerSec;
-    fat->sectors_per_clusters = dbr->BPB_SecPerClus;
+    fat->bytes_per_sector = dbr->BPB_BytsPerSec;
+    fat->sectors_per_cluster = dbr->BPB_SecPerClus;
 
     fat->fat_tbl_start = dbr->BPB_RsvdSecCnt;
     fat->fat_tbl_sectors = dbr->BPB_FATSz16;
@@ -65,7 +65,7 @@ int fat16fs_mount(struct _fs_t* fs, int major, int minor) {
     fat->data_start = fat->root_start + fat->root_entry_cnt * 32 / SECTOR_SIZE;
     
     fat->fat_buffer = (uint8_t*)dbr;
-    fat->clusters_byte_size = fat->sectors_per_clusters * dbr->BPB_BytsPerSec;
+    fat->cluster_bytes_size = fat->sectors_per_cluster * dbr->BPB_BytsPerSec;
     fat->last_sector = -1;
     fat->fs = fs;
 
@@ -104,11 +104,96 @@ void fat16fs_umount(struct _fs_t* fs) {
 
 // TODO:
 int fat16fs_open(struct _fs_t* fs, const char* filepath, file_t* file) {
+    fat16_t* fat = (fat16_t*)fs->data;
+    
+    diritem_t* item = NULL;
+    int index = -1;
+
+    for(int i = 0; i < fat->root_entry_cnt; i++) {
+        diritem_t* p = read_dir_entry(fat, i);
+        if(p == NULL) {
+            return -1;
+        }
+
+        if(p->DIR_Name[0] == DIRITEM_NAME_END) {
+            break;
+        }
+
+        if(p->DIR_Name[0] == DIRITEM_NAME_FREE) {
+            continue;
+        }
+
+        if(diritem_name_match(p, filepath)) {
+            item = p;
+            index = i;
+            break;
+        }
+    }
+
+    if(item != NULL) {
+        read_from_diritem(fat, file, item, index);
+        return 0;
+    }
+
     return -1;
 }
 
 int fat16fs_read(char* buf, int size, file_t* file) {
-    return 0;
+    fat16_t* fat = (fat16_t*)file->fs->data;
+
+    // 调整读取量, 不要超过文件总量
+    uint32_t nbytes = size;
+    if(file->pos + nbytes > file->size) {
+        nbytes = file->size - file->pos;
+    }
+
+    uint32_t len = 0;   // 最终读取总字节数
+
+    // 逐字节读取
+    while(nbytes > 0) {
+        // 每轮能够读取的长度, 会不断调整, 最终就是每轮读取了的量
+        uint32_t curr_read = nbytes;
+
+        // 当前位置在簇中的偏移
+        uint32_t cluster_offset = file->pos % fat->cluster_bytes_size;
+
+        // 当前位置的所处扇区
+        uint32_t start_sector = fat->data_start + (file->cblk - 2) * fat->sectors_per_cluster; // 簇号从2开始
+
+        // 若是整簇读取
+        if(cluster_offset == 0 && nbytes == fat->cluster_bytes_size) {
+            int ret = dev_read(fat->fs->dev_id, start_sector, buf, fat->sectors_per_cluster);
+            if(ret < 0) {
+                return len;
+            }
+            curr_read = fat->cluster_bytes_size;
+        }
+        // 若不是整簇读取
+        else {
+
+            // 若跨簇, 则只读取第一个簇
+            if(cluster_offset + curr_read > fat->cluster_bytes_size) {
+                curr_read = fat->cluster_bytes_size - cluster_offset;
+            }
+
+            fat->last_sector = -1;
+            int ret = dev_read(fat->fs->dev_id, start_sector, fat->fat_buffer, fat->sectors_per_cluster);
+            if(ret < 0) {
+                return len;
+            }
+            kernel_memcpy(buf, fat->fat_buffer + cluster_offset, curr_read);
+        }
+
+        buf += curr_read;
+        nbytes -= curr_read;
+        len += curr_read;
+
+        int ret = move_file_pos(file, fat, curr_read, 0);
+        if(ret < 0) {
+            return len;
+        }
+    }
+    return len;
 }
 
 int fat16fs_write(char* buf, int size, file_t* file) {
@@ -171,12 +256,12 @@ int fat16fs_closedir(struct _fs_t* fs, DIR* dir) {
 }
 
 static diritem_t* read_dir_entry(fat16_t* fat, int index) {
-    if(index < 0 || index > fat->root_entry_cnt) {
+    if(index < 0 || index >= fat->root_entry_cnt) {
         return NULL;
     }
 
     int offset = index * sizeof(diritem_t);
-    int sector = fat->root_start + offset / fat->bytes_per_sectors;
+    int sector = fat->root_start + offset / fat->bytes_per_sector;
     
     // 从缓冲中读取扇区
     int ret = bread_sector(fat, sector);
@@ -184,7 +269,7 @@ static diritem_t* read_dir_entry(fat16_t* fat, int index) {
         return NULL;
     }
 
-    return (diritem_t*)(fat->fat_buffer + offset % fat->bytes_per_sectors);
+    return (diritem_t*)(fat->fat_buffer + offset % fat->bytes_per_sector);
 }
 
 static file_type_t diritem_parse_type(diritem_t* item) {
@@ -200,7 +285,7 @@ static file_type_t diritem_parse_type(diritem_t* item) {
 // file.c ===> FILE____C__ (_是空格)
 static void diritem_parse_name(diritem_t* item, char* dest) {
     char* c = dest;
-    kernel_memset(dest, 0, sizeof(12));
+    kernel_memset(dest, 0, SFN_LEN + 1);
     
     char* ext = NULL;
     for(int i = 0; i < 11; i++) {
@@ -229,4 +314,81 @@ static int bread_sector(fat16_t* fat, int sector) {
         return 0;
     }
     return -1;
+}
+
+static void read_from_diritem(fat16_t* fat, file_t* file, diritem_t* item, int index) {
+    file->type = diritem_parse_type(item);
+    file->size = item->DIR_FileSize;
+    file->pos = 0;
+    file->p_index = index;
+    file->sblk = (item->DIR_FstClusHI << 16) | (item->DIR_FstClusLO);
+    file->cblk = file->sblk;
+}
+
+static int diritem_name_match(diritem_t* item, const char* name) {
+    char buf[11];
+    to_sfn(buf, name);
+    return kernel_memcmp(buf, item->DIR_Name, 11) == 0;
+}
+
+static void to_sfn(char* dest, const char* src) {
+    kernel_memset(dest, ' ', 11);
+    
+    char* p = dest;
+    char* end = dest + 11;
+    while(*src && p < end) {
+        char c = *src++;
+        switch (c)
+        {
+        case '.':
+            p = dest + 8;
+            break;
+
+        default:
+            if(c >= 'a' && c <= 'z') {
+                c = c - 'a' + 'A';
+            }
+            *p++ = c;
+            break;
+        }
+    }
+}
+
+static int move_file_pos(file_t* file, fat16_t* fat, uint32_t move_bytes, int expand) {
+    // 当前位置在簇中的偏移量
+    uint32_t c_offset = file->pos % fat->cluster_bytes_size;
+    
+    // 若pos将在下一个簇中, 那么调整pos到下一簇
+    if(c_offset + move_bytes >= fat->cluster_bytes_size) {
+        cluster_t next = cluster_get_next(fat, file->cblk);
+        if(next == FAT_CLUSTER_INVALID) {
+            return -1;
+        }
+        file->cblk = next;
+    }
+    file->pos += move_bytes;
+    return 0;
+}
+
+static cluster_t cluster_get_next(fat16_t* fat, cluster_t curr) {
+    // 若curr无效
+    if(!cluster_is_valid(curr)) {
+        return FAT_CLUSTER_INVALID;
+    }
+
+    // fat表中的扇区号和在扇区中的偏移
+    int offset = curr * sizeof(cluster_t);
+    int sector = offset / fat->bytes_per_sector;
+    int off_secter = offset % fat->bytes_per_sector;
+    if(sector >= fat->fat_tbl_sectors) {
+        log_print("cluster too big: %d", curr);
+        return FAT_CLUSTER_INVALID;
+    }
+
+    int ret = bread_sector(fat, fat->fat_tbl_start + sector);
+    if(ret < 0) {
+        return FAT_CLUSTER_INVALID;
+    }
+
+    return *(cluster_t*)(fat->fat_buffer + off_secter);
 }
