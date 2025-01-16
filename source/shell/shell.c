@@ -267,7 +267,7 @@ int main(int argc, char** argv) {
         // 从磁盘上执行
         const char* path = find_exec_file(argv[0]);
         if(path != NULL) {
-            run_exec_file("", argc, argv);
+            run_exec_file(path, argc, argv);
             continue;
         }
 
