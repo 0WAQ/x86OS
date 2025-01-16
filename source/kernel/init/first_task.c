@@ -19,7 +19,7 @@ int first_task_main() {
         else if(pid == 0) {
             tty[sizeof(tty) - 2] = i + '0';
             char* argv[] = {tty, NULL};
-            execve("/shell.elf", argv, NULL);
+            execve("shell.elf", argv, NULL);
             while(1) {
                 print("execve failed.", 0);
                 msleep(1000);

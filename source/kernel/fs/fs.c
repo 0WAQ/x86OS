@@ -54,15 +54,6 @@ static int is_path_valid(const char* path) {
 }
 
 int sys_open(const char* filename, int flags, ...) {
-
-    // TODO: 暂且用于execve以打开shell
-    if(kernel_strncmp(filename, "/shell.elf", 10) == 0) {
-        int dev_id = dev_open(DEV_DISK, 0xa0, NULL);
-        dev_read(dev_id, 5000, (uint8_t*)TEMP_ADDR, 80);
-        temp_pos = (uint8_t*)TEMP_ADDR;
-        return TEMP_FILE_ID;
-    }
-
     // 分配文件描述符链接
     file_t* file = file_alloc();
     if(file == NULL) {
@@ -119,13 +110,6 @@ sys_open_failed:
 }
 
 int sys_read(int fd, char* buf, int len) {
-    // TODO: 
-    if(fd == TEMP_FILE_ID) {
-        kernel_memcpy(buf, temp_pos, len);
-        temp_pos += len;
-        return len;
-    }
-
     if(is_fd_bad(fd) || buf == NULL || len == 0) {
         return 0;
     }
@@ -176,11 +160,7 @@ int sys_write(int fd, char* buf, int len) {
 }
 
 int sys_lseek(int fd, int offset, int dir) {
-    if(fd == TEMP_FILE_ID) {
-        temp_pos = (uint8_t*)(TEMP_ADDR + offset);
-        return 0;
-    }
-
+    // TODO:
     if(is_fd_bad(fd)) {
         log_print("file error");
         return -1;
@@ -200,9 +180,7 @@ int sys_lseek(int fd, int offset, int dir) {
 }
 
 int sys_close(int fd) {
-    if(fd == TEMP_FILE_ID) {
-        return 0;
-    }
+    // TODO: 
 
     if(is_fd_bad(fd)) {
         log_print("file error");

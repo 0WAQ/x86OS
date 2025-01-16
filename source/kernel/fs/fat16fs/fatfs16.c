@@ -206,7 +206,37 @@ void fat16fs_close(file_t* file) {
 }
 
 int fat16fs_seek(file_t* file, uint32_t offset, int dir) {
-    return -1;
+    // file->pos <= offset
+    if(dir != 0) {
+        return -1;
+    }
+
+    fat16_t* fat = (fat16_t*)file->fs->data;
+    cluster_t curr_clus = file->cblk;
+    uint32_t curr_pos = 0;
+    uint32_t off_to_move = offset;
+
+    while(off_to_move) {
+        uint32_t cur_offset = curr_pos % fat->cluster_bytes_size;
+        uint32_t curr_move = off_to_move;
+
+        if(cur_offset + curr_move < fat->cluster_bytes_size) {
+            curr_pos += curr_move;
+            break;
+        }
+
+        curr_move = fat->cluster_bytes_size - cur_offset;
+        curr_pos += curr_move;
+        off_to_move -= curr_move;
+
+        curr_clus = cluster_get_next(fat, curr_clus);
+        if(!cluster_is_valid(curr_clus)) {
+            return -1;
+        }
+    }
+    file->pos = curr_pos;
+    file->cblk = curr_clus;
+    return 0;
 }
 
 int fat16fs_stat(file_t* file, struct stat* st) {

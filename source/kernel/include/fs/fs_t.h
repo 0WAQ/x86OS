@@ -16,11 +16,6 @@
 
 #define FS_MOUNTP_SIZE      (512)
 #define FS_TABLE_SIZE       (10)
-#define TEMP_ADDR           (8*1024*1024)
-
-static uint8_t* temp_pos;
-
-#define TEMP_FILE_ID        (100)
 
 struct _fs_t;
 typedef struct _fs_t fs_t;
