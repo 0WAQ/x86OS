@@ -265,8 +265,11 @@ int main(int argc, char** argv) {
         }
 
         // 从磁盘上执行
-        run_exec_file("", argc, argv);
-
+        const char* path = find_exec_file(argv[0]);
+        if(path != NULL) {
+            run_exec_file("", argc, argv);
+            continue;
+        }
 
         fprintf(stderr, ESC_COLOR_ERROR"Unknown command: %s\n"ESC_COLOR_DEFAULT, cli.ibuf);
     }
@@ -303,15 +306,24 @@ static void run_builtin(const cli_cmd_t* cmd, int argc, char** argv) {
     }
 }
 
+static const char* find_exec_file(const char* filename) {
+    int fd = open(filename, 0);
+    if(fd < 0) {
+        return NULL;
+    }
+    close(fd);
+    return filename;
+}
+
 static void run_exec_file(const char* path, int argc, char** argv) {
     int pid = fork();
     if(pid < 0) {
         fprintf(stderr, "fork failed %s", path);
     }
     else if(pid == 0) {
-        for(int i = 0; i < argc; i++) {
-            msleep(1000);
-            printf("arg%d: %s\n", i, argv[i]);
+        int ret = execve(path, argv, NULL);
+        if(ret < 0) {
+            fprintf(stderr, "exec failed: %s\n", path);
         }
         exit(-1);
     }
