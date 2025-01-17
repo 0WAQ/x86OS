@@ -21,8 +21,8 @@
 #define TTY_ICRLF           (1 << 0)    // 开启后,输入会将 \n 转换为 \r\n
 #define TTY_IECHO           (1 << 1)    // 开启后,输入还会回显
 
-// 控制tty的回显
-#define TTY_CMD_ECHO        (0x1)
+#define TTY_CMD_ECHO        (0x1)       // 控制tty的回显
+#define TTY_CMD_IN_COUNT	(0x2)		// 获取输入缓冲区中已有的数据量
 
 /**
  * @brief tty缓冲区

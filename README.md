@@ -17,9 +17,13 @@ x86OS/
 |
 |-- image/      # 虚拟硬盘文件
 |
+|-- newlib/     # 轻量级标准C库
+|
 |-- script/     # 运行脚本
 |
 |-- source/
+| |-- applib/
+| |
 | |-- boot/         # boot模块
 | |
 | |-- common/       # common模块, 封装了其余三个模块公用类型
@@ -43,9 +47,14 @@ x86OS/
 | | |
 | | |-- kernel.lds      # 链接脚本
 | |
-| |
 | |-- loader/       # loader模块
-|
+| |
+| |-- shell/
+| | |-- cmd/
+| | |
+| | |-- include/
+| |
+| |-- snake/
 |
 |-- .gitignore
 |

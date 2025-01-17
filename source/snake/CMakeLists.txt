@@ -1,5 +1,5 @@
 
-project(loop LANGUAGES C)
+project(snake LANGUAGES C)  
 
 # 使用自定义的链接器
 # 加入相应的库
@@ -12,12 +12,14 @@ include_directories(
 )
 
 # 将所有的汇编、C文件加入工程
-file(GLOB C_LIST "*.S" "*.c" "*.h" "../applib/*.S" "../applib/*.c" "../applib/*.h")
+# 注意保证start.asm在最前头
+file(GLOB C_LIST "*.c" "*.h" "*.S" "../applib/*.S" "../applib/*.c" "../applib/*.h")
 add_executable(${PROJECT_NAME} ${C_LIST})
 
+# 不带调试信息的elf生成，何种更小，写入到image目录下
 add_custom_command(TARGET ${PROJECT_NAME}
                    POST_BUILD
                    COMMAND ${OBJCOPY_TOOL} -S ${PROJECT_NAME}.elf ${CMAKE_SOURCE_DIR}/image/${PROJECT_NAME}.elf
-                   # COMMAND ${OBJDUMP_TOOL} -x -d -S -m i386 ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.elf > ${PROJECT_NAME}_dis.txt
+                   COMMAND ${OBJDUMP_TOOL} -x -d -S -m i386 ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.elf > ${PROJECT_NAME}_dis.txt
                    COMMAND ${READELF_TOOL} -a ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.elf > ${PROJECT_NAME}_elf.txt
 )
