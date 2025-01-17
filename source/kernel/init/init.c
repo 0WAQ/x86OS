@@ -47,9 +47,10 @@ void kernel_init(boot_info_t* boot_info) {
 }
 
 void kernel_main() {
-
+    log_print("==========================");
     log_print("...kernel is running...");
     log_print("Version: %s", OS_VERSION);
+    log_print("==========================");
 
     // 初始化第一个任务
     first_task_init();

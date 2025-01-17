@@ -8,6 +8,7 @@
 
 #include "fat16fs_t.h"
 #include "fs/fs_t.h"
+#include "ipc/mutex.h"
 
 /**
  * @brief fat16fs的挂载函数

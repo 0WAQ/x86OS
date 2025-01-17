@@ -52,7 +52,6 @@ add_subdirectory(./source/loader)
 add_subdirectory(./source/kernel)
 add_subdirectory(./source/applib)
 add_subdirectory(./source/shell)
-add_subdirectory(./source/init)
 add_subdirectory(./source/loop)
 
 # 添加编译依赖，先生成app库，再生成kernel和shell
@@ -61,4 +60,3 @@ add_subdirectory(./source/loop)
 add_dependencies(shell app)
 add_dependencies(kernel app)
 add_dependencies(loop app)
-add_dependencies(kernel init)

@@ -72,6 +72,9 @@ int fat16fs_mount(struct _fs_t* fs, int major, int minor) {
     fat->last_sector = -1;
     fat->fs = fs;
 
+    mutex_init(&fat->mtx);
+    fs->mtx = &fat->mtx;
+
     // 正确性检验
     if(fat->fat_tbl_cnt != 2) {
         log_print("fat table error, major: %x, minor: %x", major, minor);

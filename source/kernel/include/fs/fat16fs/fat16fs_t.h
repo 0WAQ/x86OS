@@ -7,6 +7,7 @@
 #define FAT16FS_T_H
 
 #include "common/types.h"
+#include "ipc/mutex_t.h"
 
 #define DIRITEM_NAME_FREE               0xE5                // 目录项空闲名标记
 #define DIRITEM_NAME_END                0x00                // 目录项结束名标记
@@ -97,6 +98,8 @@ typedef struct _fat16_t {
     uint8_t* fat_buffer;                // FAT表项缓冲
     int last_sector;                    // 上次读取的扇区号
     struct _fs_t* fs;                   // 所在的文件系统
+
+    mutex_t mtx;
 
 }fat16_t;
 

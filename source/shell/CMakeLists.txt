@@ -9,10 +9,11 @@ set(CMAKE_C_LINK_EXECUTABLE "${LINKER_TOOL} <OBJECTS> ${CMAKE_EXE_LINKER_FLAGS} 
 
 include_directories(
     ${PROJECT_SOURCE_DIR}/../applib/
+    ${PROJECT_SOURCE_DIR}/include/
 )
 
 # 将所有的汇编、C文件加入工程
-file(GLOB C_LIST "*.S" "*.c" "*.h")
+file(GLOB_RECURSE C_LIST "*.S" "*.c" "*.h")
 add_executable(${PROJECT_NAME} ${C_LIST})
 
 add_custom_command(TARGET ${PROJECT_NAME}

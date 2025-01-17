@@ -37,7 +37,5 @@ export DISK2_NAME=disk2.dmg
 export TARGET_PATH=/Volumes/osdev       # mp
 rm $TARGET_PATH
 hdiutil attach $DISK2_NAME -mountpoint $TARGET_PATH
-cp -v init.elf $TARGET_PATH/init
-cp -v shell.elf $TARGET_PATH
-cp -v loop.elf $TARGET_PATH/loop
+cp -v *.elf $TARGET_PATH/
 hdiutil detach $TARGET_PATH -verbose
