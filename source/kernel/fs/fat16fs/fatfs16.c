@@ -108,26 +108,33 @@ void fat16fs_umount(struct _fs_t* fs) {
 int fat16fs_unlink(struct _fs_t* fs, const char* filename) {
     fat16_t* fat = (fat16_t*)fs->data;
 
+    // 遍历根目录的数据区，寻找匹配项
     for(int i = 0; i < fat->root_entry_cnt; i++) {
         diritem_t* p = read_dir_entry(fat, i);
         if(p == NULL) {
             return -1;
         }
 
+        // 结束项，不需要再扫描了，同时index也不能往前走
         if(p->DIR_Name[0] == DIRITEM_NAME_END) {
             break;
         }
 
+        // 只显示普通文件和目录，其它的不显示
         if(p->DIR_Name[0] == DIRITEM_NAME_FREE) {
             continue;
         }
 
+        // 若匹配, 则打开
         if(diritem_name_match(p, filename)) {
+            // 释放对应的簇
             cluster_t cluster = (p->DIR_FstClusHI << 16) | (p->DIR_FstClusLO);
             cluster_free_chain(fat, cluster);
             
-            kernel_memset(p, 0, sizeof(diritem_t));
-            return write_dir_entry(fat, p, i);
+            // 写item项
+            diritem_t item;
+            kernel_memset(&item, 0, sizeof(diritem_t));
+            return write_dir_entry(fat, &item, i);
         }
     }
     return -1;
@@ -164,6 +171,12 @@ int fat16fs_open(struct _fs_t* fs, const char* filepath, file_t* file) {
 
     if(item != NULL) {
         read_from_diritem(fat, file, item, index);
+        // 若需要截断
+        if(file->mode & O_TRUNC) {
+            cluster_free_chain(fat, file->sblk);
+            file->cblk = file->sblk = FAT_CLUSTER_INVALID;
+            file->size = 0;
+        }
         return 0;
     }
     else if((file->mode & O_CREAT) && (index >= 0)) { // 若item为空, 且需要创建该文件
@@ -175,7 +188,7 @@ int fat16fs_open(struct _fs_t* fs, const char* filepath, file_t* file) {
             log_print("create file failed.");
             return -1;
         }
-        read_from_diritem(fat, file, item, index);
+        read_from_diritem(fat, file, &itm, index);
         return 0;
     }
 
@@ -241,11 +254,91 @@ int fat16fs_read(char* buf, int size, file_t* file) {
 }
 
 int fat16fs_write(char* buf, int size, file_t* file) {
-    return 0;
+    fat16_t* fat = (fat16_t*)file->fs->data;
+
+    // 若文件大小不足, 那么先扩充文件
+    if(file->pos + size > file->size) {
+        int ret = expand_file(file, file->pos + size - file->size);
+        if(ret < 0) {
+            return 0;
+        }
+    }
+
+    uint32_t nbytes = size;
+    uint32_t len = 0;
+
+    // 逐字节写入
+    while(nbytes > 0) {
+        // 每轮能够写入的长度, 会不断调整, 最终就是每轮写入的量
+        uint32_t curr_write = nbytes;
+
+        // 当前位置在簇中的偏移
+        uint32_t cluster_offset = file->pos % fat->cluster_bytes_size;
+
+        // 当前位置的所处扇区
+        uint32_t start_sector = fat->data_start + (file->cblk - 2) * fat->sectors_per_cluster; // 簇号从2开始
+
+        // 若是整簇写入
+        if(cluster_offset == 0 && nbytes == fat->cluster_bytes_size) {
+            int ret = dev_write(fat->fs->dev_id, start_sector, buf, fat->sectors_per_cluster);
+            if(ret < 0) {
+                return len;
+            }
+            curr_write = fat->cluster_bytes_size;
+        }
+        // 若不是整簇写入
+        else {
+            // 若跨簇, 则只写入第一个簇
+            if(cluster_offset + curr_write > fat->cluster_bytes_size) {
+                curr_write = fat->cluster_bytes_size - cluster_offset;
+            }
+
+            fat->last_sector = -1;
+            int ret = dev_read(fat->fs->dev_id, start_sector, fat->fat_buffer, fat->sectors_per_cluster);
+            if(ret < 0) {
+                return len;
+            }
+
+            kernel_memcpy(fat->fat_buffer + cluster_offset, buf, curr_write);
+
+            // 写入
+            ret = dev_write(fat->fs->dev_id, start_sector, fat->fat_buffer, fat->sectors_per_cluster);
+            if(ret < 0) {
+                return len;
+            }
+        }
+
+        buf += curr_write;
+        nbytes -= curr_write;
+        len += curr_write;
+
+        // FIXME: 
+        file->size += curr_write;
+
+        int ret = move_file_pos(file, fat, curr_write, 1);
+        if(ret < 0) {
+            return len;
+        }
+    }
+
+    return len;
 }
 
 void fat16fs_close(file_t* file) {
+    if(file->mode == O_RDONLY) {
+        return;
+    }
 
+    fat16_t* fat = (fat16_t*)file->fs->data;
+    diritem_t* item = read_dir_entry(fat, file->p_index);
+    if(item == NULL) {
+        return;
+    }
+
+    item->DIR_FileSize = file->size;
+    item->DIR_FstClusHI = (uint16_t)(file->sblk >> 16);
+    item->DIR_FstClusLO = (uint16_t)(file->sblk & 0xFFFF);
+    write_dir_entry(fat, item, file->p_index);
 }
 
 int fat16fs_seek(file_t* file, uint32_t offset, int dir) {
@@ -347,7 +440,7 @@ static diritem_t* read_dir_entry(fat16_t* fat, int index) {
 }
 
 static int write_dir_entry(fat16_t* fat, diritem_t* dir, int index) {
-    if(index < 0 || index >= fat->root_entry_cnt) {
+    if((index < 0) || (index >= fat->root_entry_cnt)) {
         return -1;
     }
 
@@ -359,9 +452,7 @@ static int write_dir_entry(fat16_t* fat, diritem_t* dir, int index) {
     if(ret < 0) {
         return -1;
     }
-
     kernel_memcpy(fat->fat_buffer + offset % fat->bytes_per_sector, dir, sizeof(diritem_t));
-
     return bwrite_sector(fat, sector);
 }
 
@@ -403,7 +494,7 @@ static int bread_sector(fat16_t* fat, int sector) {
 
     int cnt = dev_read(fat->fs->dev_id, sector, fat->fat_buffer, 1);
     if(cnt == 1) {
-        fat->last_sector= sector;
+        fat->last_sector = sector;
         return 0;
     }
     return -1;
@@ -474,8 +565,12 @@ static int move_file_pos(file_t* file, fat16_t* fat, uint32_t move_bytes, int ex
     // 若pos将在下一个簇中, 那么调整pos到下一簇
     if(c_offset + move_bytes >= fat->cluster_bytes_size) {
         cluster_t next = cluster_get_next(fat, file->cblk);
-        if(next == FAT_CLUSTER_INVALID) {
-            return -1;
+        if((next == FAT_CLUSTER_INVALID) && (expand == 1)) {
+            int ret = expand_file(file, fat->cluster_bytes_size);
+            if(ret < 0) {
+                return -1;
+            }
+            next = cluster_get_next(fat, file->cblk);
         }
         file->cblk = next;
     }
@@ -492,18 +587,20 @@ static cluster_t cluster_get_next(fat16_t* fat, cluster_t curr) {
     // fat表中的扇区号和在扇区中的偏移
     int offset = curr * sizeof(cluster_t);
     int sector = offset / fat->bytes_per_sector;
-    int off_secter = offset % fat->bytes_per_sector;
+    int off_sector = offset % fat->bytes_per_sector;
+
     if(sector >= fat->fat_tbl_sectors) {
         log_print("cluster too big: %d", curr);
         return FAT_CLUSTER_INVALID;
     }
 
+    // 读扇区，然后取其中簇数据
     int ret = bread_sector(fat, fat->fat_tbl_start + sector);
     if(ret < 0) {
         return FAT_CLUSTER_INVALID;
     }
 
-    return *(cluster_t*)(fat->fat_buffer + off_secter);
+    return *(cluster_t*)(fat->fat_buffer + off_sector);
 }
 
 static int cluster_set_next(fat16_t* fat, cluster_t curr, cluster_t next) {
@@ -515,19 +612,23 @@ static int cluster_set_next(fat16_t* fat, cluster_t curr, cluster_t next) {
     // fat表中的扇区号和在扇区中的偏移
     int offset = curr * sizeof(cluster_t);
     int sector = offset / fat->bytes_per_sector;
-    int off_secter = offset % fat->bytes_per_sector;
+    int off_sector = offset % fat->bytes_per_sector;
     
     if(sector >= fat->fat_tbl_sectors) {
         log_print("cluster too big: %d", curr);
         return -1;
     }
 
+    // 读缓存
     int ret = bread_sector(fat, fat->fat_tbl_start + sector);
     if(ret < 0) {
         return -1;
     }
 
-    *(cluster_t*)(fat->fat_buffer + off_secter) = next;
+    // 修改下一簇
+    *(cluster_t*)(fat->fat_buffer + off_sector) = next;
+
+    // 回写到表中
     for(int i = 0; i < fat->fat_tbl_cnt; i++) {
         ret = bwrite_sector(fat, fat->fat_tbl_start + sector);
         if(ret < 0) {
@@ -542,8 +643,88 @@ static int cluster_set_next(fat16_t* fat, cluster_t curr, cluster_t next) {
 static void cluster_free_chain(fat16_t* fat, cluster_t begin) {
     while (cluster_is_valid(begin)) {
         cluster_t next = cluster_get_next(fat, begin);
-
         cluster_set_next(fat, begin, FAT_CLUSTER_FREE);
         begin = next;
     }
+}
+
+static int expand_file(file_t* file, int inc) {
+    fat16_t* fat = (fat16_t*)file->fs->data;
+    
+    int cluster_cnt;
+
+    // 文件为空或者刚好达到簇的末尾
+    if(file->size % fat->cluster_bytes_size == 0) {
+        cluster_cnt = up2(inc, fat->cluster_bytes_size) / fat->cluster_bytes_size;
+    }
+    else {  // 文件非空
+        int cfree = fat->cluster_bytes_size - (file->size % fat->cluster_bytes_size);
+        if(cfree > inc) {
+            return 0;
+        }
+
+        cluster_cnt = up2(inc - cfree, fat->cluster_bytes_size) / fat->cluster_bytes_size;
+        if(cluster_cnt == 0) {
+            cluster_cnt = 1;
+        }
+    }
+
+    cluster_t start = cluster_alloc(fat, cluster_cnt);
+    if(!cluster_is_valid(start)) {
+        log_print("no cluster for file write.");
+        return -1;
+    }
+
+    // 文件关闭时回写
+    if(!cluster_is_valid(file->sblk)) {
+        file->cblk = file->sblk = start;
+    }
+    else {
+        // 建立链接关系
+        int ret = cluster_set_next(fat, file->cblk, start);
+        if(ret < 0) {
+            return -1;
+        }
+    }
+    return 0;
+}
+
+static cluster_t cluster_alloc(fat16_t* fat, int cnt) {
+    cluster_t pre, curr, start;
+    pre = start = FAT_CLUSTER_INVALID;
+    
+    int tot_clus = fat->fat_tbl_sectors * fat->bytes_per_sector / sizeof(cluster_t);
+    for(curr = 2; cnt != 0 && curr < tot_clus; curr++) {
+        cluster_t free = cluster_get_next(fat, curr);
+        if(free == FAT_CLUSTER_FREE) {
+            // 记录首个簇
+            if(!cluster_is_valid(start)) {
+                start = curr;
+            }
+
+            // 若前一个簇有效, 那么设置, 否则忽略 
+            if(cluster_is_valid(pre)) {
+                // 找到空表项, 设置pre与curr的链接
+                int ret = cluster_set_next(fat, pre, curr);
+                if(ret < 0) {
+                    cluster_free_chain(fat, start);
+                    return FAT_CLUSTER_INVALID;
+                }
+            }
+
+            pre = curr;
+            --cnt;
+        }
+    }
+
+    // 最后的节点
+    if(cnt == 0) {
+        int ret = cluster_set_next(fat, pre, FAT_CLUSTER_INVALID);
+        if(ret == 0) {
+            return start;
+        }
+    }
+
+    cluster_free_chain(fat, start);
+    return FAT_CLUSTER_INVALID;
 }

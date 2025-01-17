@@ -21,8 +21,8 @@
 
 #define SFN_LEN                    	 	11                  // sfn文件名长
 
-#define FAT_CLUSTER_INVALID             0xFFF8
-#define FAT_CLUSTER_FREE                0
+#define FAT_CLUSTER_INVALID             0xFFF8              // 无效簇号
+#define FAT_CLUSTER_FREE                0x00                // 空闲簇号
 
 /**
  * @brief 簇
@@ -83,11 +83,11 @@ typedef struct _dbr_t {
  */
 typedef struct _fat16_t {
     // fat文件系统本身信息
-    uint32_t fat_tbl_start;             // FAT表起始地址
+    uint32_t fat_tbl_start;             // FAT表起始扇区号
     uint32_t fat_tbl_cnt;               // FAT表数量
     uint32_t fat_tbl_sectors;           // 每FAT表扇区数
-    uint32_t bytes_per_sector;         // 每扇区字节数
-    uint32_t sectors_per_cluster;      // 每簇扇区数
+    uint32_t bytes_per_sector;          // 每扇区字节数
+    uint32_t sectors_per_cluster;       // 每簇扇区数
     uint32_t root_start;                // 根目录扇区数
     uint32_t root_entry_cnt;            // 根目录的项数
     uint32_t data_start;                // 文件数据起始扇区

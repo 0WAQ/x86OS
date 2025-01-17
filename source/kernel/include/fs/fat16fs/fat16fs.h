@@ -142,4 +142,14 @@ static cluster_t cluster_get_next(fat16_t* fat, cluster_t curr);
  */
 static void cluster_free_chain(fat16_t* fat, cluster_t begin);
 
+/**
+ * @brief 扩充文件
+ */
+static int expand_file(file_t* file, int inc);
+
+/**
+ * @brief 分配簇
+ */
+static cluster_t cluster_alloc(fat16_t* fat, int cnt);
+
 #endif // FAT16FS_H
