@@ -15,6 +15,11 @@
 void fs_init();
 
 /**
+ * @brief 删除文件
+ */
+int sys_unlink(const char* filename);
+
+/**
  * @brief 打开一个文件
  */
 int sys_open(const char* filename, int flags, ...);

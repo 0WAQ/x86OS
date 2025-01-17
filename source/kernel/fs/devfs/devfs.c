@@ -26,6 +26,7 @@ static devfs_type_t dev_type_table[] = {
 fs_op_t devfs_op = {
     .mount = devfs_mount,
     .umount = devfs_umount,
+    .unlink = NULL,
     .open = devfs_open,
     .read = devfs_read,
     .write = devfs_write,

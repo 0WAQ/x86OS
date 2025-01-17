@@ -22,6 +22,7 @@
 #define SFN_LEN                    	 	11                  // sfn文件名长
 
 #define FAT_CLUSTER_INVALID             0xFFF8
+#define FAT_CLUSTER_FREE                0
 
 /**
  * @brief 簇

@@ -88,6 +88,13 @@ int wait(int* status) {
     return sys_call(&args);
 }
 
+int unlink(const char* filename) {
+    syscall_args_t args;
+    args.id = SYS_unlink;
+    args.arg0 = (int)filename;
+    return sys_call(&args);
+}
+
 int open(const char* filename, int flags, ...) {
     syscall_args_t args;
     args.id = SYS_open;

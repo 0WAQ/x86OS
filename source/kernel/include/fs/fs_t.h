@@ -26,6 +26,7 @@ typedef struct _fs_t fs_t;
 typedef struct _fs_op_t {
     int  (*mount)(fs_t* fs, int major, int minor);
     void (*umount)(fs_t* fs);
+    int  (*unlink)(fs_t* fs, const char* filename);
     int  (*open)(fs_t* fs, const char* filepath, file_t* file);
     int  (*read)(char* buf, int size, file_t* file);
     int  (*write)(char* buf, int size, file_t* file);

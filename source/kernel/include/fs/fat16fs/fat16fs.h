@@ -20,6 +20,11 @@ int fat16fs_mount(struct _fs_t* fs, int major, int minor);
 void fat16fs_umount(struct _fs_t* fs);
 
 /**
+ * @brief fa16fs的解引用函数
+ */
+int fat16fs_unlink(struct _fs_t* fs, const char* filename);
+
+/**
  * @brief fat16fs的打开函数
  */
 int fat16fs_open(struct _fs_t* fs, const char* filepath, file_t* file);
@@ -70,6 +75,11 @@ int fat16fs_closedir(struct _fs_t* fs, DIR* dir);
 static diritem_t* read_dir_entry(fat16_t* fat, int index);
 
 /**
+ * @brief 向fat16fs的第index个目录项写入dir
+ */
+static int write_dir_entry(fat16_t* fat, diritem_t* dir, int index);
+
+/**
  * @brief 解析目录项类型
  */
 static file_type_t diritem_parse_type(diritem_t* item);
@@ -85,9 +95,20 @@ static void diritem_parse_name(diritem_t* item, char* dest);
 static int bread_sector(fat16_t* fat, int sector);
 
 /**
+ * @brief 向sector写入数据, 无需缓冲
+ */
+static int bwrite_sector(fat16_t* fat, int sector);
+
+/**
  * @brief 
  */
 static void read_from_diritem(fat16_t* fat, file_t* file, diritem_t* item, int index);
+
+
+/**
+ * @brief 初始化diritem
+ */
+static int diritem_init(diritem_t* item, const char* name, uint8_t attr);
 
 /**
  * @brief 比较name与目录项的Name
@@ -115,5 +136,10 @@ static inline int cluster_is_valid(cluster_t cluster) {
  * @brief 获取下一簇
  */
 static cluster_t cluster_get_next(fat16_t* fat, cluster_t curr);
+
+/**
+ * @brief 删除以begin开始的簇链
+ */
+static void cluster_free_chain(fat16_t* fat, cluster_t begin);
 
 #endif // FAT16FS_H

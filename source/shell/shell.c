@@ -183,9 +183,55 @@ less_quit:
     return 0;
 }
 
+static int do_cp(int argc, char** argv) {
+    if(argc < 3) {
+        fprintf(stderr, "Usage: cp src dest\n");
+        return -1;
+    }
+
+    FILE* from, *to;
+    from = fopen(argv[1], "rb");
+    to = fopen(argv[2], "wb");
+    if(from == NULL || to == NULL) {
+        fprintf(stderr, "open file failed.\n");
+        goto do_cp_failed;
+    }
+
+    char* buf = (char*)malloc(255);
+    int len = 0;
+    while((len = fread(buf, 1, 255, from)) > 0) {
+        fwrite(buf, 1, 255, to);
+    }
+    free(buf);
+
+do_cp_failed:
+    if(from) {
+        fclose(from);
+    }
+    if(to) {
+        fclose(to);
+    }
+    return 0;
+}
+
 // TODO:
 static int do_quit(int argc, char** argv) {
     exit(0);
+    return 0;
+}
+
+static int do_rm(int argc, char** argv) {
+    if(argc < 2) {
+        fprintf(stderr, "no file.\n");
+        return -1;
+    }
+
+    int ret = unlink(argv[1]);
+    if(ret < 0) {
+        fprintf(stderr, "rm file failed: %s.\n", argv[1]);
+        return -1;
+    }
+
     return 0;
 }
 
@@ -214,6 +260,16 @@ static cli_cmd_t cmd_table[] = {
         .name = "less",
         .usage = "less [-l] file -- show file",
         .func = do_less,
+    },
+    {
+        .name = "cp",
+        .usage = "cp src dest",
+        .func = do_cp,
+    },
+    {
+        .name = "rm",
+        .usage = "rm file -- remove file",
+        .func = do_rm,
     },
     // TODO:  测试
     {

@@ -53,6 +53,13 @@ static int is_path_valid(const char* path) {
     return 1;
 }
 
+int sys_unlink(const char* filename) {
+    fs_lock(root_fs);
+    int ret = root_fs->op->unlink(root_fs, filename);
+    fs_unlock(root_fs);
+    return ret;
+}
+
 int sys_open(const char* filename, int flags, ...) {
     // 分配文件描述符链接
     file_t* file = file_alloc();

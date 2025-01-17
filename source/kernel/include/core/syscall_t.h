@@ -19,6 +19,7 @@
 #define SYS_exit        5
 #define SYS_wait        6
 
+#define SYS_unlink      48
 #define SYS_open        50
 #define SYS_read        51
 #define SYS_write       52

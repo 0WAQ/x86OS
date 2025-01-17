@@ -46,6 +46,11 @@ int execve(const char* path, char* const* argv, char* const* env);
 int yield();
 
 /**
+ * @brief 删除文件
+ */
+int unlink(const char* filename);
+
+/**
  * @brief 打开文件
  */
 int open(const char* filename, int flags, ...);

@@ -9,6 +9,7 @@
 #include "core/memory.h"
 #include "tools/klib.h"
 #include "tools/log.h"
+#include <sys/fcntl.h>
 
 /**
  * @brief 设置fat16文件系统的回调函数
@@ -16,6 +17,7 @@
 fs_op_t fat16fs_op = {
     .mount = fat16fs_mount,
     .umount = fat16fs_umount,
+    .unlink = fat16fs_unlink,
     .open = fat16fs_open,
     .read = fat16fs_read,
     .write = fat16fs_write,
@@ -103,12 +105,8 @@ void fat16fs_umount(struct _fs_t* fs) {
     memory_free_page((uint32_t)fat->fat_buffer);
 }
 
-// TODO:
-int fat16fs_open(struct _fs_t* fs, const char* filepath, file_t* file) {
+int fat16fs_unlink(struct _fs_t* fs, const char* filename) {
     fat16_t* fat = (fat16_t*)fs->data;
-    
-    diritem_t* item = NULL;
-    int index = -1;
 
     for(int i = 0; i < fat->root_entry_cnt; i++) {
         diritem_t* p = read_dir_entry(fat, i);
@@ -124,6 +122,39 @@ int fat16fs_open(struct _fs_t* fs, const char* filepath, file_t* file) {
             continue;
         }
 
+        if(diritem_name_match(p, filename)) {
+            cluster_t cluster = (p->DIR_FstClusHI << 16) | (p->DIR_FstClusLO);
+            cluster_free_chain(fat, cluster);
+            
+            kernel_memset(p, 0, sizeof(diritem_t));
+            return write_dir_entry(fat, p, i);
+        }
+    }
+    return -1;
+}
+
+int fat16fs_open(struct _fs_t* fs, const char* filepath, file_t* file) {
+    fat16_t* fat = (fat16_t*)fs->data;
+    
+    diritem_t* item = NULL;
+    int index = -1;
+
+    for(int i = 0; i < fat->root_entry_cnt; i++) {
+        diritem_t* p = read_dir_entry(fat, i);
+        if(p == NULL) {
+            return -1;
+        }
+
+        if(p->DIR_Name[0] == DIRITEM_NAME_END) {
+            index = i;
+            break;
+        }
+
+        if(p->DIR_Name[0] == DIRITEM_NAME_FREE) {
+            index = i;
+            continue;
+        }
+
         if(diritem_name_match(p, filepath)) {
             item = p;
             index = i;
@@ -132,6 +163,18 @@ int fat16fs_open(struct _fs_t* fs, const char* filepath, file_t* file) {
     }
 
     if(item != NULL) {
+        read_from_diritem(fat, file, item, index);
+        return 0;
+    }
+    else if((file->mode & O_CREAT) && (index >= 0)) { // 若item为空, 且需要创建该文件
+        diritem_t itm;
+        diritem_init(&itm, filepath, 0);
+
+        int ret = write_dir_entry(fat, &itm, index);
+        if(ret < 0) {
+            log_print("create file failed.");
+            return -1;
+        }
         read_from_diritem(fat, file, item, index);
         return 0;
     }
@@ -303,6 +346,25 @@ static diritem_t* read_dir_entry(fat16_t* fat, int index) {
     return (diritem_t*)(fat->fat_buffer + offset % fat->bytes_per_sector);
 }
 
+static int write_dir_entry(fat16_t* fat, diritem_t* dir, int index) {
+    if(index < 0 || index >= fat->root_entry_cnt) {
+        return -1;
+    }
+
+    int offset = index * sizeof(diritem_t);
+    int sector = fat->root_start + offset / fat->bytes_per_sector;
+    
+    // 从缓冲中读取扇区
+    int ret = bread_sector(fat, sector);
+    if(ret < 0) {
+        return -1;
+    }
+
+    kernel_memcpy(fat->fat_buffer + offset % fat->bytes_per_sector, dir, sizeof(diritem_t));
+
+    return bwrite_sector(fat, sector);
+}
+
 static file_type_t diritem_parse_type(diritem_t* item) {
     if(item->DIR_Attr & (DIRITEM_ATTR_VOLUME_ID | DIRITEM_ATTR_HIDDEN | DIRITEM_ATTR_SYSTEM)) {
         return FILE_UNKNOWN;
@@ -347,6 +409,11 @@ static int bread_sector(fat16_t* fat, int sector) {
     return -1;
 }
 
+static int bwrite_sector(fat16_t* fat, int sector) {
+    int cnt = dev_write(fat->fs->dev_id, sector, fat->fat_buffer, 1);
+    return (cnt == 1) ? 0 : -1;
+}
+
 static void read_from_diritem(fat16_t* fat, file_t* file, diritem_t* item, int index) {
     file->type = diritem_parse_type(item);
     file->size = item->DIR_FileSize;
@@ -354,6 +421,21 @@ static void read_from_diritem(fat16_t* fat, file_t* file, diritem_t* item, int i
     file->p_index = index;
     file->sblk = (item->DIR_FstClusHI << 16) | (item->DIR_FstClusLO);
     file->cblk = file->sblk;
+}
+
+static int diritem_init(diritem_t* item, const char* name, uint8_t attr) {
+    to_sfn((char*)item->DIR_Name, name);
+    item->DIR_FstClusHI = (uint16_t)(FAT_CLUSTER_INVALID >> 16);
+    item->DIR_FstClusLO = (uint16_t)(FAT_CLUSTER_INVALID & 0xFFFF);
+    item->DIR_FileSize = 0;
+    item->DIR_Attr = attr;
+    item->DIR_NTRes = 0;
+    item->DIR_CrtTime= 0;
+    item->DIR_CrtDate = 0;
+    item->DIR_WrtTime = 0;
+    item->DIR_WrtDate = 0;
+    item->DIR_LastAccDate = 0;
+    return 0;
 }
 
 static int diritem_name_match(diritem_t* item, const char* name) {
@@ -422,4 +504,46 @@ static cluster_t cluster_get_next(fat16_t* fat, cluster_t curr) {
     }
 
     return *(cluster_t*)(fat->fat_buffer + off_secter);
+}
+
+static int cluster_set_next(fat16_t* fat, cluster_t curr, cluster_t next) {
+    // 若curr无效
+    if(!cluster_is_valid(curr)) {
+        return -1;
+    }
+
+    // fat表中的扇区号和在扇区中的偏移
+    int offset = curr * sizeof(cluster_t);
+    int sector = offset / fat->bytes_per_sector;
+    int off_secter = offset % fat->bytes_per_sector;
+    
+    if(sector >= fat->fat_tbl_sectors) {
+        log_print("cluster too big: %d", curr);
+        return -1;
+    }
+
+    int ret = bread_sector(fat, fat->fat_tbl_start + sector);
+    if(ret < 0) {
+        return -1;
+    }
+
+    *(cluster_t*)(fat->fat_buffer + off_secter) = next;
+    for(int i = 0; i < fat->fat_tbl_cnt; i++) {
+        ret = bwrite_sector(fat, fat->fat_tbl_start + sector);
+        if(ret < 0) {
+            log_print("write cluster failed.");
+            return -1;
+        }
+        sector += fat->fat_tbl_sectors;
+    }
+    return 0; 
+}
+
+static void cluster_free_chain(fat16_t* fat, cluster_t begin) {
+    while (cluster_is_valid(begin)) {
+        cluster_t next = cluster_get_next(fat, begin);
+
+        cluster_set_next(fat, begin, FAT_CLUSTER_FREE);
+        begin = next;
+    }
 }
