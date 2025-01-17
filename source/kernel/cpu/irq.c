@@ -5,6 +5,7 @@
  */
 #include "cpu/cpu.h"
 #include "cpu/irq.h"
+#include "core/task.h"
 #include "os_cfg.h"
 #include "common/cpu_instr.h"
 #include "tools/log.h"
@@ -143,7 +144,16 @@ void do_default_handler(exception_frame_t* frame, const char* msg) {
 	log_print("------------------------------");
 	log_print("IRQ/Exception happened %s", msg);
 	dump_core_regs(frame);
-    for(;;) { hlt(); }
+
+	// 判断cs的低2位(特权级别), 若是用户程序触发, 那么退出
+	if(frame->cs & 0x3) {
+		sys_exit(frame->errno);
+	}
+	else {
+    	while(1) { 
+			hlt();
+		}
+	}
 }
 
 void dump_core_regs(exception_frame_t* frame) {
@@ -256,7 +266,16 @@ void do_handler_general_protection(exception_frame_t * frame) {
     log_print("segment index: %d", frame->errno & 0xFFF8);
 
     dump_core_regs(frame);
-    while(1) { hlt(); }	
+
+	// 判断cs的低2位(特权级别), 若是用户程序触发, 那么退出
+	if(frame->cs & 0x3) {
+		sys_exit(frame->errno);
+	}
+	else {
+    	while(1) { 
+			hlt();
+		}
+	}
 }
 
 void do_handler_page_fault(exception_frame_t * frame) {
@@ -280,7 +299,16 @@ void do_handler_page_fault(exception_frame_t * frame) {
         log_print("  A supervisor-mode access caused the fault: 0x%x", read_cr2());
 
     dump_core_regs(frame);
-    while(1) { hlt(); }
+
+	// 判断cs的低2位(特权级别), 若是用户程序触发, 那么退出
+	if(frame->cs & 0x3) {
+		sys_exit(frame->errno);
+	}
+	else {
+    	while(1) { 
+			hlt();
+		}
+	}
 }
 
 void do_handler_fpu_error(exception_frame_t * frame) {

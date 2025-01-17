@@ -35,7 +35,7 @@ if %errorlevel% neq 0 (
 del a.txt
 
 @REM 复制应用程序
-@REM copy /Y init.elf %TARGET_PATH%:\init
+copy /Y init.elf %TARGET_PATH%:\init
 copy /Y shell.elf %TARGET_PATH%:\shell.elf
 copy /Y loop %TARGET_PATH%:\loop
 
