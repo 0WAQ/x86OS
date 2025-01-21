@@ -745,12 +745,13 @@ file_t* get_task_file(int fd) {
     return NULL;
 }
 
-int task_alloc_fd(file_t* file) {
+int task_alloc_fd(file_t* pfile) {
     task_t* task = get_curr_task();
+    // 遍历寻找空闲的文件表 
     for(int i = 0; i < TASK_OFILE_NR; i++) {
         file_t* p = task->file_table[i];
         if(p == NULL) {
-            task->file_table[i] = file;
+            task->file_table[i] = pfile;
             return i;
         }
     }

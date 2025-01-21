@@ -7,24 +7,24 @@
 #include "ipc/mutex.h"
 #include "tools/klib.h"
 
-// 系统中可打开的文件表
-static file_t file_table[FILE_TABLE_NR];
+// 系统文件表
+static file_t sys_file_table[SYS_OFILE_NR];
 
 // 访问file_table的互斥锁
-static mutex_t mtx_file_alloc;
+static mutex_t mtx;
 
 void file_table_init() {
-    mutex_init(&mtx_file_alloc);
-    kernel_memset(&file_table, 0, sizeof(file_table));
+    mutex_init(&mtx);
+    kernel_memset(&sys_file_table, 0, sizeof(sys_file_table));
 }
 
 file_t* file_alloc() {
     file_t* file = NULL;
+    mutex_lock(&mtx);
 
-    mutex_lock(&mtx_file_alloc);
-
-    for(int i = 0; i < FILE_TABLE_NR; i++) {
-        file_t* p = file_table + i;
+    // 遍历系统文件表, 寻找一个空块
+    for(int i = 0; i < SYS_OFILE_NR; i++) {
+        file_t* p = sys_file_table + i;
         if(p->ref == 0) {
             kernel_memset((void*)p, 0, sizeof(file_t));
             p->ref = 1;
@@ -33,24 +33,20 @@ file_t* file_alloc() {
         }
     }
 
-    mutex_unlock(&mtx_file_alloc);
-
+    mutex_unlock(&mtx);
     return file;
 }
 
-void file_free(file_t* file) {
-    mutex_lock(&mtx_file_alloc);
-
+void file_dec_ref(file_t* file) {
+    mutex_lock(&mtx);
     if(file->ref != 0) {
         --file->ref;
     }
-
-    mutex_unlock(&mtx_file_alloc);
+    mutex_unlock(&mtx);
 }
 
-
 void file_inc_ref(file_t* file) {
-    mutex_lock(&mtx_file_alloc);
+    mutex_lock(&mtx);
     file->ref++;
-    mutex_unlock(&mtx_file_alloc);
+    mutex_unlock(&mtx);
 }

@@ -9,7 +9,7 @@
 #include "common/types.h"
 
 #define FILENAME_SIZE           (32)
-#define FILE_TABLE_NR           (2048)
+#define SYS_OFILE_NR           (2048)   // 系统中最多打开的文件数
 
 /**
  * @brief 文件类型

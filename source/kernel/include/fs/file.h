@@ -19,9 +19,9 @@ void file_table_init();
 file_t* file_alloc();
 
 /**
- * @brief 释放一个文件
+ * @brief 介绍file的引用计数(计数为0时释放file)
  */
-void file_free(file_t* file);
+void file_dec_ref(file_t* file);
 
 /**
  * @brief 增加file的引用计数

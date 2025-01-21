@@ -15,53 +15,53 @@
 void fs_init();
 
 /**
- * @brief 删除文件
+ * @brief 系统调用: 删除文件(减少引用计数)
  */
 int sys_unlink(const char* filename);
 
 /**
- * @brief 打开一个文件
+ * @brief 系统调用: 打开一个文件
  */
 int sys_open(const char* filename, int flags, ...);
 
 /**
- * @brief 从fd对应的文件中读取
+ * @brief 系统调用: 从fd对应的文件中读取
  */
 int sys_read(int fd, char* buf, int len);
 
 /**
- * @brief 向fd对应的文件写
+ * @brief 系统调用: 向fd对应的文件写
  */
 int sys_write(int fd, char* buf, int len);
 
 /**
- * @brief 定位fd的读取写入位置
+ * @brief 系统调用: 定位fd的读取写入位置
  */
 int sys_lseek(int fd, int offset, int dir);
 
 /**
- * @brief 关闭fd
+ * @brief 系统调用: 关闭fd
  */
 int sys_close(int fd);
 
 /**
- * @brief
+ * @brief 系统调用: 判断fd是否是一个tty设备
  */
 int sys_isatty(int fd);
 
 /**
- * @brief
+ * @brief 系统调用: 返回文件状态信息 TODO: 增加各个fs的fstat实现
  */
 struct stat;
 int sys_fstat(int fd, struct stat* st);
 
 /**
- * @brief io控制系统调用
+ * @brief 系统调用: 对输入输出设备进行控制 TODO: 将其改为可变参传递(前提: 将系统调用改为可变参传递)
  */
 int sys_ioctl(int fd, int cmd, int arg0, int arg1);
 
 /**
- * @brief 系统调用dup
+ * @brief 系统调用: 拷贝(增加引用计数)fd对应的file
  */
 int sys_dup(int fd);
 
@@ -97,14 +97,14 @@ static fs_op_t* get_fs_op(fs_type_t type, int major);
 static fs_t* mount(fs_type_t type, char* mount_point, int dev_major, int dev_minor);
 
 /**
- * @brief
+ * @brief 寻找path中下一个子路径
  */
 const char* path_next_child(const char* path);
 
 /**
- * @brief
+ * @brief 将path转换为int类型
  */
-int path_to_num(const char* path, int* num);
+int string_to_int(const char* path, int* num);
 
 /**
  * @brief 判断path是否以str开头

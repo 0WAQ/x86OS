@@ -3,7 +3,7 @@
  * 硬件定时器配置
  * 
  */
-#include "dev/time.h"
+#include "dev/timer.h"
 #include "common/cpu_instr.h"
 #include "os_cfg.h"
 #include "core/task.h"
@@ -11,7 +11,7 @@
 static uint32_t sys_tick; // 系统启动后的tick数量
 
 
-void time_init() {
+void timer_init() {
     sys_tick = 0;
     pit_init();
 }

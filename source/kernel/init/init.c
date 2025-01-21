@@ -9,7 +9,7 @@
 #include "cpu/irq.h"
 #include "ipc/sem.h"
 #include "fs/fs.h"
-#include "dev/time.h"
+#include "dev/timer.h"
 #include "dev/console.h"
 #include "dev/kbd.h"
 #include "tools/log.h"
@@ -40,7 +40,7 @@ void kernel_init(boot_info_t* boot_info) {
     fs_init();
 
     // 初始化定时器
-    time_init();
+    timer_init();
 
     // 初始化任务管理器
     task_manager_init();

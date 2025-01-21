@@ -6,14 +6,14 @@
 #ifndef TIME_H
 #define TIME_H
 
-#include "time_t.h"
+#include "timer_t.h"
 #include "common/types.h"
 #include "cpu/irq.h"
 
 /**
  * @brief 初始化定时器
  */
-void time_init();
+void timer_init();
 
 /**
  * @brief 初始化硬件定时器

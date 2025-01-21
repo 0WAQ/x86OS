@@ -10,17 +10,6 @@
 #include "tools/log.h"
 
 /**
- * @brief 设备类型表
- */
-static devfs_type_t dev_type_table[] = {
-    {
-        .name = "tty",
-        .dev_type = DEV_TTY,
-        .file_type = FILE_TTY,
-    },
-};
-
-/**
  * @brief 设置devfs的回调函数
  */
 fs_op_t devfs_op = {
@@ -39,12 +28,23 @@ fs_op_t devfs_op = {
     .closedir = devfs_closedir
 };
 
+/**
+ * @brief 设备类型表
+ */
+static devfs_type_t dev_type_table[] = {
+    {
+        .name = "tty",
+        .dev_type = DEV_TTY,
+        .file_type = FILE_TTY,
+    },
+};
+
 int devfs_mount(fs_t* fs, int major, int minor) {
-    fs->type = FS_DEVFS;
+    return 0;
 }
 
 void devfs_umount(fs_t* fs) {
-
+    return;
 }
 
 int devfs_open(fs_t* fs, const char* filepath, file_t* file) {
@@ -58,7 +58,7 @@ int devfs_open(fs_t* fs, const char* filepath, file_t* file) {
         if(kernel_strncmp(filepath, type->name, type_name_len) == 0) {
             int minor;
             if((kernel_strlen(filepath) > type_name_len) && 
-               (path_to_num(filepath + type_name_len, &minor) < 0)) {
+               (string_to_int(filepath + type_name_len, &minor) < 0)) {
                 
                 log_print("Get device num failed. %s", filepath);
                 break;
