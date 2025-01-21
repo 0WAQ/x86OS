@@ -4,12 +4,26 @@
  * 
  */
 #include "dev/timer.h"
+#include "dev/dev.h"
 #include "common/cpu_instr.h"
 #include "os_cfg.h"
 #include "core/task.h"
 
-static uint32_t sys_tick; // 系统启动后的tick数量
+/**
+ * @brief timer的设备层回调函数
+ */
+dev_desc_t dev_timer_desc = {
+    .name = "timer",
+    .major = DEV_TIMER,
+    .open = NULL,
+    .read = NULL,
+    .write = NULL,
+    .control = NULL,
+    .close = NULL
+};
 
+
+static uint32_t sys_tick; // 系统启动后的tick数量
 
 void timer_init() {
     sys_tick = 0;

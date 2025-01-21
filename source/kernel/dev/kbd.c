@@ -11,7 +11,7 @@
 #include "tools/log.h"
 
 /**
- * @brief
+ * @brief 键盘按压状态
  */
 static kbd_state_t kbd_stat;
 

@@ -1,6 +1,6 @@
 /**
  * 
- * 设备描述基本类型
+ * 设备管理层基本类型
  * 
  */
 #ifndef DEV_T_H
@@ -13,6 +13,7 @@ enum {
     DEV_UNKNOWN = 0,
     DEV_TTY,
     DEV_DISK,
+    DEV_TIMER,
 };
 
 struct _dev_desc_t;

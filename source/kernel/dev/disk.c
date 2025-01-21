@@ -13,18 +13,7 @@
 #include "common/boot_info.h"
 
 /**
- * @brief 磁盘表
- */
-static disk_t disk_table[DISK_CNT];
-
-// 互斥锁与信号量
-static mutex_t mtx;
-static sem_t sem;
-
-static int task_no_op;
-
-/**
- * @brief disk的描述结构
+ * @brief disk的设备层回调函数
  */
 dev_desc_t dev_disk_desc = {
     .name = "disk",
@@ -33,8 +22,13 @@ dev_desc_t dev_disk_desc = {
     .read = disk_read,
     .write = disk_write,
     .control = disk_control,
-    .close = disk_close,
+    .close = disk_close
 };
+
+static disk_t disk_table[DISK_CNT];     // 磁盘表
+static mutex_t mtx;
+static sem_t sem;
+static int task_no_op;
 
 void disk_init() {
     log_print("Check disk...");

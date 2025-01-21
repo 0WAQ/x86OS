@@ -12,7 +12,7 @@
 #include "tools/log.h"
 
 /**
- * @brief tty的描述结构
+ * @brief tty的设备层回调函数
  */
 dev_desc_t dev_tty_desc = {
     .name = "tty",
@@ -21,7 +21,7 @@ dev_desc_t dev_tty_desc = {
     .read = tty_read,
     .write = tty_write,
     .control = tty_control,
-    .close = tty_close,
+    .close = tty_close
 };
 
 static tty_t tty_devs[TTY_NR];

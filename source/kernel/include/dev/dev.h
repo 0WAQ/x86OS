@@ -1,6 +1,6 @@
 /**
  * 
- * 设备描述头文件
+ * 设备管理层头文件
  * 
  */
 #ifndef DEV_H
@@ -9,7 +9,7 @@
 #include "dev_t.h"
 
 /**
- * @brief
+ * @brief 
  */
 int dev_open(int major, int minor, void* data);
 
