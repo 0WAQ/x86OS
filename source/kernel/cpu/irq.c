@@ -15,7 +15,7 @@ static gate_desc_t idt_table[IDT_TABLE_SIZE];
 
 void irq_init() {
     for(int i = 0; i < IDT_TABLE_SIZE; i++) {
-        gate_desc_set(idt_table + i, KERNEL_SELECTOR_CS, (uint32_t)exception_handler_unknown, 
+        set_gate_desc(idt_table + i, KERNEL_SELECTOR_CS, (uint32_t)exception_handler_unknown, 
             GATE_ATTR_TYPE_INTR | GATE_ATTR_P | GATE_ATTR_DPL0 | GATE_ATTR_D);
     }
 
@@ -53,7 +53,7 @@ int irq_install(int irq_num, irq_handler_t handler) {
     }
 
     // 设置门描述符，将irq_num这个异常号与handler绑定
-    gate_desc_set(idt_table + irq_num, KERNEL_SELECTOR_CS, (uint32_t)handler, 
+    set_gate_desc(idt_table + irq_num, KERNEL_SELECTOR_CS, (uint32_t)handler, 
         GATE_ATTR_TYPE_INTR | GATE_ATTR_P | GATE_ATTR_DPL0 | GATE_ATTR_D);
 }
 

@@ -8,9 +8,6 @@
 
 #include "common/types.h"
 
-#pragma pack(1)
-
-
 ////// 段描述符表的属性
 #define DESC_ATTR_G         (1 << 15)   // 粒度位
 #define DESC_ATTR_D         (1 << 14)
@@ -95,7 +92,7 @@ typedef struct _segment_desc_t {
     uint16_t attr;          // 8 ~ 23
     uint8_t  base24_31;     // 24 ~ 31
 
-}segment_desc_t;
+}__attribute__((packed)) segment_desc_t;
 
 /**
  * IDT表项(三者中的中断门)，调用门描述符
@@ -105,7 +102,7 @@ typedef struct _gate_desc_t {
     uint16_t selector;      // 16 ~ 31
     uint16_t attr;          // 0 ~ 15
     uint16_t offset31_16;   // 16 ~ 31
-}gate_desc_t;
+}__attribute__((packed)) gate_desc_t;
 
 /**
  * 任务状态段
@@ -119,8 +116,6 @@ typedef struct _tss_t {
     uint32_t ldt;
     uint32_t iomap;     // 控制IO访问相关信息
     // uint32_t ssp;
-}tss_t;
-
-#pragma pack()
+}__attribute__((packed)) tss_t;
 
 #endif // CPU_T_H

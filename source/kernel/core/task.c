@@ -108,7 +108,7 @@ int tss_init(task_t* task, uint32_t flag, uint32_t entry, uint32_t esp) {
     }
 
     // 注册为tss段，段的起始地址就是&task->tss，偏移为tss的大小
-    segment_desc_set(tss_sel, (uint32_t)&task->tss, sizeof(tss_t), 
+    set_segment_desc(tss_sel, (uint32_t)&task->tss, sizeof(tss_t), 
         DESC_ATTR_P | DESC_ATTR_DPL0 | DESC_ATTR_TYPE_TSS   
     );
 
@@ -184,14 +184,14 @@ void task_manager_init() {
 
     // 创建两个特权级为3的段
     int data_sel = gdt_alloc_desc();
-    segment_desc_set(data_sel, 0x00000000, 0xFFFFFFFF, 
+    set_segment_desc(data_sel, 0x00000000, 0xFFFFFFFF, 
         DESC_ATTR_P | DESC_ATTR_DPL3 | DESC_ATTR_S_USR | 
         DESC_ATTR_TYPE_DATA | DESC_ATTR_TYPE_RW | DESC_ATTR_D
     );
     task_manager.data_sel = data_sel;
 
     int code_sel = gdt_alloc_desc();
-    segment_desc_set(code_sel, 0x00000000, 0xFFFFFFFF, 
+    set_segment_desc(code_sel, 0x00000000, 0xFFFFFFFF, 
         DESC_ATTR_P | DESC_ATTR_DPL3 | DESC_ATTR_S_USR | 
         DESC_ATTR_TYPE_CODE | DESC_ATTR_TYPE_RW | DESC_ATTR_D
     );

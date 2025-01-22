@@ -19,7 +19,7 @@ int sys_call(syscall_args_t * args) {
         "push %[arg0]\n\t"
         "push %[id]\n\t"
         "lcalll *(%[a])"
-        :"=a"(ret)  // 返回值通过eax寄存器传递给ret
+        :"=a"(ret)          // 返回值通过eax寄存器传递给ret
         :[arg3]"r"(args->arg3), [arg2]"r"(args->arg2), [arg1]"r"(args->arg1),
          [arg0]"r"(args->arg0), [id]"r"(args->id), [a]"r"(addr)
     );

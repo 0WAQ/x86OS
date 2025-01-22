@@ -44,14 +44,15 @@ typedef int(*syscall_handler_t)(uint32_t, uint32_t, uint32_t, uint32_t);
  * @brief 执行系统调用时的栈帧
  */
 typedef struct _syscall_frame_t {
+    // 以下是syscall.S中exception_handler_syscall中压入的寄存器
     uint32_t eflags;
     uint32_t gs, fs, es, ds;
     uint32_t edi, esi, ebp, dummy_esp, ebx, edx, ecx, eax;
 
     // 以下是在切换栈时cpu压入的参数
-    uint32_t eip, cs;
-    uint32_t id, arg0, arg1, arg2, arg3;
-    uint32_t esp, ss;
+    uint32_t eip, cs;                       // 执行长跳转时cpu自动压入的
+    uint32_t id, arg0, arg1, arg2, arg3;    // 在sys_call中压入的参数
+    uint32_t esp, ss;                       // cpu在内核栈压入的用户态的栈位置
 }syscall_frame_t;
 
 #endif // SYSCALL_T_H
