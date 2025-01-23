@@ -7,7 +7,7 @@
 #define TIME_H
 
 #include "timer_t.h"
-#include "common/types.h"
+#include "cpu/cpu_t.h"
 #include "cpu/irq.h"
 
 /**

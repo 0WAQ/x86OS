@@ -114,7 +114,7 @@ void kbd_init() {
         update_capslk_led_status();
         update_numlk_led_status();
 
-        irq_install(IRQ1_KEYBOARD, (irq_handler_t)exception_handler_kbd);
+        irq_install(IRQ1_KEYBOARD, GATE_ATTR_DPL0, exception_handler_kbd);
         irq_enable(IRQ1_KEYBOARD);
     }
 }

@@ -15,34 +15,33 @@
 static gate_desc_t idt_table[IDT_TABLE_SIZE];
 
 void irq_init() {
+
+	// 设置默认中断处理函数
     for(int i = 0; i < IDT_TABLE_SIZE; i++) {
-        set_gate_desc(idt_table + i, KERNEL_SELECTOR_CS, (uint32_t)exception_handler_unknown, 
-            GATE_ATTR_TYPE_INTR | GATE_ATTR_P | GATE_ATTR_DPL0 | GATE_ATTR_D);
+		irq_install(i, GATE_ATTR_DPL0, exception_handler_unknown);
     }
 
     // 安装异常处理接口
-    irq_install(IRQ0_DE,  exception_handler_divider);
-    irq_install(IRQ1_DB,  exception_handler_debug);
-	irq_install(IRQ2_NMI, exception_handler_NMI);
-	irq_install(IRQ3_BP,  exception_handler_breakpoint);
-	irq_install(IRQ4_OF,  exception_handler_overflow);
-	irq_install(IRQ5_BR,  exception_handler_bound_range);
-	irq_install(IRQ6_UD,  exception_handler_invalid_opcode);
-	irq_install(IRQ7_NM,  exception_handler_device_unavailable);
-	irq_install(IRQ8_DF,  exception_handler_double_fault);
-	irq_install(IRQ10_TS, exception_handler_invalid_tss);
-	irq_install(IRQ11_NP, exception_handler_segment_not_present);
-	irq_install(IRQ12_SS, exception_handler_stack_segment_fault);
-	irq_install(IRQ13_GP, exception_handler_general_protection);
-	irq_install(IRQ14_PF, exception_handler_page_fault);
-	irq_install(IRQ16_MF, exception_handler_fpu_error);
-	irq_install(IRQ17_AC, exception_handler_alignment_check);
-	irq_install(IRQ18_MC, exception_handler_machine_check);
-	irq_install(IRQ19_XM, exception_handler_smd_exception);
-	irq_install(IRQ20_VE, exception_handler_virtual_exception);
-
-	set_gate_desc(idt_table + 0x80, KERNEL_SELECTOR_CS, (uint32_t)exception_handler_syscall, 
-        GATE_ATTR_TYPE_INTR | GATE_ATTR_P | GATE_ATTR_DPL3);
+    irq_install(IRQ0_DE,  GATE_ATTR_DPL0, exception_handler_divider);
+    irq_install(IRQ1_DB,  GATE_ATTR_DPL0, exception_handler_debug);
+	irq_install(IRQ2_NMI, GATE_ATTR_DPL0, exception_handler_NMI);
+	irq_install(IRQ3_BP,  GATE_ATTR_DPL0, exception_handler_breakpoint);
+	irq_install(IRQ4_OF,  GATE_ATTR_DPL0, exception_handler_overflow);
+	irq_install(IRQ5_BR,  GATE_ATTR_DPL0, exception_handler_bound_range);
+	irq_install(IRQ6_UD,  GATE_ATTR_DPL0, exception_handler_invalid_opcode);
+	irq_install(IRQ7_NM,  GATE_ATTR_DPL0, exception_handler_device_unavailable);
+	irq_install(IRQ8_DF,  GATE_ATTR_DPL0, exception_handler_double_fault);
+	irq_install(IRQ10_TS, GATE_ATTR_DPL0, exception_handler_invalid_tss);
+	irq_install(IRQ11_NP, GATE_ATTR_DPL0, exception_handler_segment_not_present);
+	irq_install(IRQ12_SS, GATE_ATTR_DPL0, exception_handler_stack_segment_fault);
+	irq_install(IRQ13_GP, GATE_ATTR_DPL0, exception_handler_general_protection);
+	irq_install(IRQ14_PF, GATE_ATTR_DPL0, exception_handler_page_fault);
+	irq_install(IRQ16_MF, GATE_ATTR_DPL0, exception_handler_fpu_error);
+	irq_install(IRQ17_AC, GATE_ATTR_DPL0, exception_handler_alignment_check);
+	irq_install(IRQ18_MC, GATE_ATTR_DPL0, exception_handler_machine_check);
+	irq_install(IRQ19_XM, GATE_ATTR_DPL0, exception_handler_smd_exception);
+	irq_install(IRQ20_VE, GATE_ATTR_DPL0, exception_handler_virtual_exception);
+	irq_install(IRQ_0x80, GATE_ATTR_DPL3, exception_handler_syscall);
 
     lidt((uint32_t)idt_table, sizeof(idt_table));
 
@@ -51,14 +50,14 @@ void irq_init() {
 }
 
 // 安装irq
-int irq_install(int irq_num, irq_handler_t handler) {
+int irq_install(int irq_num, int perm, irq_handler_t handler) {
     if(irq_num >= IDT_TABLE_SIZE) {
         return -1;
     }
 
     // 设置门描述符，将irq_num这个异常号与handler绑定
     set_gate_desc(idt_table + irq_num, KERNEL_SELECTOR_CS, (uint32_t)handler, 
-        GATE_ATTR_TYPE_INTR | GATE_ATTR_P | GATE_ATTR_DPL0 | GATE_ATTR_D);
+        GATE_ATTR_TYPE_INTR | GATE_ATTR_P | perm | GATE_ATTR_D);
 }
 
 void pic_init(void) {

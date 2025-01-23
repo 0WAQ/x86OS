@@ -34,7 +34,7 @@
 
 // 22 ~ 31, intel reversed. Do not used.
 // 32 ~ 255, User Defined (Non-reserved) interrupts, Interrupt
-
+#define IRQ_0x80    0x80    // 系统调用
 
 // 
 #define IRQ0_TIMER              0x20

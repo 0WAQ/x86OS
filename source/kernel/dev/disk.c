@@ -168,7 +168,7 @@ int disk_open(device_t* dev) {
     dev->data = part_info;
 
     // 安装并打开中断
-    irq_install(IRQ14_HARDDISK_PRIMARY, (irq_handler_t)exception_handler_ide_primary);
+    irq_install(IRQ14_HARDDISK_PRIMARY, GATE_ATTR_DPL0, exception_handler_ide_primary);
     irq_enable(IRQ14_HARDDISK_PRIMARY);
     return 0;
 }

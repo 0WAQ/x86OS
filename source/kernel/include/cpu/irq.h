@@ -16,7 +16,7 @@ void irq_init();
 /**
  * @brief 将对应的异常与异常处理函数绑定
  */
-int irq_install(int irq_num, irq_handler_t handler);
+int irq_install(int irq_num, int perm, irq_handler_t handler);
 
 /**
  * @brief 初始化pic

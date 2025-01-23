@@ -37,7 +37,7 @@ void pit_init() {
     outb(PIT_CHANNEL0_DATA_PORT, reload_count & 0xFF);          // 加载低8位
     outb(PIT_CHANNEL0_DATA_PORT, (reload_count >> 8) & 0xFF);   // 加载高8位
 
-    irq_install(IRQ0_TIMER, (irq_handler_t)exception_handler_timer);
+    irq_install(IRQ0_TIMER, GATE_ATTR_DPL0, exception_handler_timer);
     irq_enable(IRQ0_TIMER);
 }
 

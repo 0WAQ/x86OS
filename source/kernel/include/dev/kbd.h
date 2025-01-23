@@ -7,6 +7,7 @@
 #define KBD_H
 
 #include "kbd_t.h"
+#include "cpu/cpu_t.h"
 #include "cpu/irq_t.h"
 
 /**
