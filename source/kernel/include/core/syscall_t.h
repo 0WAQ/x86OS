@@ -35,8 +35,6 @@
 #define SYS_readdir     61
 #define SYS_closedir    62
 
-#define SYS_print       100
-
 
 typedef int(*syscall_handler_t)(uint32_t, uint32_t, uint32_t, uint32_t);
 

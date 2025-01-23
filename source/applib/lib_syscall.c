@@ -60,14 +60,6 @@ int getpid() {
     return sys_call(&args);
 }
 
-int print(const char* fmt, int arg) {
-    syscall_args_t args;
-    args.id = SYS_print;
-    args.arg0 = (uint32_t)fmt;
-    args.arg1 = arg;
-    return sys_call(&args);
-}
-
 int fork() {
     syscall_args_t args;
     args.id = SYS_fork;

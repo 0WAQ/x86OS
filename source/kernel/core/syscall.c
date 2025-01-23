@@ -9,11 +9,6 @@
 #include "fs/fs.h"
 #include "tools/log.h"
 
-// 临时 TODO:
-void sys_print(char* fmt, int arg) {
-    log_print(fmt, arg);
-}
-
 static const 
 syscall_handler_t sys_table[] = {
     [SYS_sleep]  = (syscall_handler_t)sys_sleep,
@@ -39,8 +34,6 @@ syscall_handler_t sys_table[] = {
     [SYS_opendir]  = (syscall_handler_t)sys_opendir,
     [SYS_readdir]  = (syscall_handler_t)sys_readdir,
     [SYS_closedir] = (syscall_handler_t)sys_closedir,
-
-    [SYS_print]  = (syscall_handler_t)sys_print,
 };
 
 /* XXX

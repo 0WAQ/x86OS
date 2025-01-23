@@ -26,11 +26,6 @@ int msleep(int ms);
 int getpid();
 
 /**
- * @brief 打印, 临时 TODO:
- */
-int print(const char* fmt, int arg);
-
-/**
  * @brief 创建子进程
  */
 int fork();
