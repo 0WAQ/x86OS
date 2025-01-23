@@ -11,7 +11,7 @@
 
 /**
  * @brief 初始化任务
- * @param esp 内核栈的栈顶
+ * @param esp 任务的用户栈
  */
 int task_init(task_t* task, const char* name, uint32_t flag, uint32_t entry, uint32_t esp);
 

@@ -7,6 +7,8 @@
 #include "core/syscall.h"
 #include "os_cfg.h"
 
+/*
+// XXX 通过调用门实现系统调用
 static inline
 int sys_call(syscall_args_t * args) {
 	uint32_t addr[] = {0, SELECTOR_SYSCALL | 0};
@@ -21,6 +23,20 @@ int sys_call(syscall_args_t * args) {
         :"=a"(ret)  // 返回值通过eax寄存器传递给ret
         :[arg3]"r"(args->arg3), [arg2]"r"(args->arg2), [arg1]"r"(args->arg1),
          [arg0]"r"(args->arg0), [id]"r"(args->id), [a]"r"(addr)
+    );
+    return ret;
+}
+*/
+
+// 通过中断实现系统调用
+static inline
+int sys_call(syscall_args_t * args) {
+    int ret;
+    __asm__ __volatile__(
+        "int $0x80"
+        :"=a"(ret)          // 返回值通过eax寄存器传递给ret
+        :"S"(args->arg3), "d"(args->arg2), "c"(args->arg1),
+         "b"(args->arg0), "a"(args->id)
     );
     return ret;
 }

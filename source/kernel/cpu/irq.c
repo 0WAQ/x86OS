@@ -6,6 +6,7 @@
 #include "cpu/cpu.h"
 #include "cpu/irq.h"
 #include "core/task.h"
+#include "core/syscall.h"
 #include "os_cfg.h"
 #include "common/cpu_instr.h"
 #include "tools/log.h"
@@ -39,6 +40,9 @@ void irq_init() {
 	irq_install(IRQ18_MC, exception_handler_machine_check);
 	irq_install(IRQ19_XM, exception_handler_smd_exception);
 	irq_install(IRQ20_VE, exception_handler_virtual_exception);
+
+	set_gate_desc(idt_table + 0x80, KERNEL_SELECTOR_CS, (uint32_t)exception_handler_syscall, 
+        GATE_ATTR_TYPE_INTR | GATE_ATTR_P | GATE_ATTR_DPL3);
 
     lidt((uint32_t)idt_table, sizeof(idt_table));
 

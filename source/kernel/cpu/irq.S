@@ -65,11 +65,14 @@ exception_handler machine_check, 18, 0
 exception_handler smd_exception, 19, 0
 exception_handler virtual_exception, 20, 0
 
+# 系统调用的中断处理函数
+exception_handler syscall, 0x80, 0
+
 # 定时器的中断处理函数
 exception_handler timer, 0x20, 0
 
-# 键盘的终中断处理函数
+# 键盘的中断处理函数
 exception_handler kbd, 0x21, 0
 
-# 硬盘
+# 硬盘的中断处理函数
 exception_handler ide_primary, 0x2E, 0
