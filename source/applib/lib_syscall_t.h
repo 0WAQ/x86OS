@@ -9,10 +9,9 @@
 #include "common/types.h"
 
 /**
- * @brief 系统调用号及参数
+ * @brief 系统调用的参数
  */
 typedef struct _syscall_args_t {
-    int id;
     int arg0, arg1, arg2, arg3;
 }syscall_args_t;
 

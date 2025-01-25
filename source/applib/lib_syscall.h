@@ -13,7 +13,7 @@
  * @brief 系统调用的统一入口
  */
 static inline
-int sys_call(syscall_args_t * args);
+int syscall(int id, syscall_args_t * args);
 
 /**
  * @brief 让当前进程进入sleep

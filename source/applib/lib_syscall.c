@@ -10,13 +10,13 @@
 
 // 通过中断实现系统调用
 static inline
-int sys_call(syscall_args_t * args) {
+int syscall(int id, syscall_args_t* args) {
     int ret;
     __asm__ __volatile__(
         "int $0x80"
         :"=a"(ret)          // 返回值通过eax寄存器传递给ret
         :"S"(args->arg3), "d"(args->arg2), "c"(args->arg1),
-         "b"(args->arg0), "a"(args->id)
+         "b"(args->arg0), "a"(id)
     );
     return ret;
 }
@@ -27,140 +27,121 @@ int msleep(int ms) {
     }
 
     syscall_args_t args;
-    args.id = SYS_sleep;
     args.arg0 = ms;
-
-    return sys_call(&args);
+    return syscall(SYS_sleep, &args);
 }
 
 int getpid() {
     syscall_args_t args;
-    args.id = SYS_getpid;
-    return sys_call(&args);
+    return syscall(SYS_getpid, &args);
 }
 
 int fork() {
     syscall_args_t args;
-    args.id = SYS_fork;
-    return sys_call(&args);
+    return syscall(SYS_fork, &args);
 }
 
 int execve(const char* path, char* const* argv, char* const* env) {
     syscall_args_t args;
-    args.id = SYS_execve;
     args.arg0 = (int)path;
     args.arg1 = (int)argv;
     args.arg2 = (int)env;
-    return sys_call(&args);
+    return syscall(SYS_execve, &args);
 }
 
 int yield() {
     syscall_args_t args;
-    args.id = SYS_yield;
-    return sys_call(&args); 
+    return syscall(SYS_yield, &args); 
 }
 
 void _exit(int status) {
     syscall_args_t args;
-    args.id = SYS_exit;
     args.arg0 = status;
-    sys_call(&args);
+    syscall(SYS_exit, &args);
     __builtin_unreachable();
 }
 
 int wait(int* status) {
     syscall_args_t args;
-    args.id = SYS_wait;
     args.arg0 = (int)status;
-    return sys_call(&args);
+    return syscall(SYS_wait, &args);
 }
 
 int unlink(const char* filename) {
     syscall_args_t args;
-    args.id = SYS_unlink;
     args.arg0 = (int)filename;
-    return sys_call(&args);
+    return syscall(SYS_unlink, &args);
 }
 
 int open(const char* filename, int flags, ...) {
     syscall_args_t args;
-    args.id = SYS_open;
     args.arg0 = (int)filename;
     args.arg1 = flags;
-    return sys_call(&args);
+    return syscall(SYS_open, &args);
 }
 
 int read(int fd, char* buf, int len) {
     syscall_args_t args;
-    args.id = SYS_read;
     args.arg0 = fd;
     args.arg1 = (int)buf;
     args.arg2 = len;
-    return sys_call(&args);
+    return syscall(SYS_read, &args);
 }
 
 int write(int fd, char* buf, int len) {
     syscall_args_t args;
-    args.id = SYS_write;
     args.arg0 = fd;
     args.arg1 = (int)buf;
     args.arg2 = len;
-    return sys_call(&args);
+    return syscall(SYS_write, &args);
 }
 
 int lseek(int fd, int offset, int dir) {
     syscall_args_t args;
-    args.id = SYS_lseek;
     args.arg0 = fd;
     args.arg1 = offset;
     args.arg2 = dir;
-    return sys_call(&args);
+    return syscall(SYS_lseek, &args);
 }
 
 int close(int fd) {
     syscall_args_t args;
-    args.id = SYS_close;
     args.arg0 = fd;
-    return sys_call(&args);
+    return syscall(SYS_close, &args);
 }
 
 int isatty(int fd) {
     syscall_args_t args;
-    args.id = SYS_isatty;
     args.arg0 = fd;
-    return sys_call(&args);
+    return syscall(SYS_isatty, &args);
 }
 
 int fstat(int fd, struct stat* st) {
     syscall_args_t args;
-    args.id = SYS_fstat;
     args.arg0 = fd;
     args.arg1 = (int)st;
-    return sys_call(&args);
+    return syscall(SYS_fstat, &args);
 }
 
 int ioctl(int fd, int cmd, int arg0, int arg1) {
     syscall_args_t args;
-    args.id = SYS_ioctl;
     args.arg0 = fd;
     args.arg1 = (int)cmd;
     args.arg2 = arg0;
     args.arg3 = arg1;
-    return sys_call(&args);
+    return syscall(SYS_ioctl, &args);
 }
 
 void* sbrk (ptrdiff_t incr) {
     syscall_args_t args;
-    args.id = SYS_sbrk;
     args.arg0 = (int)incr;
-    return (void*)sys_call(&args);
+    return (void*)syscall(SYS_sbrk, &args);
 }
 
 int dup(int fd) {
     syscall_args_t args;
-    args.id = SYS_dup;
     args.arg0 = (int)fd;
-    return sys_call(&args);
+    return syscall(SYS_dup, &args);
 }
 
 DIR* opendir(const char* path) {
@@ -170,10 +151,9 @@ DIR* opendir(const char* path) {
     }
 
     syscall_args_t args;
-    args.id = SYS_opendir;
     args.arg0 = (int)path;
     args.arg1 = (int)dir;
-    int ret = sys_call(&args);
+    int ret = syscall(SYS_opendir, &args);
     if(ret < 0) {
         free(dir);
         return NULL;
@@ -184,10 +164,9 @@ DIR* opendir(const char* path) {
 
 struct dirent* readdir(DIR* dir) {
     syscall_args_t args;
-    args.id = SYS_readdir;
     args.arg0 = (int)dir;
     args.arg1 = (int)&dir->dirent;
-    int ret = sys_call(&args);
+    int ret = syscall(SYS_readdir, &args);
     if(ret < 0) {
         return NULL;
     }
@@ -196,9 +175,8 @@ struct dirent* readdir(DIR* dir) {
 
 int closedir(DIR* dir) {
     syscall_args_t args;
-    args.id = SYS_closedir;
     args.arg0 = (int)dir;
-    int ret = sys_call(&args);
+    int ret = syscall(SYS_closedir, &args);
     free(dir);
     return 0;
 }
