@@ -8,27 +8,6 @@
 #include "os_cfg.h"
 #include <stdlib.h>
 
-/*
-// XXX 通过调用门实现系统调用
-static inline
-int sys_call(syscall_args_t * args) {
-	uint32_t addr[] = {0, SELECTOR_SYSCALL | 0};
-    int ret;
-    __asm__ __volatile__(
-        "push %[arg3]\n\t"
-        "push %[arg2]\n\t"
-        "push %[arg1]\n\t"
-        "push %[arg0]\n\t"
-        "push %[id]\n\t"
-        "lcalll *(%[a])"
-        :"=a"(ret)          // 返回值通过eax寄存器传递给ret
-        :[arg3]"r"(args->arg3), [arg2]"r"(args->arg2), [arg1]"r"(args->arg1),
-         [arg0]"r"(args->arg0), [id]"r"(args->id), [a]"r"(addr)
-    );
-    return ret;
-}
-*/
-
 // 通过中断实现系统调用
 static inline
 int sys_call(syscall_args_t * args) {

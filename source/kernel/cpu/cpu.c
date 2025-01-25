@@ -43,14 +43,6 @@ void gdt_init() {
         DESC_ATTR_TYPE_DATA | DESC_ATTR_TYPE_RW
     );
 
-    /* XXX
-    // 3. 设置调用门描述符
-    set_gate_desc((gate_desc_t*)(gdt_table + (SELECTOR_SYSCALL >> 3)),
-        KERNEL_SELECTOR_CS, (uint32_t)exception_handler_syscall, 
-        GATE_ATTR_P | GATE_ATTR_DPL3 | GATE_ATTR_TYPE_SYSCALL | SYSCALL_PARAM_COUNT 
-    );
-    */
-
     lgdt((uint32_t)gdt_table, sizeof(gdt_table));
 }
 

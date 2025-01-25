@@ -13,7 +13,6 @@
  * @brief 系统调用触发的处理函数
  */
 void exception_handler_syscall();
-// XXX void do_handler_syscall(syscall_frame_t* frame);
 void do_handler_syscall(exception_frame_t* frame);
 
 #endif // SYSCALL_H

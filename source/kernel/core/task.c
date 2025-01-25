@@ -429,17 +429,11 @@ int sys_fork() {
     }
 
     // 获取父进程的栈0的esp寄存器(只有在切换走时才被更新), 强转为syscall_frame_t*
-    // XXX: syscall_frame_t* frame = (syscall_frame_t*)(parent->tss.esp0 - sizeof(syscall_frame_t));
     exception_frame_t* frame = (exception_frame_t*)(parent->tss.esp0 - sizeof(exception_frame_t));
 
     // 初始化子进程
     int ret = task_init(child, parent->name, 0, frame->eip,
                         frame->esp3);
-    /* 
-    // XXX 子进程的栈顶: 要算上系统调用的总参数大小, 模拟子进程从sys_call返回的过程
-    int ret = task_init(child, parent->name, 0, frame->eip,
-                        frame->esp + sizeof(uint32_t) * SYSCALL_PARAM_COUNT);
-    */ 
     
     if(ret < 0) {
         goto sys_fork_failed;
@@ -562,7 +556,6 @@ int sys_execve(char* path, char** argv, char** env) {
     frame->eflags = EFLAGS_IF | EFLAGS_DEFAULT;
 
     // 修改用户栈, 要加上调用门的参数压栈空间
-    // XXX frame->esp3 = stack_top - sizeof(uint32_t) * SYSCALL_PARAM_COUNT;
     frame->esp3 = stack_top; // 通过中断进入内核时, 不会在用户栈压入其它参数
 
     // 切换至新的页表
