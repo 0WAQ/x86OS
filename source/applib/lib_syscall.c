@@ -15,8 +15,8 @@ int syscall(int id, syscall_args_t* args) {
     __asm__ __volatile__(
         "int $0x80"
         :"=a"(ret)          // 返回值通过eax寄存器传递给ret
-        :"S"(args->arg3), "d"(args->arg2), "c"(args->arg1),
-         "b"(args->arg0), "a"(id)
+        :"D"(args->arg4), "S"(args->arg3), "d"(args->arg2),
+         "c"(args->arg1), "b"(args->arg0), "a"(id)
     );
     return ret;
 }

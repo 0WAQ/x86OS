@@ -12,7 +12,7 @@
  * @brief 系统调用的参数
  */
 typedef struct _syscall_args_t {
-    int arg0, arg1, arg2, arg3;
+    int arg0, arg1, arg2, arg3, arg4;
 }syscall_args_t;
 
 /**

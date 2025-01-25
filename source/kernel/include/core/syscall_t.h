@@ -36,7 +36,7 @@
 #define SYS_closedir    62
 
 
-typedef int(*syscall_handler_t)(uint32_t, uint32_t, uint32_t, uint32_t);
+typedef int(*syscall_handler_t)(uint32_t, uint32_t, uint32_t, uint32_t, uint32_t);
 
 /**
  * @brief 执行系统调用时的栈帧

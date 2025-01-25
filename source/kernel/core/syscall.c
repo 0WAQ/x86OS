@@ -44,6 +44,7 @@ void do_handler_syscall(exception_frame_t* frame) {
     int arg1 = frame->ecx;
     int arg2 = frame->edx;
     int arg3 = frame->esi;
+    int arg4 = frame->edi;
 
     if(id >= sizeof(sys_table) / sizeof(sys_table[0])) {
         goto syscall_id_error;
@@ -55,7 +56,7 @@ void do_handler_syscall(exception_frame_t* frame) {
         goto syscall_handler_null;
     }
 
-    int ret = handler(arg0, arg1, arg2, arg3);
+    int ret = handler(arg0, arg1, arg2, arg3, arg4);
     frame->eax = ret;
     return;
 
