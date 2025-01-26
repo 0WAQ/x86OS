@@ -1,6 +1,6 @@
 /***
  * 
- * 字符串的处理函数相关头文件
+ * 内核通用函数相关头文件
  *  
  */
 #ifndef KLIB_H
@@ -44,7 +44,11 @@ void kernel_strncpy(char* dest, const char* src, int size);
 
 /**
  * @brief 比较字符串
+ * @return s1 > s2 则返回大于0的值;
+ *         s1 < s2 则返回小于0的值;
+ *         s1 = s2 则返回0
  */
+int kernel_strcmp(const char* s1, const char* s2);
 int kernel_strncmp(const char* s1, const char* s2, int size);
 
 /**

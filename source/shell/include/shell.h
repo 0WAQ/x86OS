@@ -14,7 +14,7 @@
 static void cli_init(const char* promot, cli_cmd_t* cmd_table, int size);
 
 /**
- * @brief 答应命令提示符
+ * @brief 打印命令提示符
  */
 static void show_pormot();
 

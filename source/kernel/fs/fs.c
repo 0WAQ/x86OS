@@ -100,7 +100,6 @@ int sys_open(const char* filename, int flags, ...) {
         int ret = fs->op->open(fs, filename, file);
         if(ret < 0) {
             fs_unlock(fs);
-            log_print("open %s failed.", filename);
             goto sys_open_failed;
         }
         fs_unlock(fs);
@@ -380,7 +379,7 @@ static fs_t* mount(fs_type_t type, char* mount_point, int dev_major, int dev_min
     while(curr != NULL) {
         // 若fs的挂载点与入参的挂载点一样就退出
         fs_t* p = list_entry_of(curr, fs_t, node);
-        if(kernel_strncmp(fs->mount_point, mount_point, FS_MOUNTP_SIZE) == 0) {
+        if(kernel_strncmp(p->mount_point, mount_point, FS_MOUNTP_SIZE) == 0) {
             log_print("fs already mounted.");
             goto mount_failed;
         }

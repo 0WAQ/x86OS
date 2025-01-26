@@ -12,7 +12,7 @@ extern addr_alloc_t paddr_alloc;
 
 pte_t* find_pte(pde_t* page_dir, uint32_t vaddr, int is_alloc) {
 
-    pte_t* page_table; // 页目录项的首地址
+    pte_t* page_table; // 页目录项的首地址(页表的物理地址)
 
     // vaddr对应的页目录项
     pde_t* pde = page_dir + pde_index(vaddr);

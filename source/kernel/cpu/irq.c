@@ -173,24 +173,24 @@ void dump_core_regs(exception_frame_t* frame) {
 	}
 	
 	log_print("CS: %d\r\n"
-			  "DS: %d\r\n"
-			  "ES: %d\r\n"
-			  "SS: %d\r\n"
-			  "FS: %d\r\n"
-			  "GS: %d", frame->cs, frame->ds, frame->es, ss, frame->fs, frame->gs);
+			  "log: DS: %d\r\n"
+			  "log: ES: %d\r\n"
+			  "log: SS: %d\r\n"
+			  "log: FS: %d\r\n"
+			  "log: GS: %d", frame->cs, frame->ds, frame->es, ss, frame->fs, frame->gs);
 	
 	log_print("EAX: 0x%x\r\n"
-              "EBX: 0x%x\r\n"
-              "ECX: 0x%x\r\n"
-              "EDX: 0x%x\r\n"
-              "EDI: 0x%x\r\n"
-              "ESI: 0x%x\r\n"
-              "EBP: 0x%x\r\n"
-              "ESP: 0x%x", frame->eax, frame->ebx, frame->ecx, frame->edx,
+              "log: EBX: 0x%x\r\n"
+              "log: ECX: 0x%x\r\n"
+              "log: EDX: 0x%x\r\n"
+              "log: EDI: 0x%x\r\n"
+              "log: ESI: 0x%x\r\n"
+              "log: EBP: 0x%x\r\n"
+              "log: ESP: 0x%x", frame->eax, frame->ebx, frame->ecx, frame->edx,
                				 frame->edi, frame->esi, frame->ebp, esp);
 
     log_print("EIP: 0x%x\r\n"
-			  "EFLAGS: 0x%x\r\n", frame->eip, frame->eflags);
+			  "log: EFLAGS: 0x%x\r\n", frame->eip, frame->eflags);
 }
 
 /////////////////////////////////////////////////////////////////////////////////

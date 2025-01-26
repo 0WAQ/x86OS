@@ -111,10 +111,14 @@ void fat16fs_umount(struct _fs_t* fs) {
 int fat16fs_unlink(struct _fs_t* fs, const char* filename) {
     fat16_t* fat = (fat16_t*)fs->data;
 
+    char buf[11];
+    to_sfn(buf, filename);
+
     // 遍历根目录的数据区，寻找匹配项
     for(int i = 0; i < fat->root_entry_cnt; i++) {
         diritem_t* p = read_dir_entry(fat, i);
         if(p == NULL) {
+            log_print("no directory entry.");
             return -1;
         }
 
@@ -123,21 +127,37 @@ int fat16fs_unlink(struct _fs_t* fs, const char* filename) {
             break;
         }
 
-        // 只显示普通文件和目录，其它的不显示
-        if(p->DIR_Name[0] == DIRITEM_NAME_FREE) {
+        // 跳过空闲项和长文件名项
+        if(p->DIR_Name[0] == DIRITEM_NAME_FREE || p->DIR_Attr & DIRITEM_ATTR_LONG_NAME) {
             continue;
         }
 
-        // 若匹配, 则打开
-        if(diritem_name_match(p, filename)) {
+        // 跳过只读和系统文件
+        if(p->DIR_Attr & DIRITEM_ATTR_READ_ONLY || p->DIR_Attr & DIRITEM_ATTR_SYSTEM) {
+            continue;
+        }
+
+        // 若匹配, 则删除
+        if(kernel_strncmp(buf, p->DIR_Name, 11) == 0) {
             // 释放对应的簇
             cluster_t cluster = (p->DIR_FstClusHI << 16) | (p->DIR_FstClusLO);
-            cluster_free_chain(fat, cluster);
+            if(cluster_is_valid(cluster)) {
+                cluster_free_chain(fat, cluster);
+            }
             
+            // 如果是目录, 则递归删除目录内容
+            if(p->DIR_Attr & DIRITEM_ATTR_DIRECTORY) {
+                // TODO:
+            }
+
             // 写item项
             diritem_t item;
             kernel_memset(&item, 0, sizeof(diritem_t));
-            return write_dir_entry(fat, &item, i);
+            item.DIR_Name[0] = DIRITEM_NAME_FREE;   // 标记为free
+            if(write_dir_entry(fat, &item, i) != 0) {
+                return -1;
+            }
+            return 0;
         }
     }
     return -1;

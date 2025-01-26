@@ -1,6 +1,6 @@
 /**
  * 
- * 字符串的处理函数
+ * 内核通用函数
  *
  */ 
 
@@ -149,18 +149,32 @@ void kernel_strncpy(char* dest, const char* src, int size) {
     }
 }
 
-// TODO:
+int kernel_strcmp(const char* s1, const char* s2) {
+    ASSERT(s1 != NULL && s2 != NULL);
+
+    while(*s1 && *s2 && (*s1 == *s2)) {
+        *s1++;
+        *s2++;
+    }
+    return (unsigned char)*s1 - (unsigned char)*s2;
+}
+
 int kernel_strncmp(const char* s1, const char* s2, int size) {
-    if(!s1 || !s2) {
-        return -1;
+    ASSERT(s1 != NULL && s2 != NULL);
+
+    if (size <= 0) {
+        return 0;
     }
 
-    while(*s1 && *s2 && (*s1 == *s2) && size) {
-        ++s1, ++s2;
-        --size;
+    while (size--) {
+        if (*s1 == '\0' || *s2 == '\0' || *s1 != *s2) {
+            return (unsigned char)*s1 - (unsigned char)*s2;
+        }
+        s1++;
+        s2++;
     }
 
-    return !((*s1 == '\0') || (*s2 == '\0') || (*s1 == *s2));
+    return 0;
 }
 
 int kernel_strlen(const char* str) {
@@ -216,7 +230,7 @@ int kernel_memcmp(void* d1, void* d2, int size) {
 
 void panic(const char* file, int line, const char* func, const char* msg) {
     log_print("ERROR ASSERT(%s)", msg);
-    log_print("file: %s\r\nline: %d\r\nfunc: %s\r\n", file, line, func);
+    log_print("file: %s\r\nlog: line: %d\r\nlog: func: %s\r\n", file, line, func);
     for(;;) { hlt(); }
 }
 

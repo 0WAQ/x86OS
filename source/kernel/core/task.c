@@ -585,7 +585,7 @@ static uint32_t load_elf_file(task_t* task, const char* filename, uint32_t page_
     // 以只读的方式打开
     int fd = sys_open(filename, 0);   // TODO: flags
     if(fd < 0) {
-        log_print("open failed. %s", filename);
+        log_print("open %s failed.", filename);
         goto load_elf_file_failed;
     }
 

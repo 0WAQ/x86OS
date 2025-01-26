@@ -66,7 +66,7 @@ void create_kernel_table() {
     // 清空页目录表
     kernel_memset(kernel_page_dir, 0, sizeof(kernel_page_dir));
 
-    // 遍历地址映射表, 内核由三个地址映射关系
+    // 遍历地址映射表, 内核有五个地址映射关系
     int nr = sizeof(kernel_map) / sizeof(memory_map_t);
     for(int i = 0; i < nr; ++i) {
         memory_map_t* map = kernel_map + i;
@@ -82,7 +82,7 @@ void create_kernel_table() {
 
 int memory_create_map(pde_t* page_dir, uint32_t vaddr, uint32_t paddr, uint32_t page_nr, uint32_t perm)
 {
-    // 遍历一个映射关系拥有的页表数
+    // 遍历一个映射关系拥有的所有页, 在页目录表中建立映射
     for(int i = 0; i < page_nr; i++) {
 
         // 查找或创建一个页表项(页)
@@ -357,7 +357,7 @@ char* sys_sbrk(int incr) {
     }
 
 sys_sbrk_normal:
-    // log_print("sbrk(%d), end=0x%x", pre_incr, alloc_end);
+    log_print("sbrk(%d), end=0x%x", pre_incr, alloc_end);
     task->heap_end = alloc_end;
     return (char*)pre_head_end;
 

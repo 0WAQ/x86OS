@@ -71,7 +71,7 @@ void log_print(const char* fmt, ...) {
 #else   // !LOG_USE_COM
 
     // 向 log_dev 输出设备
-    dev_write(log_dev_id, 0, "log: ", 4);
+    dev_write(log_dev_id, 0, "log: ", 5);
     dev_write(log_dev_id, 0, buf, kernel_strlen(buf));
     dev_write(log_dev_id, 0, "\n", 1);
 
