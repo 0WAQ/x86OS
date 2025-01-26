@@ -8,6 +8,7 @@
 #include "dev/dev.h"
 #include "tools/klib.h"
 #include "tools/log.h"
+#include <sys/fcntl.h>
 
 /**
  * @brief 设置devfs的回调函数
@@ -50,10 +51,12 @@ static devfs_type_t dev_type_table[] = {
 };
 
 int devfs_mount(fs_t* fs, int major, int minor) {
+    // TODO:
     return 0;
 }
 
 void devfs_umount(fs_t* fs) {
+    // TODO:
     return;
 }
 
@@ -105,11 +108,36 @@ void devfs_close(file_t* file) {
 }
 
 int devfs_seek(file_t* file, uint32_t offset, int dir) {
+    // TODO:
     return -1;
 }
 
 int devfs_stat(file_t* file, struct stat* st) {
-    return -1;
+    if(file == NULL || st == NULL) {
+        log_print("invalid file or stat structure.");
+        return -1;
+    }
+
+    kernel_memset(st, 0, sizeof(struct stat));
+
+    st->st_mode = 0;
+    switch (file->type) {
+        case FILE_TTY:
+            st->st_mode |= S_IFCHR; // 字符设备
+            break;
+        default:
+            st->st_mode |= S_IFREG; // 普通文件
+            break;
+    }
+
+    st->st_size = file->size;   // 文件大小
+    st->st_rdev = file->dev_id; // 设备号
+    st->st_ino = file->dev_id;  // inode号, 直接使用设备号 TODO:
+    st->st_nlink = 1;           // 硬链接数, 设备文件通常为1
+    st->st_mode |= S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;   // 文件权限
+    st->st_atime = st->st_mtime = st->st_ctime = 0; // 时间戳 TODO:
+
+    return 0;
 }
 
 int devfs_ioctl(file_t* file, int cmd, int arg0, int arg1) {
@@ -117,6 +145,10 @@ int devfs_ioctl(file_t* file, int cmd, int arg0, int arg1) {
 }
 
 int devfs_opendir(struct _fs_t* fs, const char* name, DIR* dir) {
+    if(dir == NULL) {
+        log_print("open directory failed.");
+        return -1;
+    }
     dir->index = 0;
     return 0;
 }
@@ -132,5 +164,6 @@ int devfs_readdir(struct _fs_t* fs, DIR* dir, struct dirent* dirent) {
 }
 
 int devfs_closedir(struct _fs_t* fs, DIR* dir) {
+    // TODO:
     return 0;
 }

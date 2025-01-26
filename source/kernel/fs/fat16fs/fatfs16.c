@@ -398,11 +398,61 @@ int fat16fs_seek(file_t* file, uint32_t offset, int dir) {
     return 0;
 }
 
+
 int fat16fs_stat(file_t* file, struct stat* st) {
-    return -1;
+    if (file == NULL || st == NULL) {
+        log_print("invalid file or stat structure.");
+        return -1;
+    }
+
+    kernel_memset(st, 0, sizeof(struct stat));
+
+    fat16_t* fat = (fat16_t*)file->fs->data;
+
+    // 读取目录项
+    diritem_t* item = read_dir_entry(fat, file->p_index);
+    if (item == NULL) {
+        log_print("no directory entry.");
+        return -1;
+    }
+
+    // 根据item计算stat结构体
+    st->st_size = item->DIR_FileSize;   // 文件大小
+    st->st_mode = 0;
+
+    // 设置文件的类型
+    if (item->DIR_Attr & DIRITEM_ATTR_DIRECTORY) {
+        st->st_mode |= S_IFDIR;  // 目录
+    } else {
+        st->st_mode |= S_IFREG;  // 文件
+    }
+
+    // 设置文件的读写权限
+    if (item->DIR_Attr & DIRITEM_ATTR_READ_ONLY) {
+        st->st_mode |= S_IRUSR | S_IRGRP | S_IROTH;  // 只读
+    } else {
+        st->st_mode |= S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;  // 读写
+    }
+
+    st->st_nlink = 1;  // 硬链接数 (FAT16永远是1)
+    st->st_uid = 0;    // 用户ID  (FAT16未使用)
+    st->st_gid = 0;    // 组ID (FAT16未使用)
+    st->st_blksize = fat->cluster_bytes_size;  // 块大小 (cluster size)
+    st->st_blocks = (st->st_size + st->st_blksize - 1) / st->st_blksize;  // 块数量, 向上取整
+
+    // 时间戳(FAT16 does not store creation/modification times in Unix format)
+    st->st_atime = 0;  // Last access time (not available)
+    st->st_mtime = 0;  // Last modification time (not available)
+    st->st_ctime = 0;  // Creation time (not available)
+
+    return 0;
 }
 
 int fat16fs_opendir(struct _fs_t* fs, const char* name, DIR* dir) {
+    if(dir == NULL) {
+        log_print("open dir failed.");
+        return -1;
+    }
     dir->index = 0;
     return 0;
 }
@@ -415,10 +465,11 @@ int fat16fs_readdir(struct _fs_t* fs, DIR* dir, struct dirent* dirent) {
         // 读取目录项
         diritem_t* item = read_dir_entry(fat, dir->index);
         if(item == NULL) {
+            log_print("no directory entry.");
             return -1;
         }
 
-        // 若当前目录项是空闲的并且后面没有目录项, 那么直接退出
+        // 若为end则退出
         if(item->DIR_Name[0] == DIRITEM_NAME_END) {
             break;
         }
@@ -442,6 +493,7 @@ int fat16fs_readdir(struct _fs_t* fs, DIR* dir, struct dirent* dirent) {
 }
 
 int fat16fs_closedir(struct _fs_t* fs, DIR* dir) {
+    // TODO:
     return 0;
 }
 
@@ -480,10 +532,12 @@ static int write_dir_entry(fat16_t* fat, diritem_t* dir, int index) {
 }
 
 static file_type_t diritem_parse_type(diritem_t* item) {
+    // 跳过卷标文件, 隐藏文件, 系统文件
     if(item->DIR_Attr & (DIRITEM_ATTR_VOLUME_ID | DIRITEM_ATTR_HIDDEN | DIRITEM_ATTR_SYSTEM)) {
         return FILE_UNKNOWN;
     }
-    if((item->DIR_Attr & DIRITEM_ATTR_LONG_NAME) == DIRITEM_ATTR_LONG_NAME) {
+    // 跳过长文件名
+    if(item->DIR_Attr & DIRITEM_ATTR_LONG_NAME) {
         return FILE_UNKNOWN;
     }
     return item->DIR_Attr & DIRITEM_ATTR_DIRECTORY ? FILE_DIR : FILE_NORMAL;

@@ -50,7 +50,7 @@ int sys_close(int fd);
 int sys_isatty(int fd);
 
 /**
- * @brief 系统调用: 返回文件状态信息 TODO: 增加各个fs的fstat实现
+ * @brief 系统调用: 返回文件状态信息
  */
 struct stat;
 int sys_fstat(int fd, struct stat* st);
