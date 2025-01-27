@@ -57,28 +57,28 @@ void disk_close(device_t* dev);
 /**
  * @brief 发送ATA命令, 支持最多16位的扇区
  */
-static inline void ata_send_cmd(disk_t* disk, uint32_t start_sector, uint32_t sector_count, int cmd) {
+static inline void ata_send_cmd(disk_t* disk, u32_t start_sector, u32_t sector_count, int cmd) {
     outb(DISK_DRIVE(disk), DISK_DRIVE_BASE | disk->drive);		    // 使用LBA寻址，并设置驱动器
 
 	// 必须先写高字节
-	outb(DISK_SECTOR_COUNT(disk), (uint8_t) (sector_count >> 8));	// 扇区数高8位
-	outb(DISK_LBA_LOW(disk), (uint8_t) (start_sector >> 24));		// LBA参数的24~31位
+	outb(DISK_SECTOR_COUNT(disk), (u8_t) (sector_count >> 8));	// 扇区数高8位
+	outb(DISK_LBA_LOW(disk), (u8_t) (start_sector >> 24));		// LBA参数的24~31位
 	outb(DISK_LBA_MID(disk), 0);									// 高于32位不支持
 	outb(DISK_LBA_HIGH(disk), 0);								    // 高于32位不支持
-	outb(DISK_SECTOR_COUNT(disk), (uint8_t) (sector_count));		// 扇区数量低8位
-	outb(DISK_LBA_LOW(disk), (uint8_t) (start_sector >> 0));		// LBA参数的0-7
-	outb(DISK_LBA_MID(disk), (uint8_t) (start_sector >> 8));		// LBA参数的8-15位
-	outb(DISK_LBA_HIGH(disk), (uint8_t) (start_sector >> 16));		// LBA参数的16-23位
+	outb(DISK_SECTOR_COUNT(disk), (u8_t) (sector_count));		// 扇区数量低8位
+	outb(DISK_LBA_LOW(disk), (u8_t) (start_sector >> 0));		// LBA参数的0-7
+	outb(DISK_LBA_MID(disk), (u8_t) (start_sector >> 8));		// LBA参数的8-15位
+	outb(DISK_LBA_HIGH(disk), (u8_t) (start_sector >> 16));		// LBA参数的16-23位
 
 	// 选择对应的主-从磁盘
-	outb(DISK_CMD(disk), (uint8_t)cmd);
+	outb(DISK_CMD(disk), (u8_t)cmd);
 }
 
 /**
  * @brief 读取ATA数据端口
  */
 static inline void ata_read_data (disk_t* disk, void* buf, int size) {
-    uint16_t* c = (uint16_t*)buf;
+    u16_t* c = (u16_t*)buf;
     for(int i = 0; i < size / 2; i++) {
         *c++ = inw(DISK_DATA(disk));
     }
@@ -88,7 +88,7 @@ static inline void ata_read_data (disk_t* disk, void* buf, int size) {
  * @brief 读取ATA数据端口
  */
 static inline void ata_write_data (disk_t* disk, void* buf, int size) {
-    uint16_t* c = (uint16_t*)buf;
+    u16_t* c = (u16_t*)buf;
     for(int i = 0; i < size / 2; i++) {
         outw(DISK_DATA(disk), *c++);
     }
@@ -98,7 +98,7 @@ static inline void ata_write_data (disk_t* disk, void* buf, int size) {
  * @brief 等待磁盘有数据到达
  */
 static inline int ata_wait_data (disk_t* disk) {
-    uint8_t status;
+    u8_t status;
 	do {
         // 等待数据或者有错误
         status = inb(DISK_STATUS(disk));

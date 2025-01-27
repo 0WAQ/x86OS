@@ -17,12 +17,12 @@ extern boot_info_t boot_info;
  * @brief 内存检测信息结构
  */
 typedef struct SMAP_entry {
-    uint32_t base_low;      // 该块内存起始地址的低32位
-    uint32_t base_high;     // 该块内存起始地址的高32位，未使用
-    uint32_t length_low;    // 长度的低32位
-    uint32_t length_high;   // 长度的高32位，未使用
-    uint32_t type;          // 值为1表示可用RAM空间
-    uint32_t ACPI;          // extended
+    u32_t base_low;      // 该块内存起始地址的低32位
+    u32_t base_high;     // 该块内存起始地址的高32位，未使用
+    u32_t length_low;    // 长度的低32位
+    u32_t length_high;   // 长度的高32位，未使用
+    u32_t type;          // 值为1表示可用RAM空间
+    u32_t ACPI;          // extended
 }__attribute__((packed)) SMAP_entry_t;
 
 

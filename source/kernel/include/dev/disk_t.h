@@ -76,7 +76,7 @@ typedef struct _disk_t {
         DISK_SLAVE = (1 << 4),  // 从设备
     }drive;                     // 磁盘类型
 
-    uint16_t port_base;         // 端口起始地址
+    u16_t port_base;         // 端口起始地址
     int sector_size;            // 扇区大小
     int sector_count;           // 扇区数量
     partinfo_t partinfo[DISK_PRIMARY_PART_CNT]; // 分区表, 描述一个磁盘的分区信息
@@ -94,25 +94,25 @@ typedef struct _disk_t {
  * 
  */
 typedef struct _part_item_t {
-    uint8_t  boot_active;
-    uint8_t  start_header;
-    uint16_t start_sector:6;
-    uint16_t start_cylinder:10;
-    uint8_t  system_id;
-    uint8_t  end_header;
-    uint16_t end_sector:6;
-    uint16_t end_cylinder:10;
-    uint32_t relative_sectors;
-    uint32_t total_sectors;
+    u8_t  boot_active;
+    u8_t  start_header;
+    u16_t start_sector:6;
+    u16_t start_cylinder:10;
+    u8_t  system_id;
+    u8_t  end_header;
+    u16_t end_sector:6;
+    u16_t end_cylinder:10;
+    u32_t relative_sectors;
+    u32_t total_sectors;
 }part_item_t;
 
 /**
  * 
  */
 typedef struct _mbr_t {
-    uint8_t code[446];
+    u8_t code[446];
     part_item_t part_time[MBR_PRIMARY_PART_NR];
-    uint8_t boot_sig[2];
+    u8_t boot_sig[2];
 }mbr_t;
 
 #pragma pack()

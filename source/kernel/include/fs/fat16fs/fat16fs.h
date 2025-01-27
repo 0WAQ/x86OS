@@ -48,7 +48,7 @@ void fat16fs_close(file_t* file);
 /**
  * @brief fat16fs的定位函数
  */
-int fat16fs_seek(file_t* file, uint32_t offset, int dir);
+int fat16fs_seek(file_t* file, u32_t offset, int dir);
 
 /**
  * @brief fat16fs的状态函数
@@ -109,7 +109,7 @@ static void read_from_diritem(fat16_t* fat, file_t* file, diritem_t* item, int i
 /**
  * @brief 初始化diritem
  */
-static int diritem_init(diritem_t* item, const char* name, uint8_t attr);
+static int diritem_init(diritem_t* item, const char* name, u8_t attr);
 
 /**
  * @brief 比较name与目录项的Name
@@ -124,7 +124,7 @@ static void to_sfn(char* dest, const char* src);
 /**
  * @brief 调整文件的pos
  */
-static int move_file_pos(file_t* file, fat16_t* fat, uint32_t move_bytes, int expand);
+static int move_file_pos(file_t* file, fat16_t* fat, u32_t move_bytes, int expand);
 
 /**
  * @brief 判断簇是否有效

@@ -24,12 +24,12 @@ void exception_handler_kbd();
 /**
  * @brief 以E0开头的键值
  */
-void do_e0_key(uint8_t raw);
+void do_e0_key(u8_t raw);
 
 /**
  * @brief 普通的键值
  */
-void do_normal_key(uint8_t raw);
+void do_normal_key(u8_t raw);
 
 /**
  * @brief 切换tty设备
@@ -49,26 +49,26 @@ static void update_numlk_led_status();
 /**
  * @brief 判断键值是否是make_code(即按下)
  */
-static inline int is_make_code(uint8_t raw) {
+static inline int is_make_code(u8_t raw) {
     return !(raw & 0x80);
 }
 
 /**
  * @brief 根据raw获取键值映射表中的键
  */
-static inline char get_key(uint8_t raw) {
+static inline char get_key(u8_t raw) {
     return raw & 0x7F;
 }
 
 /**
  * @brief 读键盘数据
  */
-uint8_t kbd_read();
+u8_t kbd_read();
 
 /**
  * @brief 向键盘端口写数据
  */
-void kbd_write(uint8_t port, uint8_t data);
+void kbd_write(u8_t port, u8_t data);
 
 /**
  * @brief 等待可写数据

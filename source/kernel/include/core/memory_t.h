@@ -26,9 +26,9 @@ typedef struct _addr_alloc_t {
 
     bitmap_t bitmap;    // 辅助分配的位图
 
-    uint32_t start;     // 内存块的起始地址
-    uint32_t size;      // 内存块的大小
-    uint32_t page_size; // 页大小, 页数 = size / page_size
+    u32_t start;     // 内存块的起始地址
+    u32_t size;      // 内存块的大小
+    u32_t page_size; // 页大小, 页数 = size / page_size
 
     mutex_t mutex;      // 互斥锁    
 
@@ -42,7 +42,7 @@ typedef struct _memory_map_t{
     void* vstart;       // 线性地址的起始地址
     void* vend;         // 线性地址的结束地址
     void* pstart;       // 物理地址的起始地址
-    uint32_t perm;
+    u32_t perm;
 }memory_map_t;
 
 #endif // MEMORY_T_H

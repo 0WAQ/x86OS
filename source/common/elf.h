@@ -9,11 +9,11 @@
 #include "types.h"
 
 // ELF相关基本类型
-typedef uint32_t Elf32_Addr;
-typedef uint16_t Elf32_Half;
-typedef uint32_t Elf32_Off;
-typedef uint32_t Elf32_Sword;
-typedef uint32_t Elf32_Word;
+typedef u32_t Elf32_Addr;
+typedef u16_t Elf32_Half;
+typedef u32_t Elf32_Off;
+typedef u32_t Elf32_Sword;
+typedef u32_t Elf32_Word;
 
 #pragma pack(1)
 

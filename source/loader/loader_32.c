@@ -11,11 +11,11 @@
 void loader_kernel() {
 
     // 从第100个扇区开始读取扇区，将内核映像文件(elf格式)加载到1MB处
-    read_disk(100, 500, (uint8_t*)SYS_KERNEL_LOAD_ADDR);
+    read_disk(100, 500, (u8_t*)SYS_KERNEL_LOAD_ADDR);
 
     // 读取kernel的elf文件，而不是bin文件
     // 需要先将其从内存中读取出来解析，获得其入口函数地址0x10000(在lds中设置)
-    uint32_t kernel_entry = reload_elf_file((uint8_t*)SYS_KERNEL_LOAD_ADDR);
+    u32_t kernel_entry = reload_elf_file((u8_t*)SYS_KERNEL_LOAD_ADDR);
     if(kernel_entry == 0) {
         die(-1);
     }
@@ -29,25 +29,25 @@ void loader_kernel() {
     for(;;);
 }
 
-void read_disk(uint32_t sector, uint32_t sector_cnt, uint8_t* buffer) {
+void read_disk(u32_t sector, u32_t sector_cnt, u8_t* buffer) {
     
     // 读取LBA参数
-    outb(0x1F6, (uint8_t) (0xE0));
+    outb(0x1F6, (u8_t) (0xE0));
 
-	outb(0x1F2, (uint8_t) (sector_cnt >> 8));
-    outb(0x1F3, (uint8_t) (sector >> 24));		// LBA参数的24~31位
-    outb(0x1F4, (uint8_t) (0));					// LBA参数的32~39位
-    outb(0x1F5, (uint8_t) (0));					// LBA参数的40~47位
+	outb(0x1F2, (u8_t) (sector_cnt >> 8));
+    outb(0x1F3, (u8_t) (sector >> 24));		// LBA参数的24~31位
+    outb(0x1F4, (u8_t) (0));					// LBA参数的32~39位
+    outb(0x1F5, (u8_t) (0));					// LBA参数的40~47位
 
-    outb(0x1F2, (uint8_t) (sector_cnt));
-	outb(0x1F3, (uint8_t) (sector));			// LBA参数的0~7位
-	outb(0x1F4, (uint8_t) (sector >> 8));		// LBA参数的8~15位
-	outb(0x1F5, (uint8_t) (sector >> 16));		// LBA参数的16~23位
+    outb(0x1F2, (u8_t) (sector_cnt));
+	outb(0x1F3, (u8_t) (sector));			// LBA参数的0~7位
+	outb(0x1F4, (u8_t) (sector >> 8));		// LBA参数的8~15位
+	outb(0x1F5, (u8_t) (sector >> 16));		// LBA参数的16~23位
 
-	outb(0x1F7, (uint8_t) 0x24);
+	outb(0x1F7, (u8_t) 0x24);
 
     // 读取数据
-    uint16_t* buf = (uint16_t*)buffer;
+    u16_t* buf = (u16_t*)buffer;
     while(sector_cnt-- > 0) {
 
         // 读前检查，等待数据就位
@@ -60,7 +60,7 @@ void read_disk(uint32_t sector, uint32_t sector_cnt, uint8_t* buffer) {
     }
 }
 
-uint32_t reload_elf_file(uint8_t* file_buffer) {
+u32_t reload_elf_file(u8_t* file_buffer) {
 
     // 从0x100000处开始的数据转换成elf文件，elf不像bin一样可以直接运行，需要先解析
     Elf32_Ehdr* elf_hdr = (Elf32_Ehdr*)file_buffer;
@@ -84,14 +84,14 @@ uint32_t reload_elf_file(uint8_t* file_buffer) {
         }
 
         // 全部使用物理地址, 此时分页机制还未打开
-        uint8_t* src = file_buffer + phdr->p_offset;
-        uint8_t* dest = (uint8_t*)phdr->p_paddr;
+        u8_t* src = file_buffer + phdr->p_offset;
+        u8_t* dest = (u8_t*)phdr->p_paddr;
         for(int j = 0; j < phdr->p_filesz; j++) {
             *dest++ = *src++;
         }
 
         // memsz和filesz不同时要填0(bss段)
-        dest = (uint8_t*)phdr->p_paddr + phdr->p_filesz;
+        dest = (u8_t*)phdr->p_paddr + phdr->p_filesz;
         for(int j = 0; j < phdr->p_memsz - phdr->p_filesz; j++) {
             *dest++ = 0;
         }
@@ -101,13 +101,13 @@ uint32_t reload_elf_file(uint8_t* file_buffer) {
 }
 
 void enable_page_mode() {
-    static uint32_t page_dir[1024] __attribute__((aligned(4096))) = {
+    static u32_t page_dir[1024] __attribute__((aligned(4096))) = {
         [0] = PDE_P | PDE_W | PDE_PS | 0
     };
 
-    uint32_t cr4 = read_cr4();
+    u32_t cr4 = read_cr4();
     write_cr4(cr4 | CR4_PSE);
-    write_cr3((uint32_t)page_dir);
+    write_cr3((u32_t)page_dir);
 
     write_cr0(read_cr0() | CR0_PG);
 }

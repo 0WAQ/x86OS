@@ -26,18 +26,18 @@
  * @brief 页目录项
  */
 typedef union _pde_t{
-    uint32_t v;
+    u32_t v;
     struct {
-        uint32_t present : 1;
-        uint32_t write_enable : 1;
-        uint32_t user_mode_access : 1;
-        uint32_t write_through : 1;
-        uint32_t cache_disable : 1;
-        uint32_t accessed : 1;
-        uint32_t : 1;
-        uint32_t ps : 1;
-        uint32_t : 4;
-        uint32_t phy_pt_addr : 20;
+        u32_t present : 1;
+        u32_t write_enable : 1;
+        u32_t user_mode_access : 1;
+        u32_t write_through : 1;
+        u32_t cache_disable : 1;
+        u32_t accessed : 1;
+        u32_t : 1;
+        u32_t ps : 1;
+        u32_t : 4;
+        u32_t phy_pt_addr : 20;
     };
 }pde_t;
 
@@ -45,19 +45,19 @@ typedef union _pde_t{
  * @brief 页表项
  */
 typedef union _pte_t{
-    uint32_t v;
+    u32_t v;
     struct {
-        uint32_t present : 1;
-        uint32_t write_enable : 1;
-        uint32_t user_mode_access : 1;
-        uint32_t write_through : 1;
-        uint32_t cache_disable : 1;
-        uint32_t accessed : 1;
-        uint32_t dirty : 1;
-        uint32_t pat : 1;
-        uint32_t global : 1;
-        uint32_t : 3;
-        uint32_t phy_page_addr : 20;
+        u32_t present : 1;
+        u32_t write_enable : 1;
+        u32_t user_mode_access : 1;
+        u32_t write_through : 1;
+        u32_t cache_disable : 1;
+        u32_t accessed : 1;
+        u32_t dirty : 1;
+        u32_t pat : 1;
+        u32_t global : 1;
+        u32_t : 3;
+        u32_t phy_page_addr : 20;
     };
 }pte_t;
 

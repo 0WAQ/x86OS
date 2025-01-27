@@ -64,8 +64,8 @@
  * 2. shift按下或者numLock等灭的值, 为附加功能值
  */
 typedef struct _key_map_t {
-    uint8_t normal;     // 普通功能
-    uint8_t func;       // 第二功能
+    u8_t normal;     // 普通功能
+    u8_t func;       // 第二功能
 }key_map_t;
 
 /**

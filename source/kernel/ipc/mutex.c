@@ -13,7 +13,7 @@ void mutex_init(mutex_t* mutex) {
 }
 
 void mutex_lock(mutex_t* mutex) {
-    uint32_t state = irq_enter_protection();
+    u32_t state = irq_enter_protection();
 
     task_t* curr = get_curr_task();
 
@@ -37,7 +37,7 @@ void mutex_lock(mutex_t* mutex) {
 }
 
 void mutex_unlock(mutex_t* mutex) {
-    uint32_t state = irq_enter_protection();
+    u32_t state = irq_enter_protection();
 
     task_t* curr = get_curr_task();
 

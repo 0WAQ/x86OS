@@ -23,7 +23,7 @@ dev_desc_t dev_timer_desc = {
 };
 
 
-static uint32_t sys_tick; // 系统启动后的tick数量
+static u32_t sys_tick; // 系统启动后的tick数量
 
 void timer_init() {
     sys_tick = 0;
@@ -31,7 +31,7 @@ void timer_init() {
 }
 
 void pit_init() {
-    uint32_t reload_count = PIT_OSC_FREQ * OS_TICK_MS / 1000.0;
+    u32_t reload_count = PIT_OSC_FREQ * OS_TICK_MS / 1000.0;
 
     outb(PIT_COMMAND_MODE_PORT, PIT_CHANNEL0 | PIT_LOAD_LOHI | PIT_MODE3);
     outb(PIT_CHANNEL0_DATA_PORT, reload_count & 0xFF);          // 加载低8位

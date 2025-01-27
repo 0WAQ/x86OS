@@ -76,9 +76,9 @@ static int identify_disk(disk_t* disk) {
 
     // 读取返回的数据，特别是uint16_t 100 through 103
     // 测试用的盘： 总共102400 = 0x19000， 实测会多一个扇区，为vhd磁盘格式增加的一个扇区
-    uint16_t buf[256];
+    u16_t buf[256];
     ata_read_data(disk, buf, sizeof(buf));
-    disk->sector_count = *(uint32_t *)(buf + 100);
+    disk->sector_count = *(u32_t *)(buf + 100);
     disk->sector_size = SECTOR_SIZE;            // 固定为512字节大小
 
     // 分区0保存了整个磁盘的信息

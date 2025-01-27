@@ -43,10 +43,10 @@ void gdt_init() {
         DESC_ATTR_TYPE_DATA | DESC_ATTR_TYPE_RW
     );
 
-    lgdt((uint32_t)gdt_table, sizeof(gdt_table));
+    lgdt((u32_t)gdt_table, sizeof(gdt_table));
 }
 
-void set_segment_desc(int selector, uint32_t base, uint32_t limit, uint16_t attr) {
+void set_segment_desc(int selector, u32_t base, u32_t limit, u16_t attr) {
     segment_desc_t* desc = gdt_table + (selector >> 3); // 每个gdt的大小是8字节(64位)
     
     // 若limit超过20位，则界限位G为1
@@ -62,7 +62,7 @@ void set_segment_desc(int selector, uint32_t base, uint32_t limit, uint16_t attr
     desc->base24_31 = (base >> 24) & 0xFF;
 }
 
-void set_gate_desc(gate_desc_t* desc, uint16_t selector, uint32_t offset, uint16_t attr) {
+void set_gate_desc(gate_desc_t* desc, u16_t selector, u32_t offset, u16_t attr) {
     desc->offset15_0 = offset & 0xFFFF;
     desc->selector = selector;
     desc->attr = attr;

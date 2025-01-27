@@ -107,7 +107,7 @@ void devfs_close(file_t* file) {
     dev_close(file->dev_id);
 }
 
-int devfs_seek(file_t* file, uint32_t offset, int dir) {
+int devfs_seek(file_t* file, u32_t offset, int dir) {
     // TODO:
     return -1;
 }

@@ -72,13 +72,13 @@
 #define ERR_IDT         (1 << 1)
 
 // irq_enter_protection 与 irq_leave_protection 使用, 用于判断进入临界区前, 中断的状态
-typedef uint32_t irq_state_t;
+typedef u32_t irq_state_t;
 
 typedef struct _exception_frame_t{
-    uint32_t gs, fs, es, ds;
-    uint32_t edi, esi, ebp, esp, ebx, edx, ecx, eax;
-    uint32_t num, errno, eip, cs, eflags;
-    uint32_t esp3, ss3;
+    u32_t gs, fs, es, ds;
+    u32_t edi, esi, ebp, esp, ebx, edx, ecx, eax;
+    u32_t num, errno, eip, cs, eflags;
+    u32_t esp3, ss3;
 }exception_frame_t;
 
 

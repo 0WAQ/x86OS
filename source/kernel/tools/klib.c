@@ -82,7 +82,7 @@ void kernel_vsprintf(char* buf, const char* fmt, va_list args) {
     }
 }
 
-void kernel_itoa(char* dest, int num, uint32_t base) {
+void kernel_itoa(char* dest, int num, u32_t base) {
     char* p = dest;
     char* start = dest;
     
@@ -101,7 +101,7 @@ void kernel_itoa(char* dest, int num, uint32_t base) {
     // 转换表
     static const char* num2ch = {"0123456789ABCDEF"};
 
-    uint32_t unum = (uint32_t)num;
+    u32_t unum = (u32_t)num;
     do {
         *p++ = num2ch[unum % base];
         unum /= base;
@@ -195,19 +195,19 @@ void kernel_memcpy(void* dest, void* src, int size) {
         return;
     }
 
-    uint8_t* s = (uint8_t*)src;
-    uint8_t* d = (uint8_t*)dest;
+    u8_t* s = (u8_t*)src;
+    u8_t* d = (u8_t*)dest;
     while(size--) {
         *d++ = *s++;
     }
 }
 
-void kernel_memset(void* dest, uint8_t v, int size) {
+void kernel_memset(void* dest, u8_t v, int size) {
     if(!dest || !size) {
         return;
     }
 
-    uint8_t* d = (uint8_t*)dest;
+    u8_t* d = (u8_t*)dest;
     while(size--) {
         *d++ = v;
     }
@@ -218,8 +218,8 @@ int kernel_memcmp(void* d1, void* d2, int size) {
         return 1;
     }
 
-    uint8_t* p1 = (uint8_t*)d1;
-    uint8_t* p2 = (uint8_t*)d2;
+    u8_t* p1 = (u8_t*)d1;
+    u8_t* p2 = (u8_t*)d2;
     while(size--) {
         if(*p1++ != *p2++) {
             return 1;

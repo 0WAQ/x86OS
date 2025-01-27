@@ -12,7 +12,7 @@
 
 typedef struct _mutex_t {
     task_t* owner;      // 锁的拥有者
-    uint32_t count;     // 锁的使用计数
+    u32_t count;     // 锁的使用计数
     list_t wait_list;   // 等待队列
 }mutex_t;
 

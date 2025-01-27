@@ -29,7 +29,7 @@ struct _fs_t;
 typedef struct _file_t {
     char filename[FILENAME_SIZE];   // 文件名
     file_type_t type;               // 文件类型
-    uint32_t size;                  // 文件大小
+    u32_t size;                  // 文件大小
     int ref;                        // 打开计数
     int dev_id;                     // 该文件对应的设备id
     int pos;                        // 当前读取的位置

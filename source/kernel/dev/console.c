@@ -33,7 +33,7 @@ int console_init(int idx) {
     // 初始化光标
     cursor_t* cursor = &console->cursor;
     if(idx == 0) {
-        uint16_t pos = read_cursor_pos();
+        u16_t pos = read_cursor_pos();
         cursor->row = pos / console->cols;
         cursor->col = pos % console->cols;
     } else {
@@ -161,7 +161,7 @@ static void write_esc_square(console_t* c, char ch) {
 
     // 读取参数序列, 填充至缓冲区
     if((ch >= '0' && ch <= '9')) {
-        uint32_t* param = &c->esc_param_buf[c->esc_param_index];
+        u32_t* param = &c->esc_param_buf[c->esc_param_index];
         *param = *param * 10 + (ch - '0');
     }
     // ;是参数的间隔符
@@ -205,9 +205,9 @@ void console_close(int console) {
 }
 
 static void clear_display(console_t* console) {
-    uint32_t size = console->cols * console->rows;
+    u32_t size = console->cols * console->rows;
     disp_char_t* p = console->disp_base;
-    for(uint32_t i = 0; i < size; ++i, ++p) {
+    for(u32_t i = 0; i < size; ++i, ++p) {
         p->ch = ' ';
         p->foreground = console->foreground;
         p->background = console->background;
@@ -220,7 +220,7 @@ static void show_char(console_t* console, char ch) {
     cursor_t cursor = console->cursor;
     
     // 计算偏移
-    uint32_t offset = cursor.col + cursor.row * console->cols;
+    u32_t offset = cursor.col + cursor.row * console->cols;
 
     // 
     disp_char_t* p = console->disp_base + offset;
@@ -280,10 +280,10 @@ static void move_next_row(console_t* console) {
     }
 }
 
-static void scroll_up(console_t* console, uint32_t lines) {
+static void scroll_up(console_t* console, u32_t lines) {
     disp_char_t* dest = console->disp_base;
     disp_char_t* src = console->disp_base + console->cols * lines;
-    uint32_t size = (console->rows - lines) * console->cols * sizeof(disp_char_t);
+    u32_t size = (console->rows - lines) * console->cols * sizeof(disp_char_t);
     kernel_memcpy(dest, src, size);
 
     // 清空后几行
@@ -293,7 +293,7 @@ static void scroll_up(console_t* console, uint32_t lines) {
     cursor->row -= lines;
 }
 
-static void erase_row(console_t* console, uint32_t start, uint32_t lines) {
+static void erase_row(console_t* console, u32_t start, u32_t lines) {
     disp_char_t* dstart = console->disp_base + console->cols * start;
     disp_char_t* dend   = console->disp_base + console->cols * (start + lines);
     while(dstart < dend) {
@@ -305,8 +305,8 @@ static void erase_row(console_t* console, uint32_t start, uint32_t lines) {
     }
 }
 
-static uint16_t read_cursor_pos() {
-    uint16_t pos;
+static u16_t read_cursor_pos() {
+    u16_t pos;
 
     irq_state_t state = irq_enter_protection();
 
@@ -320,17 +320,17 @@ static uint16_t read_cursor_pos() {
     return pos;
 }
 
-static uint16_t update_cursor_pos(console_t* console) {
+static u16_t update_cursor_pos(console_t* console) {
     cursor_t* cursor = &console->cursor;
-    uint16_t pos = (console - console_buf) * console->rows * console->cols;
+    u16_t pos = (console - console_buf) * console->rows * console->cols;
     pos += cursor->row * console->cols + cursor->col;
 
     irq_state_t state = irq_enter_protection();
 
     outb(0x3D4, 0xF);
-    outb(0x3D5, (uint8_t)(pos & 0xFF));
+    outb(0x3D5, (u8_t)(pos & 0xFF));
     outb(0x3D4, 0xE);
-    outb(0x3D5, (uint8_t)((pos >> 8) & 0xFF));
+    outb(0x3D5, (u8_t)((pos >> 8) & 0xFF));
 
     irq_leave_protectoin(state);
 
@@ -362,7 +362,7 @@ static void set_font_style(console_t* c) {
 
     // 从参数缓冲区取值
     for(int i = 0; i <= c->esc_param_index; i++) {
-        uint32_t param = c->esc_param_buf[i];
+        u32_t param = c->esc_param_buf[i];
         if((param >= 30) && (param <= 37)) {
             c->foreground = color_table[param - 30];
         }
@@ -383,7 +383,7 @@ static void erase_in_display(console_t* c) {
         return;
     }
 
-    uint32_t param = c->esc_param_buf[0];
+    u32_t param = c->esc_param_buf[0];
     switch (param)
     {
     case 1:
@@ -439,11 +439,11 @@ void console_switch(int idx) {
         console_init(idx);
     }
 
-    uint16_t pos = idx * c->rows * c->cols;
+    u16_t pos = idx * c->rows * c->cols;
     outb(0x3D4, 0xC);
-    outb(0x3D5, (uint8_t)((pos >> 8) & 0xFF));
+    outb(0x3D5, (u8_t)((pos >> 8) & 0xFF));
     outb(0x3D4, 0xD);
-    outb(0x3D5, (uint8_t)(pos & 0xFF));
+    outb(0x3D5, (u8_t)(pos & 0xFF));
 
     curr_console_idx = idx;
     update_cursor_pos(c);

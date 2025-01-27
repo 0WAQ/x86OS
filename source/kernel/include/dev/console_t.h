@@ -22,7 +22,7 @@
 
 // 每个字符使用16位控制. 低8位表示字符; 高8位是属性, 其中低4位是前景色, 4~6位是背景色, // TODO:
 typedef union _disp_char_t {
-    uint16_t v;
+    u16_t v;
     struct {
         char ch;
         char foreground : 4;    // 前景色
@@ -56,7 +56,7 @@ typedef enum {
  * @brief 光标
  */
 typedef struct _cursor_t {
-    uint32_t row, col;
+    u32_t row, col;
 }cursor_t;
 
 /**
@@ -71,7 +71,7 @@ typedef struct _console_t {
     }write_state;
 
     disp_char_t* disp_base;
-    uint32_t rows, cols;
+    u32_t rows, cols;
     color_t foreground, background;    // 当前终端的前景色和背景色
 
     cursor_t cursor;        // 光标
@@ -80,8 +80,8 @@ typedef struct _console_t {
     cursor_t old_cursor;    
 
     // esc序列的参数缓冲区
-    uint32_t esc_param_buf[ESC_PARAM_MAX];
-    uint32_t esc_param_index;
+    u32_t esc_param_buf[ESC_PARAM_MAX];
+    u32_t esc_param_index;
 
     mutex_t mtx;
 

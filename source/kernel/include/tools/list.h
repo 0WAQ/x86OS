@@ -68,7 +68,7 @@ int list_is_empty(list_t* list) {
 }
 
 static inline
-uint32_t list_count(list_t* list) {
+u32_t list_count(list_t* list) {
     return list->count;
 }
 

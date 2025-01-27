@@ -13,7 +13,7 @@
  * @brief 初始化任务
  * @param esp 任务的用户栈
  */
-int task_init(task_t* task, const char* name, uint32_t flag, uint32_t entry, uint32_t esp);
+int task_init(task_t* task, const char* name, u32_t flag, u32_t entry, u32_t esp);
 
 /**
  * @brief 将任务加入到运行队列中
@@ -29,7 +29,7 @@ int task_uninit(task_t* task);
  * @brief 初始化任务状态段
  * @param esp 任务的用户栈
  */
-int tss_init(task_t* task, uint32_t flag, uint32_t entry, uint32_t esp);
+int tss_init(task_t* task, u32_t flag, u32_t entry, u32_t esp);
 
 /**
  * @brief 切换任务
@@ -39,7 +39,7 @@ void task_switch_from_to(task_t* from, task_t* to);
 /**
  * @brief 切换任务，不使用硬件，在core/task.S中实现
  */
-void simple_switch(uint32_t** from, uint32_t* to);
+void simple_switch(u32_t** from, u32_t* to);
 
 /*==============================================================*/
 
@@ -86,7 +86,7 @@ void set_task_block(task_t* task);
 /**
  * @brief 将任务设置为sleep
  */
-void set_task_sleep(task_t* task, uint32_t ticks);
+void set_task_sleep(task_t* task, u32_t ticks);
 
 /**
  * @brief 将任务从sleep唤醒
@@ -116,7 +116,7 @@ void task_time_tick();
 /**
  * @brief 让任务睡眠
  */
-void sys_sleep(uint32_t ms);
+void sys_sleep(u32_t ms);
 
 /**
  * @brief 获取任务的pid
@@ -147,18 +147,18 @@ int sys_execve(char* path, char** argv, char** env);
 /**
  * @brief 将elf文件加载到task中
  */
-static uint32_t load_elf_file(task_t* task, const char* filename, uint32_t page_dir);
+static u32_t load_elf_file(task_t* task, const char* filename, u32_t page_dir);
 
 /**
  * @brief 加载程序头
  */
-static int load_phdr(int fd, Elf32_Phdr* phdr, uint32_t page_dir);
+static int load_phdr(int fd, Elf32_Phdr* phdr, u32_t page_dir);
 
 /**
  * @brief 复制进程参数到栈中
  * @attention argv与env在另一个页表里
  */
-static int copy_args(char* to, uint32_t page_dir, int argc, char** argv);
+static int copy_args(char* to, u32_t page_dir, int argc, char** argv);
 
 /**
  * @brief 获取当前任务文件打开表的第fd项

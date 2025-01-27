@@ -128,14 +128,14 @@ void do_handler_kbd(exception_frame_t* frame) {
     }recv_state = NORMAL;
 
     // 检查是否有数据, 没有则退出
-    uint32_t status = inb(KBD_PORT_STAT);
+    u32_t status = inb(KBD_PORT_STAT);
     if(!(status & KBD_STAT_RECV_READY)) {
         pic_send_eoi(IRQ1_KEYBOARD);
         return;
     }
 
     // 读取键值
-    uint8_t raw = inb(KBD_PORT_DATA);
+    u8_t raw = inb(KBD_PORT_DATA);
 
     // 读取完成后发送EOI, 方便后续继续响应键盘中断
     pic_send_eoi(IRQ1_KEYBOARD);
@@ -165,7 +165,7 @@ void do_handler_kbd(exception_frame_t* frame) {
     }
 }
 
-void do_e0_key(uint8_t raw) {
+void do_e0_key(u8_t raw) {
     char key = get_key(raw);
     int is_make = is_make_code(raw);
 
@@ -181,7 +181,7 @@ void do_e0_key(uint8_t raw) {
     }
 }
 
-void do_normal_key(uint8_t raw) {
+void do_normal_key(u8_t raw) {
     char key = get_key(raw);
     int is_make = is_make_code(raw);
 
@@ -300,18 +300,18 @@ static void update_numlk_led_status() {
     kbd_read();
 }
 
-uint8_t kbd_read() {
+u8_t kbd_read() {
     kbd_wait_recv_ready();
     return inb(KBD_PORT_DATA);
 }
 
-void kbd_write(uint8_t port, uint8_t data) {
+void kbd_write(u8_t port, u8_t data) {
     kbd_wait_send_ready();
     outb(port, data);
 }
 
 void kbd_wait_send_ready() {
-    uint32_t timeout = 100000;
+    u32_t timeout = 100000;
     while(timeout--) {
         if((inb(KBD_PORT_STAT) & KBD_STAT_SEND_FULL) == 0) {
             return;
@@ -320,7 +320,7 @@ void kbd_wait_send_ready() {
 }
 
 void kbd_wait_recv_ready() {
-    uint32_t timeout = 100000;
+    u32_t timeout = 100000;
     while(timeout--) {
         if((inb(KBD_PORT_STAT) & KBD_STAT_RECV_READY) == 0) {
             return;

@@ -32,7 +32,7 @@ void loader_entry() {
 void detect_memory() {
     show_msg("...Detecting Memory...");
     
-    uint32_t contID = 0;
+    u32_t contID = 0;
     SMAP_entry_t smap_entry;
     int signature, bytes;
 
@@ -73,7 +73,7 @@ void detect_memory() {
 
 // 临时的GDT表
 static
-uint16_t gdt_table[][4] = {
+u16_t gdt_table[][4] = {
     {0, 0, 0, 0},
     {0xFFFF, 0x0000, 0x9A00, 0x00CF},
     {0xFFFF, 0x0000, 0x9200, 0x00CF},
@@ -87,18 +87,18 @@ void enter_protect_mode() {
 
     // 开启A20地址线
     // 使用的是Fast A20 Gate方式，见https://wiki.osdev.org/A20#Fast_A20_Gate
-    uint8_t data = inb(0x92);
+    u8_t data = inb(0x92);
     outb(0x92, data | 0x2);
 
     // 加载GDT；由于中断已经关闭，无需加载IDT
-    lgdt((uint32_t)gdt_table, sizeof(gdt_table));
+    lgdt((u32_t)gdt_table, sizeof(gdt_table));
 
     // 开启CR0的PE位
-    uint32_t cr0 = read_cr0();
+    u32_t cr0 = read_cr0();
     write_cr0(cr0 | (1 << 0));
 
     // 远跳转
-    far_jump(8, (uint32_t)protect_mode_entry);
+    far_jump(8, (u32_t)protect_mode_entry);
 }
 
 void show_msg(const char* msg) {

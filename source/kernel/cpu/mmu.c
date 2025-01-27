@@ -10,7 +10,7 @@
 // 外部的地址分配结构, 在memory.c中定义 
 extern addr_alloc_t paddr_alloc;
 
-pte_t* find_pte(pde_t* page_dir, uint32_t vaddr, int is_alloc) {
+pte_t* find_pte(pde_t* page_dir, u32_t vaddr, int is_alloc) {
 
     pte_t* page_table; // 页目录项的首地址(页表的物理地址)
 
@@ -28,7 +28,7 @@ pte_t* find_pte(pde_t* page_dir, uint32_t vaddr, int is_alloc) {
         }
 
         // 分配一个物理页表, 当作一个页目录项(页目录项的大小正好是一页)
-        uint32_t pg_paddr = addr_alloc_page(&paddr_alloc, 1);
+        u32_t pg_paddr = addr_alloc_page(&paddr_alloc, 1);
         if(pg_paddr == 0) {
             return NULL;
         }

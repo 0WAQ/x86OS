@@ -85,12 +85,12 @@
  * GDT表项，段描述符
  */
 typedef struct _segment_desc_t {
-    uint16_t limit15_0;     // 0 ~ 15
-    uint16_t base15_0;      // 16 ~ 31
+    u16_t limit15_0;     // 0 ~ 15
+    u16_t base15_0;      // 16 ~ 31
 
-    uint8_t  base23_16;     // 0 ~ 7
-    uint16_t attr;          // 8 ~ 23
-    uint8_t  base24_31;     // 24 ~ 31
+    u8_t  base23_16;     // 0 ~ 7
+    u16_t attr;          // 8 ~ 23
+    u8_t  base24_31;     // 24 ~ 31
 
 }__attribute__((packed)) segment_desc_t;
 
@@ -98,24 +98,24 @@ typedef struct _segment_desc_t {
  * IDT表项(三者中的中断门)，调用门描述符
  */
 typedef struct _gate_desc_t {
-    uint16_t offset15_0;    // 0 ~ 15
-    uint16_t selector;      // 16 ~ 31
-    uint16_t attr;          // 0 ~ 15
-    uint16_t offset31_16;   // 16 ~ 31
+    u16_t offset15_0;    // 0 ~ 15
+    u16_t selector;      // 16 ~ 31
+    u16_t attr;          // 0 ~ 15
+    u16_t offset31_16;   // 16 ~ 31
 }__attribute__((packed)) gate_desc_t;
 
 /**
  * 任务状态段
  */
 typedef struct _tss_t {
-    uint32_t pre_link;
-    uint32_t esp0, ss0, esp1, ss1, esp2, ss2;
-    uint32_t cr3;
-    uint32_t eip, eflags, eax, ecx, edx, ebx, esp, ebp, esi, edi;
-    uint32_t es, cs, ss, ds, fs, gs;
-    uint32_t ldt;
-    uint32_t iomap;     // 控制IO访问相关信息
-    // uint32_t ssp;
+    u32_t pre_link;
+    u32_t esp0, ss0, esp1, ss1, esp2, ss2;
+    u32_t cr3;
+    u32_t eip, eflags, eax, ecx, edx, ebx, esp, ebp, esi, edi;
+    u32_t es, cs, ss, ds, fs, gs;
+    u32_t ldt;
+    u32_t iomap;     // 控制IO访问相关信息
+    // u32_t ssp;
 }__attribute__((packed)) tss_t;
 
 #endif // CPU_T_H

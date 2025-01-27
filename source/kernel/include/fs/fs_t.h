@@ -31,7 +31,7 @@ typedef struct _fs_op_t {
     int  (*read)(char* buf, int size, file_t* file);
     int  (*write)(char* buf, int size, file_t* file);
     void (*close)(file_t* file);
-    int  (*seek)(file_t* file, uint32_t offset, int dir);
+    int  (*seek)(file_t* file, u32_t offset, int dir);
     int  (*stat)(file_t* file, struct stat* st);
     int  (*ioctl)(file_t* file, int cmd, int arg0, int arg1);
     int  (*opendir)(struct _fs_t* fs, const char* name, DIR* dir);

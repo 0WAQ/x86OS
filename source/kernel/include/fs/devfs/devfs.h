@@ -44,7 +44,7 @@ void devfs_close(file_t* file);
 /**
  * @brief devfs的定位函数
  */
-int devfs_seek(file_t* file, uint32_t offset, int dir);
+int devfs_seek(file_t* file, u32_t offset, int dir);
 
 /**
  * @brief devfs的状态函数

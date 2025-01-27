@@ -43,7 +43,7 @@ void irq_init() {
 	irq_install(IRQ20_VE, GATE_ATTR_DPL0, exception_handler_virtual_exception);
 	irq_install(IRQ_0x80, GATE_ATTR_DPL3, exception_handler_syscall);
 
-    lidt((uint32_t)idt_table, sizeof(idt_table));
+    lidt((u32_t)idt_table, sizeof(idt_table));
 
 	// 初始化中断控制器
 	pic_init();
@@ -56,7 +56,7 @@ int irq_install(int irq_num, int perm, irq_handler_t handler) {
     }
 
     // 设置门描述符，将irq_num这个异常号与handler绑定
-    set_gate_desc(idt_table + irq_num, KERNEL_SELECTOR_CS, (uint32_t)handler, 
+    set_gate_desc(idt_table + irq_num, KERNEL_SELECTOR_CS, (u32_t)handler, 
         GATE_ATTR_TYPE_INTR | GATE_ATTR_P | perm | GATE_ATTR_D);
 }
 
@@ -105,12 +105,12 @@ void irq_enable(int irq_num) {
 	
 	irq_num -= IRQ_PIC_START;
 	if(irq_num < 8) {
-		uint8_t mask = inb(PIC0_IMR) & ~(1 << irq_num);
+		u8_t mask = inb(PIC0_IMR) & ~(1 << irq_num);
 		outb(PIC0_IMR, mask);
 	}
 	else {
 		irq_num -= 8;
-		uint8_t mask = inb(PIC1_IMR) & ~(1 << irq_num);
+		u8_t mask = inb(PIC1_IMR) & ~(1 << irq_num);
 		outb(PIC1_IMR, mask);
 	}
 }
@@ -122,12 +122,12 @@ void irq_disable(int irq_num) {
 	
 	irq_num -= IRQ_PIC_START;
 	if(irq_num < 8) {
-		uint8_t mask = inb(PIC0_IMR) | (1 << irq_num);
+		u8_t mask = inb(PIC0_IMR) | (1 << irq_num);
 		outb(PIC0_IMR, mask);
 	}
 	else {
 		irq_num -= 8;
-		uint8_t mask = inb(PIC1_IMR) | (1 << irq_num);
+		u8_t mask = inb(PIC1_IMR) | (1 << irq_num);
 		outb(PIC1_IMR, mask);
 	}
 }
@@ -162,7 +162,7 @@ void do_default_handler(exception_frame_t* frame, const char* msg) {
 void dump_core_regs(exception_frame_t* frame) {
 	log_print("IRQ: %d, Error Code: %d", frame->num, frame->errno);
 	
-	uint32_t ss, esp;
+	u32_t ss, esp;
 	if(frame->cs & 0x3) {
 		ss = frame->ss3;
 		esp = frame->esp3;

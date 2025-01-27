@@ -67,7 +67,7 @@ int fat16fs_mount(struct _fs_t* fs, int major, int minor) {
     
     fat->data_start = fat->root_start + fat->root_entry_cnt * 32 / SECTOR_SIZE;
     
-    fat->fat_buffer = (uint8_t*)dbr;
+    fat->fat_buffer = (u8_t*)dbr;
     fat->cluster_bytes_size = fat->sectors_per_cluster * dbr->BPB_BytsPerSec;
     fat->last_sector = -1;
     fat->fs = fs;
@@ -95,7 +95,7 @@ int fat16fs_mount(struct _fs_t* fs, int major, int minor) {
 
 fat16fs_mount_failed:
     if(dbr != NULL) {
-        memory_free_page((uint32_t)dbr);
+        memory_free_page((u32_t)dbr);
     }
     dev_close(dev_id);
     return -1;
@@ -105,7 +105,7 @@ void fat16fs_umount(struct _fs_t* fs) {
     fat16_t* fat = (fat16_t*)fs->data;
 
     dev_close(fs->dev_id);
-    memory_free_page((uint32_t)fat->fat_buffer);
+    memory_free_page((u32_t)fat->fat_buffer);
 }
 
 int fat16fs_unlink(struct _fs_t* fs, const char* filename) {
@@ -222,23 +222,23 @@ int fat16fs_read(char* buf, int size, file_t* file) {
     fat16_t* fat = (fat16_t*)file->fs->data;
 
     // 调整读取量, 不要超过文件总量
-    uint32_t nbytes = size;
+    u32_t nbytes = size;
     if(file->pos + nbytes > file->size) {
         nbytes = file->size - file->pos;
     }
 
-    uint32_t len = 0;   // 最终读取总字节数
+    u32_t len = 0;   // 最终读取总字节数
 
     // 逐字节读取
     while(nbytes > 0) {
         // 每轮能够读取的长度, 会不断调整, 最终就是每轮读取了的量
-        uint32_t curr_read = nbytes;
+        u32_t curr_read = nbytes;
 
         // 当前位置在簇中的偏移
-        uint32_t cluster_offset = file->pos % fat->cluster_bytes_size;
+        u32_t cluster_offset = file->pos % fat->cluster_bytes_size;
 
         // 当前位置的所处扇区
-        uint32_t start_sector = fat->data_start + (file->cblk - 2) * fat->sectors_per_cluster; // 簇号从2开始
+        u32_t start_sector = fat->data_start + (file->cblk - 2) * fat->sectors_per_cluster; // 簇号从2开始
 
         // 若是整簇读取
         if(cluster_offset == 0 && nbytes == fat->cluster_bytes_size) {
@@ -287,19 +287,19 @@ int fat16fs_write(char* buf, int size, file_t* file) {
         }
     }
 
-    uint32_t nbytes = size;
-    uint32_t len = 0;
+    u32_t nbytes = size;
+    u32_t len = 0;
 
     // 逐字节写入
     while(nbytes > 0) {
         // 每轮能够写入的长度, 会不断调整, 最终就是每轮写入的量
-        uint32_t curr_write = nbytes;
+        u32_t curr_write = nbytes;
 
         // 当前位置在簇中的偏移
-        uint32_t cluster_offset = file->pos % fat->cluster_bytes_size;
+        u32_t cluster_offset = file->pos % fat->cluster_bytes_size;
 
         // 当前位置的所处扇区
-        uint32_t start_sector = fat->data_start + (file->cblk - 2) * fat->sectors_per_cluster; // 簇号从2开始
+        u32_t start_sector = fat->data_start + (file->cblk - 2) * fat->sectors_per_cluster; // 簇号从2开始
 
         // 若是整簇写入
         if(cluster_offset == 0 && nbytes == fat->cluster_bytes_size) {
@@ -359,12 +359,12 @@ void fat16fs_close(file_t* file) {
     }
 
     item->DIR_FileSize = file->size;
-    item->DIR_FstClusHI = (uint16_t)(file->sblk >> 16);
-    item->DIR_FstClusLO = (uint16_t)(file->sblk & 0xFFFF);
+    item->DIR_FstClusHI = (u16_t)(file->sblk >> 16);
+    item->DIR_FstClusLO = (u16_t)(file->sblk & 0xFFFF);
     write_dir_entry(fat, item, file->p_index);
 }
 
-int fat16fs_seek(file_t* file, uint32_t offset, int dir) {
+int fat16fs_seek(file_t* file, u32_t offset, int dir) {
     // file->pos <= offset
     if(dir != 0) {
         return -1;
@@ -372,12 +372,12 @@ int fat16fs_seek(file_t* file, uint32_t offset, int dir) {
 
     fat16_t* fat = (fat16_t*)file->fs->data;
     cluster_t curr_clus = file->cblk;
-    uint32_t curr_pos = 0;
-    uint32_t off_to_move = offset;
+    u32_t curr_pos = 0;
+    u32_t off_to_move = offset;
 
     while(off_to_move) {
-        uint32_t cur_offset = curr_pos % fat->cluster_bytes_size;
-        uint32_t curr_move = off_to_move;
+        u32_t cur_offset = curr_pos % fat->cluster_bytes_size;
+        u32_t curr_move = off_to_move;
 
         if(cur_offset + curr_move < fat->cluster_bytes_size) {
             curr_pos += curr_move;
@@ -591,10 +591,10 @@ static void read_from_diritem(fat16_t* fat, file_t* file, diritem_t* item, int i
     file->cblk = file->sblk;
 }
 
-static int diritem_init(diritem_t* item, const char* name, uint8_t attr) {
+static int diritem_init(diritem_t* item, const char* name, u8_t attr) {
     to_sfn((char*)item->DIR_Name, name);
-    item->DIR_FstClusHI = (uint16_t)(FAT_CLUSTER_INVALID >> 16);
-    item->DIR_FstClusLO = (uint16_t)(FAT_CLUSTER_INVALID & 0xFFFF);
+    item->DIR_FstClusHI = (u16_t)(FAT_CLUSTER_INVALID >> 16);
+    item->DIR_FstClusLO = (u16_t)(FAT_CLUSTER_INVALID & 0xFFFF);
     item->DIR_FileSize = 0;
     item->DIR_Attr = attr;
     item->DIR_NTRes = 0;
@@ -635,9 +635,9 @@ static void to_sfn(char* dest, const char* src) {
     }
 }
 
-static int move_file_pos(file_t* file, fat16_t* fat, uint32_t move_bytes, int expand) {
+static int move_file_pos(file_t* file, fat16_t* fat, u32_t move_bytes, int expand) {
     // 当前位置在簇中的偏移量
-    uint32_t c_offset = file->pos % fat->cluster_bytes_size;
+    u32_t c_offset = file->pos % fat->cluster_bytes_size;
     
     // 若pos将在下一个簇中, 那么调整pos到下一簇
     if(c_offset + move_bytes >= fat->cluster_bytes_size) {

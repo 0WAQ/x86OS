@@ -23,7 +23,7 @@
  * 同Linux中的task_struct
  */
 typedef struct _task_t {
-    // uint32_t* stack;    // 保存esp, simple_switch使用
+    // u32_t* stack;    // 保存esp, simple_switch使用
 
     // 任务的状态
     enum {
@@ -36,8 +36,8 @@ typedef struct _task_t {
     }state;
 
     // 记录堆区的位置
-    uint32_t heap_start;
-    uint32_t heap_end;
+    u32_t heap_start;
+    u32_t heap_end;
 
     int pid;
     struct _task_t* parent; // 父进程
@@ -52,9 +52,9 @@ typedef struct _task_t {
     char name[TASK_NAME_SIZE];    // 任务名称
 
     // 每个时间片是100ms
-    uint32_t slice_ticks;   // 时间片计数(递减)
-    uint32_t time_ticks;    // 时间片
-    uint32_t sleep_ticks;   // 
+    u32_t slice_ticks;   // 时间片计数(递减)
+    u32_t time_ticks;    // 时间片
+    u32_t sleep_ticks;   // 
 
     file_t* file_table[TASK_OFILE_NR];      // 任务打开的文件表
 
@@ -84,8 +84,8 @@ typedef struct _task_manager_t {
  * @brief 用于给执行execve的进程传递参数
  */
 typedef struct _task_args_t {
-    uint32_t ret_addr;
-    uint32_t argc;
+    u32_t ret_addr;
+    u32_t argc;
     char** argv;
 }task_args_t;
 

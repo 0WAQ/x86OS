@@ -13,7 +13,7 @@
  * @brief 将size向下(小)对齐到bound的整数倍
  */
 static inline 
-uint32_t down2(uint32_t size, uint32_t bound) {
+u32_t down2(u32_t size, u32_t bound) {
     return size & ~(bound - 1);
 }
 
@@ -21,7 +21,7 @@ uint32_t down2(uint32_t size, uint32_t bound) {
  * @brief 将size向上(大)对齐到bound的整数倍
  */
 static inline 
-uint32_t up2(uint32_t size, uint32_t bound) {
+u32_t up2(u32_t size, u32_t bound) {
     return (size + bound - 1) & ~(bound - 1);
 }
 
@@ -34,7 +34,7 @@ void kernel_sprintf(char* buf, const char* fmt, ...);
 /**
  * @brief 将num以base进制转换为字符串放入dest
  */
-void kernel_itoa(char* dest, int num, uint32_t base);
+void kernel_itoa(char* dest, int num, u32_t base);
 
 /**
  * @brief 复制字符串
@@ -64,7 +64,7 @@ void kernel_memcpy(void* dest, void* src, int size);
 /**
  * @brief 初始化
  */
-void kernel_memset(void* dest, uint8_t v, int size);
+void kernel_memset(void* dest, u8_t v, int size);
 
 /**
  * @brief 比较

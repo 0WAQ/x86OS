@@ -8,7 +8,7 @@
 #include "core/task.h"
 #include "cpu/irq.h"
 
-void sem_init(sem_t* sem, uint32_t count) {
+void sem_init(sem_t* sem, u32_t count) {
     list_init(&sem->wait_list);
     sem->count = count;
 }
@@ -54,10 +54,10 @@ void sem_notify(sem_t* sem) {
     irq_leave_protectoin(state);
 }
 
-uint32_t sem_count(sem_t* sem) {
+u32_t sem_count(sem_t* sem) {
 
     irq_state_t state = irq_enter_protection();
-    uint32_t count = sem->count;
+    u32_t count = sem->count;
     irq_leave_protectoin(state);
 
     return count;

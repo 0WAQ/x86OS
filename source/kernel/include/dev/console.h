@@ -72,12 +72,12 @@ static void move_next_row(console_t* console);
 /**
  * @brief 屏幕上滚lines行
  */
-static void scroll_up(console_t* console, uint32_t lines);
+static void scroll_up(console_t* console, u32_t lines);
 
 /**
  * @brief 删除lines行
  */
-static void erase_row(console_t* console, uint32_t start, uint32_t lines);
+static void erase_row(console_t* console, u32_t start, u32_t lines);
 
 /**
  * @brief 光标向右移动,并删除字符
@@ -87,12 +87,12 @@ static void erase_left(console_t* console);
 /**
  * @brief 读取光标的位置
  */
-static uint16_t read_cursor_pos();
+static u16_t read_cursor_pos();
 
 /**
  * @brief 修改光标的位置
  */
-static uint16_t update_cursor_pos(console_t* console);
+static u16_t update_cursor_pos(console_t* console);
 
 /**
  * @brief 保存光标位置

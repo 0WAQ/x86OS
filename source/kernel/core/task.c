@@ -22,7 +22,7 @@ static task_manager_t task_manager;
 static task_t task_table[TASK_NR];
 static mutex_t task_table_mutex;
 
-int task_init(task_t* task, const char* name, uint32_t flag, uint32_t entry, uint32_t esp) {
+int task_init(task_t* task, const char* name, u32_t flag, u32_t entry, u32_t esp) {
     ASSERT(task != NULL);
 
     // 初始化tss
@@ -31,7 +31,7 @@ int task_init(task_t* task, const char* name, uint32_t flag, uint32_t entry, uin
     // 初始化任务时，执行以下操作的原因:
     // 因为从其它任务首次切换到该任务时，会先恢复该任务的状态
     //  但该任务是首次运行，之前没有状态(并且该任务的调用栈为空)
-    // uint32_t* pesp = (uint32_t*)esp;
+    // u32_t* pesp = (u32_t*)esp;
     // if(pesp) {
     //     *(--pesp) = entry;  // eip, 即返回参数
     //     *(--pesp) = 0;      // ebp
@@ -45,7 +45,7 @@ int task_init(task_t* task, const char* name, uint32_t flag, uint32_t entry, uin
     kernel_strncpy(task->name, name, TASK_NAME_SIZE);
     task->heap_start = 0;
     task->heap_end = 0;
-    task->pid = (uint32_t)task;
+    task->pid = (u32_t)task;
     task->parent = task_manager.curr_task;
     task->state = TASK_CREATED;
     task->time_ticks = TASK_TIME_SLICE_DEFAULT;
@@ -97,7 +97,7 @@ int task_uninit(task_t* task) {
     kernel_memset(task, 0, sizeof(task_t));
 }
 
-int tss_init(task_t* task, uint32_t flag, uint32_t entry, uint32_t esp) {
+int tss_init(task_t* task, u32_t flag, u32_t entry, u32_t esp) {
     
 // 1.创建tss, 注册到gdt中
 
@@ -108,7 +108,7 @@ int tss_init(task_t* task, uint32_t flag, uint32_t entry, uint32_t esp) {
     }
 
     // 注册为tss段，段的起始地址就是&task->tss，偏移为tss的大小
-    set_segment_desc(tss_sel, (uint32_t)&task->tss, sizeof(tss_t), 
+    set_segment_desc(tss_sel, (u32_t)&task->tss, sizeof(tss_t), 
         DESC_ATTR_P | DESC_ATTR_DPL0 | DESC_ATTR_TYPE_TSS   
     );
 
@@ -137,7 +137,7 @@ int tss_init(task_t* task, uint32_t flag, uint32_t entry, uint32_t esp) {
     task->tss.ss0 = KERNEL_SELECTOR_DS;     // 任务的内核栈段
 
     // 分配一页作为栈顶
-    uint32_t kernel_stack = memory_alloc_page();
+    u32_t kernel_stack = memory_alloc_page();
     if(kernel_stack == 0) {
         goto tss_init_failed;
     }
@@ -152,7 +152,7 @@ int tss_init(task_t* task, uint32_t flag, uint32_t entry, uint32_t esp) {
     task->tss.iomap = 0;
 
     // 创建用户自己的页目录表
-    uint32_t page_dir = memory_create_uvm();
+    u32_t page_dir = memory_create_uvm();
     if(page_dir == 0) {
         goto tss_init_failed;
     }
@@ -202,8 +202,8 @@ void task_manager_init() {
     list_init(&task_manager.sleep_list);
 
     // 初始化空闲任务
-    uint32_t flag = TASK_FLAGS_SYSTEM;
-    task_init(&task_manager.idle_task, "idle task", flag, (uint32_t)idle_task_entry, 0);
+    u32_t flag = TASK_FLAGS_SYSTEM;
+    task_init(&task_manager.idle_task, "idle task", flag, (u32_t)idle_task_entry, 0);
 
     task_manager.curr_task = NULL;
 
@@ -216,24 +216,24 @@ void first_task_init() {
     extern void first_task_entry();
 
     // 在链接脚本kernel.lds中定义
-    extern uint8_t s_first_task[], e_first_task[];
+    extern u8_t s_first_task[], e_first_task[];
 
     // 将一号进程移指用户态
     // first_task需要使用的内存, 只包含 .text .data .bss .rodata
-    uint32_t copy_size = (uint32_t)(e_first_task - s_first_task);   // 需要移动的字节
-    uint32_t alloc_size = 10 * MEM_PAGE_SIZE;   // 还有栈段需要计算, 这里不计算了
+    u32_t copy_size = (u32_t)(e_first_task - s_first_task);   // 需要移动的字节
+    u32_t alloc_size = 10 * MEM_PAGE_SIZE;   // 还有栈段需要计算, 这里不计算了
     ASSERT(copy_size < alloc_size);
 
 
     // 这里不需要给参数，因为当cpu从当前任务切换走时，会自动将状态保存，只要保证有地方可去就行
     // cpu会自动保存来源
 
-    uint32_t flag = TASK_FLAGS_USER;
+    u32_t flag = TASK_FLAGS_USER;
     task_init(&task_manager.first_task, "first task", flag, 
-            (uint32_t)first_task_entry, (uint32_t)first_task_entry + alloc_size);
+            (u32_t)first_task_entry, (u32_t)first_task_entry + alloc_size);
     
-    task_manager.first_task.heap_start = (uint32_t)e_first_task;
-    task_manager.first_task.heap_end = (uint32_t)e_first_task;
+    task_manager.first_task.heap_start = (u32_t)e_first_task;
+    task_manager.first_task.heap_end = (u32_t)e_first_task;
 
     task_manager.curr_task = &task_manager.first_task;
 
@@ -244,7 +244,7 @@ void first_task_init() {
     mmu_set_page_dir(task_manager.first_task.tss.cr3);
     
     // 为first_task分配物理页, 从first_task_entry(0x80000000)处分配
-    memory_alloc_page_for((uint32_t)first_task_entry, alloc_size, PTE_P | PTE_W | PTE_U);
+    memory_alloc_page_for((u32_t)first_task_entry, alloc_size, PTE_P | PTE_W | PTE_U);
 
     // 将first_task从内核移指用户
     kernel_memcpy((void*)first_task_entry, (void*)&s_first_task, copy_size);
@@ -290,7 +290,7 @@ void set_task_block(task_t* task) {
     // 不设置状态，因为不确定
 }
 
-void set_task_sleep(task_t* task, uint32_t ticks) {
+void set_task_sleep(task_t* task, u32_t ticks) {
     if(ticks == 0) {
         return;
     }
@@ -398,7 +398,7 @@ void task_time_tick() {
     task_dispatch();
 }
 
-void sys_sleep(uint32_t ms) {
+void sys_sleep(u32_t ms) {
     
     /////////////////////////////////////////// 进入临界区
     irq_state_t state = irq_enter_protection(); 
@@ -518,11 +518,11 @@ int sys_execve(char* path, char** argv, char** env) {
     kernel_memcpy(task->name, get_filename_from_path(path), TASK_NAME_SIZE);
 
     // 创建新的页目录表, 防止在中途出现错误
-    uint32_t old_page_dir = task->tss.cr3;
-    uint32_t new_page_dir = memory_create_uvm();
+    u32_t old_page_dir = task->tss.cr3;
+    u32_t new_page_dir = memory_create_uvm();
 
     // 解析elf文件到内存中
-    uint32_t entry = load_elf_file(task, path, new_page_dir);   // TODO: 第二个参数
+    u32_t entry = load_elf_file(task, path, new_page_dir);   // TODO: 第二个参数
     if(!entry) {
         goto sys_execve_failed;
     }
@@ -530,7 +530,7 @@ int sys_execve(char* path, char** argv, char** env) {
     // TODO: 用户栈不是已经分配过了吗
 
     // 准备用户栈, 为环境变量与参数预留足够的空间
-    uint32_t stack_top = MEM_TASK_STACK_TOP - MEM_TASK_ARG_SIZE;
+    u32_t stack_top = MEM_TASK_STACK_TOP - MEM_TASK_ARG_SIZE;
     int ret = _memory_alloc_page_for(new_page_dir, 
                                      MEM_TASK_STACK_TOP - MEM_TASK_STACK_SIZE, 
                                      MEM_TASK_STACK_SIZE, PTE_P | PTE_U | PTE_W);
@@ -578,7 +578,7 @@ sys_execve_failed:
     return -1;
 }
 
-static uint32_t load_elf_file(task_t* task, const char* filename, uint32_t page_dir) {
+static u32_t load_elf_file(task_t* task, const char* filename, u32_t page_dir) {
     Elf32_Ehdr elf_hdr;
     Elf32_Phdr elf_phdr;
 
@@ -624,8 +624,8 @@ static uint32_t load_elf_file(task_t* task, const char* filename, uint32_t page_
     }
 
     // 加载程序头, 将内容拷贝到相应位置
-    uint32_t e_phoff = elf_hdr.e_phoff;
-    for(uint32_t i = 0; i < elf_hdr.e_phnum; ++i, e_phoff += elf_hdr.e_phentsize) {
+    u32_t e_phoff = elf_hdr.e_phoff;
+    for(u32_t i = 0; i < elf_hdr.e_phnum; ++i, e_phoff += elf_hdr.e_phentsize) {
         if(sys_lseek(fd, e_phoff, 0) < 0) {
             log_print("read file failed.");
             goto load_elf_file_failed;
@@ -665,7 +665,7 @@ load_elf_file_failed:
     return 0;
 }
 
-static int load_phdr(int fd, Elf32_Phdr* phdr, uint32_t page_dir) {
+static int load_phdr(int fd, Elf32_Phdr* phdr, u32_t page_dir) {
 
     // 生成的elf文件必须是页边界对齐的
     ASSERT((phdr->p_vaddr & (MEM_PAGE_SIZE - 1)) == 0);
@@ -683,13 +683,13 @@ static int load_phdr(int fd, Elf32_Phdr* phdr, uint32_t page_dir) {
         goto load_phdr_failed;
     }
 
-    uint32_t vaddr = phdr->p_vaddr;
-    uint32_t size = phdr->p_filesz;
+    u32_t vaddr = phdr->p_vaddr;
+    u32_t size = phdr->p_filesz;
     while(size > 0) {
 
         // 每次只拷贝最多一页内存
-        uint32_t cur_size = (size > MEM_PAGE_SIZE) ? MEM_PAGE_SIZE : size;
-        uint32_t paddr = memory_vaddr_to_paddr(page_dir, vaddr);
+        u32_t cur_size = (size > MEM_PAGE_SIZE) ? MEM_PAGE_SIZE : size;
+        u32_t paddr = memory_vaddr_to_paddr(page_dir, vaddr);
         if(sys_read(fd, (char*)paddr, cur_size) < cur_size) {
             log_print("copy file failed.");
             goto load_phdr_failed;
@@ -705,7 +705,7 @@ load_phdr_failed:
     return -1;
 }
 
-static int copy_args(char* to, uint32_t page_dir, int argc, char** argv) {
+static int copy_args(char* to, u32_t page_dir, int argc, char** argv) {
 
     // 再stack_top中一次写入argc, argv
     task_args_t task_args;
@@ -715,7 +715,7 @@ static int copy_args(char* to, uint32_t page_dir, int argc, char** argv) {
     char* dest_arg = to + sizeof(task_args_t) + (argc + 1) * sizeof(char*);
     
     // argv表
-    char** dest_arg_tb = (char**)memory_vaddr_to_paddr(page_dir, (uint32_t)(to + sizeof(task_args_t)));
+    char** dest_arg_tb = (char**)memory_vaddr_to_paddr(page_dir, (u32_t)(to + sizeof(task_args_t)));
     ASSERT(dest_arg_tb != 0);
 
     for(int i = 0; i < argc; i++) {
@@ -723,7 +723,7 @@ static int copy_args(char* to, uint32_t page_dir, int argc, char** argv) {
 
         // 不能用strcpy, 因为to和argv不在一个页表里
         int len = kernel_strlen(from) + 1;      // 包含结束符
-        int ret = memory_copy_uvm_data((uint32_t)dest_arg, page_dir, (uint32_t)from, len);
+        int ret = memory_copy_uvm_data((u32_t)dest_arg, page_dir, (u32_t)from, len);
         ASSERT(ret >= 0);
         
         dest_arg_tb[i] = dest_arg;
@@ -735,7 +735,7 @@ static int copy_args(char* to, uint32_t page_dir, int argc, char** argv) {
     }
 
     // 写入task_args
-    return memory_copy_uvm_data((uint32_t)to, page_dir, (uint32_t)&task_args, sizeof(task_args_t));
+    return memory_copy_uvm_data((u32_t)to, page_dir, (u32_t)&task_args, sizeof(task_args_t));
 }
 
 file_t* get_task_file(int fd) {
