@@ -53,6 +53,22 @@ static inline void outb(uint16_t port, uint8_t data) {
     );
 }
 
+// TODO:
+#define outb_p(value,port) \
+__asm__ ("outb %%al,%%dx\n" \
+		"\tjmp 1f\n" \
+		"1:\tjmp 1f\n" \
+		"1:"::"a" (value),"d" (port))
+
+#define inb_p(port) ({ \
+unsigned char _v; \
+__asm__ volatile ("inb %%dx,%%al\n" \
+	"\tjmp 1f\n" \
+	"1:\tjmp 1f\n" \
+	"1:":"=a" (_v):"d" (port)); \
+_v; \
+})
+
 /**
  * @brief 读端口，inw ax, dx
  */

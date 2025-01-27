@@ -3,8 +3,8 @@
  * 硬件定时器配置相关参数
  * 
  */
-#ifndef TIME_T_H
-#define TIME_T_H
+#ifndef TIMER_T_H
+#define TIMER_T_H
 
 // 定时器时钟
 #define PIT_OSC_FREQ        1193182
@@ -17,4 +17,4 @@
 #define PIT_LOAD_LOHI           (3 << 4)
 #define PIT_MODE3               (3 << 1)
 
-#endif // TIME_T_H
+#endif // TIMER_T_H

@@ -15,6 +15,7 @@
 #include "tools/log.h"
 #include "tools/klib.h"
 #include "tools/list.h"
+#include "tools/time.h"
 #include "core/task.h"
 #include "core/memory.h"
 #include "os_cfg.h"
