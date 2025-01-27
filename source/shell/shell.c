@@ -11,6 +11,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <sys/file.h>
+#include <sys/time.h>
 
 cli_t cli;
 static const char* promot = "sh >> ";
@@ -64,6 +65,8 @@ int main(int argc, char** argv) {
     dup(fd);
 
     cli_init(promot, cmd_table, sizeof(cmd_table) / sizeof(cmd_table[0]));
+
+    time_t t = time(NULL);
 
     while(1) {
         show_pormot();

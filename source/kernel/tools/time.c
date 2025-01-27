@@ -4,6 +4,7 @@
  * 
  */
 #include "tools/time.h"
+#include "os_cfg.h"
 
 // 每个月的起始天数
 static int month[12] = {
@@ -22,7 +23,7 @@ static int month[12] = {
 };
 
 // TODO: change func-signature
-int get_time(struct tm* tm) {
+int get_tm(struct tm* tm) {
 	
     do {
 		tm->tm_sec = CMOS_READ(0);
@@ -72,4 +73,21 @@ time_t kernel_mktime(struct tm * tm)
 	res += MINUTE*tm->tm_min;
 	res += tm->tm_sec;
 	return res;
+}
+
+int sys_gettimeofday(struct timeval* tv, struct timezone* tz) {
+	
+	struct tm tm;
+	get_tm(&tm);
+
+	if(tv != NULL) {
+		tv->tv_sec = kernel_mktime(&tm);
+		tv->tv_usec = 0;
+	}
+
+	if(tz != NULL) {
+		tz->tz_minuteswest = 0;
+		tz->tz_dsttime = 0;
+	}
+	return 0;
 }

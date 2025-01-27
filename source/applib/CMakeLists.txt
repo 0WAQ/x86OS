@@ -1,6 +1,15 @@
 
 project(app LANGUAGES C)
 
+option(FIRST_TASK "Enable FIRST_TASK compilation" OFF)
+
+if(FIRST_TASK)
+    message(STATUS "app: Compling applib with FIRST_TASK")
+    add_definitions(-DFIRST_TASK)
+else()
+    message(STATUS "app: Compling applib whitout FIRST_TASK")
+endif()
+
 file(GLOB C_LIST "*.S" "*.c" "*.h")
 add_library(${PROJECT_NAME} ${C_LIST})
 

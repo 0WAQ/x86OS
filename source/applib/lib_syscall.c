@@ -4,9 +4,12 @@
  * 
  */
 #include "lib_syscall.h"
-#include "core/syscall.h"
+#include "core/syscall_t.h"
 #include "os_cfg.h"
+
+#ifndef FIRST_TASK
 #include <stdlib.h>
+#endif // FIRST_TASK
 
 // 通过中断实现系统调用
 static inline
@@ -144,6 +147,7 @@ int dup(int fd) {
     return syscall(SYS_dup, &args);
 }
 
+#ifndef FIRST_TASK
 DIR* opendir(const char* path) {
     DIR* dir = (DIR*)malloc(sizeof(DIR));
     if(dir == NULL) {
@@ -161,7 +165,9 @@ DIR* opendir(const char* path) {
 
     return dir;
 }
+#endif // FIRST_TASK
 
+#ifndef FIRST_TASK
 struct dirent* readdir(DIR* dir) {
     syscall_args_t args;
     args.arg0 = (int)dir;
@@ -172,11 +178,21 @@ struct dirent* readdir(DIR* dir) {
     }
     return &dir->dirent;
 }
+#endif // FIRST_TASK
 
+#ifndef FIRST_TASK
 int closedir(DIR* dir) {
     syscall_args_t args;
     args.arg0 = (int)dir;
     int ret = syscall(SYS_closedir, &args);
     free(dir);
     return 0;
+}
+#endif // FIRST_TASK
+
+int gettimeofday(struct timeval* tv, void* tz) {
+    syscall_args_t args;
+    args.arg0 = (int)tv;
+    args.arg1 = (int)tz;
+    return syscall(SYS_gettimeofday, &args);
 }

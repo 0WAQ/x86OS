@@ -35,6 +35,7 @@
 #define SYS_readdir     61
 #define SYS_closedir    62
 
+#define SYS_gettimeofday 70
 
 typedef int(*syscall_handler_t)(u32_t, u32_t, u32_t, u32_t, u32_t);
 

@@ -8,6 +8,7 @@
 
 #include "lib_syscall_t.h"
 #include <sys/stat.h>
+#include <sys/time.h>
 
 /**
  * @brief 系统调用的统一入口
@@ -108,16 +109,27 @@ int wait(int* status);
 /**
  * @brief 打开目录的外部实现
  */
+#ifndef FIRST_TASK
 DIR* opendir(const char* path);
+#endif // FIRST_TASK
 
 /**
  * @brief 读取目录的外部实现
  */
+#ifndef FIRST_TASK
 struct dirent* readdir(DIR* dir);
+#endif // FIRST_TASK
 
 /**
  * @brief 关闭目录的外部实现
  */
+#ifndef FIRST_TASK
 int closedir(DIR* dir);
+#endif // FIRST_TASK
+
+/**
+ * @brief
+ */
+int gettimeofday(struct timeval* tv, void* tz);
 
 #endif // LIB_SYSCALL_H

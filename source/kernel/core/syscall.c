@@ -8,6 +8,7 @@
 #include "core/memory.h"
 #include "fs/fs.h"
 #include "tools/log.h"
+#include "tools/time.h"
 
 static const 
 syscall_handler_t sys_table[] = {
@@ -34,6 +35,8 @@ syscall_handler_t sys_table[] = {
     [SYS_opendir]  = (syscall_handler_t)sys_opendir,
     [SYS_readdir]  = (syscall_handler_t)sys_readdir,
     [SYS_closedir] = (syscall_handler_t)sys_closedir,
+
+    [SYS_gettimeofday] = (syscall_handler_t)sys_gettimeofday,
 };
 
 void do_handler_syscall(exception_frame_t* frame) {
