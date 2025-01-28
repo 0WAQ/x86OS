@@ -1,13 +1,54 @@
 # 如何开始
-1. 项目依赖
-   - `qemu`
-   - `gcc` 工具链
-   - `vscode`, 可选
-2. 创建虚拟硬盘
-3. 使用 `vscode` 打开项目根目录
-   - ...
-4. 开始调试
-   - ...
+1. 安装工具链
+   - 安装`gcc-i686-linux-gnu`, `gdb`, `cmake`
+   ```shell
+   sudo apt update
+   sudo apt upgrade
+   sudo apt install gcc-i686-linux-gnu
+   sudo apt install gdb
+   sudo apt install cmake
+   ```
+   - 安装qemu
+   ```shell
+   sudo apt install qemu-system-x86
+   ```
+
+2. 移植newlib
+
+   - 安装`i686-elf-tools`工具链
+   ```shell
+   cd ~ && mkdir compiler && cd compiler
+   wget https://github.com/lordmilko/i686-elf-tools/releases/download/7.1.0/i686-elf-tools-linux.zip
+   mkdir i686-elf-tools && cd i686-elf-tools
+   unzip ../i686-elf-tools-linux.zip
+   mkdir newlib
+   ```
+
+   - 配置`环境变量`
+   ```shell
+   echo "export PATH=\"$HOME/compiler/i686-elf-tools/bin:$PATH\"" >> ~/.bashrc
+   source ~/.bashrc
+   ```
+
+   - 下载`newlib-4.10.0`
+   ```shell
+   wget ftp://sourceware.org/pub/newlib/newlib-4.1.0.tar.gz
+   ```
+   
+   - 编译`newlib`
+   ```shell
+   cd newlib-4.10.0
+   mkdir build && build
+   ../configure --target=i686-elf --prefix=${HOME}/compiler/i686-elf-tools/newlib \
+                --disable-multilib --disable-newlib-io-float --disable-newlib-supplied-syscalls
+   make all -j${nproc}
+   make install
+   ```
+TODO:
+3. 创建虚拟硬盘
+   ```shell
+   cd image
+   ```
 
 # 目录结构
 ``` shell
