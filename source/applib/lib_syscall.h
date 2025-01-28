@@ -37,6 +37,11 @@ int fork();
 int execve(const char* path, char* const* argv, char* const* env);
 
 /**
+ * @brief  TODO:
+ */
+int kill(int pid, int sig);
+
+/**
  * @brief 让进程主动释放cpu
  */
 int yield();

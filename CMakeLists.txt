@@ -35,6 +35,9 @@ set(OBJCOPY_TOOL "${TOOL_PREFIX}objcopy")
 set(OBJDUMP_TOOL "${TOOL_PREFIX}objdump")
 set(READELF_TOOL "${TOOL_PREFIX}readelf")
 
+# 设置newlib根目录
+set(NEWLIB_ROOT "$ENV{HOME}/compiler/i686-elf-tools/newlib/i686-elf")
+
 # 工程，启用C语言和汇编语言
 project(os LANGUAGES C)  
 enable_language(ASM)
@@ -43,7 +46,7 @@ enable_language(ASM)
 include_directories(
     ${PROJECT_SOURCE_DIR}/source
     ${PROJECT_SOURCE_DIR}/source/kernel/include
-    ${PROJECT_SOURCE_DIR}/newlib/i686-elf/include
+    ${NEWLIB_ROOT}/include
 )
 
 # 底层的若干子项目：含内核及应用程序

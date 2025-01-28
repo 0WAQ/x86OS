@@ -52,6 +52,10 @@ int execve(const char* path, char* const* argv, char* const* env) {
     return syscall(SYS_execve, &args);
 }
 
+int kill(int pid, int sig) {
+    return -1;
+}
+
 int yield() {
     syscall_args_t args;
     return syscall(SYS_yield, &args); 
