@@ -3,9 +3,13 @@
    - 安装`gcc-i686-linux-gnu`, `gdb`, `cmake`
    ```shell
    sudo apt update
+
    sudo apt upgrade
+
    sudo apt install gcc-i686-linux-gnu
+
    sudo apt install gdb
+
    sudo apt install cmake
    ```
    - 安装qemu
@@ -18,30 +22,43 @@
    - 安装`i686-elf-tools`工具链
    ```shell
    cd ~ && mkdir compiler && cd compiler
+
    wget https://github.com/lordmilko/i686-elf-tools/releases/download/7.1.0/i686-elf-tools-linux.zip
+
    mkdir i686-elf-tools && cd i686-elf-tools
+
    unzip ../i686-elf-tools-linux.zip
+
    mkdir newlib
    ```
 
    - 配置`环境变量`
    ```shell
    echo "export PATH=\"$HOME/compiler/i686-elf-tools/bin:$PATH\"" >> ~/.bashrc
+   
    source ~/.bashrc
    ```
 
-   - 下载`newlib-4.10.0`
+   - 下载`newlib-4.5.0`
    ```shell
-   wget ftp://sourceware.org/pub/newlib/newlib-4.1.0.tar.gz
+   wget ftp://sourceware.org/pub/newlib/newlib-4.5.0.20241231.tar.gz
+
+   tar xvf newlib-4.5.0.20241231.tar.gz
    ```
    
    - 编译`newlib`
    ```shell
-   cd newlib-4.10.0
+   cd newlib-4.5.0.20241231
+
    mkdir build && build
+
    ../configure --target=i686-elf --prefix=${HOME}/compiler/i686-elf-tools/newlib \
-                --disable-multilib --disable-newlib-io-float --disable-newlib-supplied-syscalls
+   --disable-multilib --disable-newlib-supplied-syscalls --enable-newlib-long-time_t \
+   --disable-newlib-io-float
+
+
    make all -j${nproc}
+
    make install
    ```
 TODO:
@@ -56,9 +73,9 @@ x86OS/
 |
 |-- .vscode/    # vscode相关配置文件
 |
-|-- image/      # 虚拟硬盘文件
+|-- doc/
 |
-|-- newlib/     # 轻量级标准C库
+|-- image/      # 虚拟硬盘文件
 |
 |-- script/     # 运行脚本
 |

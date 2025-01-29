@@ -42,6 +42,11 @@ int do_cp(int argc, char** argv);
 int do_rm(int argc, char** argv);
 
 /**
+ * @brief date
+ */
+int do_date(int argc, char** argv);
+
+/**
  * @brief quit
  */
 int do_quit(int argc, char** argv);

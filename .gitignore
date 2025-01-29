@@ -2,4 +2,4 @@
 .vscode/c_cpp_properties.json
 build/
 image/*
-newlib-4.1.0
+newlib*
