@@ -342,7 +342,7 @@ irq_state_t irq_enter_protection() {
 	return state;
 }
 
-void irq_leave_protectoin(irq_state_t state) {
+void irq_leave_protection(irq_state_t state) {
 	// 复原进入临界区之前中断的状态
 	write_eflags(state);
 }

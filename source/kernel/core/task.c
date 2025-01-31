@@ -76,7 +76,7 @@ void task_start(task_t* task) {
     set_task_ready(task);
 
 
-    irq_leave_protectoin(state);
+    irq_leave_protection(state);
     /////////////////////////////////////////// 退出临界区
 
 }
@@ -328,7 +328,7 @@ int sys_yield() {
     }
 
 
-    irq_leave_protectoin(state);
+    irq_leave_protection(state);
     /////////////////////////////////////////// 退出临界区
 
     return 0;
@@ -361,7 +361,7 @@ void task_dispatch() {
         task_switch_from_to(from, to);
     }
 
-    irq_leave_protectoin(state);
+    irq_leave_protection(state);
     /////////////////////////////////////////// 退出临界区
 }
 
@@ -409,7 +409,7 @@ void sys_sleep(u32_t ms) {
 
     task_dispatch();
 
-    irq_leave_protectoin(state);
+    irq_leave_protection(state);
     /////////////////////////////////////////// 退出临界区
 
 }
@@ -817,7 +817,7 @@ void sys_exit(int status) {
     set_task_block(task);
     task_dispatch();
 
-    irq_leave_protectoin(state);
+    irq_leave_protection(state);
 }
 
 int sys_wait(int* status) {
@@ -857,7 +857,7 @@ int sys_wait(int* status) {
         // 切换到其它进程
         task_dispatch();
 
-        irq_leave_protectoin(state);
+        irq_leave_protection(state);
     }
 
     return 0;

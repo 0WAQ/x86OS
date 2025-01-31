@@ -134,4 +134,9 @@ static void move_right_esc(console_t* c, int n);
  */
 void console_switch(int idx);
 
+/**
+ * @brief 设置光标可见性
+ */
+void set_cursor_visiable(int idx, int visiable);
+
 #endif // CONSOLE_H

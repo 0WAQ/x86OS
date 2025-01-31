@@ -173,9 +173,11 @@ int tty_control(device_t* dev, int cmd, int arg0, int arg1) {
     case TTY_CMD_ECHO:
         if(arg0) {
             tty->iflags |= TTY_IECHO;
+            set_cursor_visiable(tty->console_index, 1); // 光标可见
         }
         else {
             tty->iflags &= ~TTY_IECHO;
+            set_cursor_visiable(tty->console_index, 0); // 光标不可见
         }
         break;
 
@@ -210,7 +212,7 @@ int tty_fifo_put(tty_fifo_t* fifo, char ch) {
     irq_state_t state = irq_enter_protection();
 
     if(fifo->cnt >= fifo->size) {
-        irq_leave_protectoin(state);
+        irq_leave_protection(state);
         return -1;
     }
 
@@ -220,7 +222,7 @@ int tty_fifo_put(tty_fifo_t* fifo, char ch) {
     }
     fifo->cnt++;
 
-    irq_leave_protectoin(state);
+    irq_leave_protection(state);
 
     return 0;
 }
@@ -240,7 +242,7 @@ int tty_fifo_get(tty_fifo_t* fifo, char* ch) {
     }
     fifo->cnt--;
 
-    irq_leave_protectoin(state);
+    irq_leave_protection(state);
 
     return 0;
 }

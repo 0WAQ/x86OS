@@ -30,7 +30,7 @@ void sem_wait(sem_t* sem) {
         task_dispatch();
     }
 
-    irq_leave_protectoin(state);
+    irq_leave_protection(state);
 }
 
 void sem_notify(sem_t* sem) {
@@ -51,14 +51,14 @@ void sem_notify(sem_t* sem) {
         ++sem->count;
     }
 
-    irq_leave_protectoin(state);
+    irq_leave_protection(state);
 }
 
 u32_t sem_count(sem_t* sem) {
 
     irq_state_t state = irq_enter_protection();
     u32_t count = sem->count;
-    irq_leave_protectoin(state);
+    irq_leave_protection(state);
 
     return count;
 }

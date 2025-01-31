@@ -41,7 +41,7 @@ int dev_open(int major, int minor, void* data) {
         // 找到相同的设备, 直接返回其dev_id
         else if((dev->desc->major == major) && (dev->minor == minor)) {
             dev->open_cnt++;
-            irq_leave_protectoin(state);
+            irq_leave_protection(state);
             return i;
         }
     }
@@ -68,12 +68,12 @@ int dev_open(int major, int minor, void* data) {
         }
         if(ret == 0) {
             fdev->open_cnt = 1;
-            irq_leave_protectoin(state);
+            irq_leave_protection(state);
             return fdev - dev_tbl;
         }
     }
 
-    irq_leave_protectoin(state);
+    irq_leave_protection(state);
 
     return -1;
 }
@@ -130,7 +130,7 @@ void dev_close(int dev_id) {
         kernel_memset((void*)dev, 0, sizeof(device_t));
     }
     
-    irq_leave_protectoin(state);
+    irq_leave_protection(state);
 }
 
 static int is_devid_bad(int dev_id) {

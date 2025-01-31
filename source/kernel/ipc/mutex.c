@@ -33,7 +33,7 @@ void mutex_lock(mutex_t* mutex) {
         task_dispatch();
     }
 
-    irq_leave_protectoin(state);
+    irq_leave_protection(state);
 }
 
 void mutex_unlock(mutex_t* mutex) {
@@ -65,5 +65,5 @@ void mutex_unlock(mutex_t* mutex) {
         }
     }
 
-    irq_leave_protectoin(state);
+    irq_leave_protection(state);
 }

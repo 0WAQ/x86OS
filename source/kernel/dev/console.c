@@ -315,7 +315,7 @@ static u16_t read_cursor_pos() {
     outb(0x3D4, 0xE);
     pos |= inb(0x3D5) << 8;
 
-    irq_leave_protectoin(state);
+    irq_leave_protection(state);
 
     return pos;
 }
@@ -332,7 +332,7 @@ static u16_t update_cursor_pos(console_t* console) {
     outb(0x3D4, 0xE);
     outb(0x3D5, (u8_t)((pos >> 8) & 0xFF));
 
-    irq_leave_protectoin(state);
+    irq_leave_protection(state);
 
     return pos;
 }
@@ -447,4 +447,20 @@ void console_switch(int idx) {
 
     curr_console_idx = idx;
     update_cursor_pos(c);
+}
+
+void set_cursor_visiable(int idx, int visiable) {
+    console_t *console = console_buf + idx;
+
+    irq_state_t state = irq_enter_protection();
+    if (visiable) {
+        outb(0x3D4, 0x0A);
+        outb(0x3D5, (inb(0x3D5) & 0xC0) | 0);
+        outb(0x3D4, 0x0B);
+        outb(0x3D5, (inb(0x3D5) & 0xE0) | 15);
+    } else {
+        outb(0x3D4, 0x0A);
+        outb(0x3D5, 0x20);
+    }
+    irq_leave_protection(state);
 }
