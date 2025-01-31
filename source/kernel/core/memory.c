@@ -205,11 +205,11 @@ static void show_mem_info(boot_info_t* boot_info) {
     log_print("");
 }
 
-u32_t memory_copy_uvm(u32_t page_dir, u32_t to_page_dir) {
+u32_t memory_copy_uvm(u32_t from, u32_t to) {
 
     // 复制用户空间的页表
     u32_t user_pde_start = pde_index(MEMORY_TASK_BASE);
-    pde_t* pde = (pde_t*)page_dir + user_pde_start; // 父进程用户空间的起始页目录项
+    pde_t* pde = (pde_t*)from + user_pde_start; // 父进程用户空间的起始页目录项
     
     // 遍历父进程的用户空间的页目录项
     for(int i = user_pde_start; i < PDE_CNT; ++i, ++pde) {
@@ -234,7 +234,7 @@ u32_t memory_copy_uvm(u32_t page_dir, u32_t to_page_dir) {
 
             // 建立映射关系
             u32_t vaddr = (i << 22) | (j << 12);
-            int ret = memory_create_map((pde_t*)to_page_dir, vaddr, page, 1, get_pte_perm(pte));
+            int ret = memory_create_map((pde_t*)to, vaddr, page, 1, get_pte_perm(pte));
             if(ret < 0) {
                 goto copy_uvm_failed;
             }
@@ -244,12 +244,12 @@ u32_t memory_copy_uvm(u32_t page_dir, u32_t to_page_dir) {
         }
     }
 
-    return to_page_dir;
+    return to;
 
 copy_uvm_failed:
 
-    if(to_page_dir) {
-        memory_destory_uvm(to_page_dir);
+    if(to) {
+        memory_destory_uvm(to);
     }
 
     return 0;

@@ -78,7 +78,7 @@ typedef struct _exception_frame_t{
     u32_t gs, fs, es, ds;
     u32_t edi, esi, ebp, esp, ebx, edx, ecx, eax;
     u32_t num, errno, eip, cs, eflags;
-    u32_t esp3, ss3;
+    u32_t esp3, ss3;    // 中断触发时, cpu在内核栈中自动压入的原用户栈
 }exception_frame_t;
 
 

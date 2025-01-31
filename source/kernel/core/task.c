@@ -135,13 +135,13 @@ static int tss_init(task_t* task, u32_t flag, u32_t entry, u32_t esp) {
 
     task->tss.ss0 = KERNEL_SELECTOR_DS;     // 任务的内核栈段
 
-    // 分配一页作为栈顶
+    // 分配一页内存作为内核栈
     u32_t kernel_stack = memory_alloc_page();
     if(kernel_stack == 0) {
         goto tss_init_failed;
     }
 
-    // 若未指定栈那么就用内核栈, 一般是特权级为0的进程, 如idle
+    // 若未指定用户栈那么就用内核栈, 一般是特权级为0的进程, 如idle
     task->tss.esp = esp ? esp : kernel_stack + MEM_PAGE_SIZE;
     task->tss.esp0 = kernel_stack + MEM_PAGE_SIZE;
 

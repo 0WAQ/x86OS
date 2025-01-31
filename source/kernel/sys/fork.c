@@ -41,7 +41,7 @@ int sys_fork() {
     tss->eflags = frame->eflags;
 
     child->parent = parent;
-
+    // TODO: 不应该是复制, 而是共享页表
     // 将父进程的页表映射复制到子进程
     if((tss->cr3 = memory_copy_uvm(parent->tss.cr3, child->tss.cr3)) == 0) {
         goto sys_fork_failed;
