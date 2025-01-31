@@ -3,12 +3,9 @@
  * 系统调用相关
  * 
  */
-#include "core/syscall.h"
-#include "core/task.h"
-#include "core/memory.h"
-#include "fs/fs.h"
+#include "sys/syscall.h"
+#include "core/task_t.h"
 #include "tools/log.h"
-#include "tools/time.h"
 
 static const 
 syscall_handler_t sys_table[] = {
@@ -20,6 +17,8 @@ syscall_handler_t sys_table[] = {
     [SYS_exit]   = (syscall_handler_t)sys_exit,
     [SYS_wait]   = (syscall_handler_t)sys_wait,
     
+    [SYS_sbrk]   = (syscall_handler_t)sys_sbrk,
+
     [SYS_unlink] = (syscall_handler_t)sys_unlink,
     [SYS_open]   = (syscall_handler_t)sys_open,
     [SYS_read]   = (syscall_handler_t)sys_read,
@@ -28,7 +27,6 @@ syscall_handler_t sys_table[] = {
     [SYS_close]  = (syscall_handler_t)sys_close,
     [SYS_isatty] = (syscall_handler_t)sys_isatty,
     [SYS_fstat]  = (syscall_handler_t)sys_fstat,
-    [SYS_sbrk]   = (syscall_handler_t)sys_sbrk,
     [SYS_dup]    = (syscall_handler_t)sys_dup,
     [SYS_ioctl]  = (syscall_handler_t)sys_ioctl,
 

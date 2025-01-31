@@ -24,17 +24,17 @@ void exception_handler_kbd();
 /**
  * @brief 以E0开头的键值
  */
-void do_e0_key(u8_t raw);
+static void do_e0_key(u8_t raw);
 
 /**
  * @brief 普通的键值
  */
-void do_normal_key(u8_t raw);
+static void do_normal_key(u8_t raw);
 
 /**
  * @brief 切换tty设备
  */
-void do_fx_key(char key);
+static void do_fx_key(char key);
 
 /**
  * @brief 更新Caps Lock键的led灯
@@ -63,21 +63,21 @@ static inline char get_key(u8_t raw) {
 /**
  * @brief 读键盘数据
  */
-u8_t kbd_read();
+static u8_t kbd_read();
 
 /**
  * @brief 向键盘端口写数据
  */
-void kbd_write(u8_t port, u8_t data);
+static void kbd_write(u8_t port, u8_t data);
 
 /**
  * @brief 等待可写数据
  */
-void kbd_wait_send_ready();
+static void kbd_wait_send_ready();
 
 /**
  * @brief 等待可用的键盘数据
  */
-void kbd_wait_recv_ready();
+static void kbd_wait_recv_ready();
 
 #endif // KBD_H

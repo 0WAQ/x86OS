@@ -21,17 +21,17 @@ int irq_install(int irq_num, int perm, irq_handler_t handler);
 /**
  * @brief 初始化pic
  */
-void pic_init();
+static void pic_init();
 
 /**
  * @brief 关中断
  */
-void irq_disable_global();
+static void irq_disable_global();
 
 /**
  * @brief 开中断
  */
-void irq_enalbe_global();
+static void irq_enalbe_global();
 
 /**
  * @brief 开启指定中断
@@ -52,12 +52,12 @@ void pic_send_eoi(int irq_num);
 /**
  * @brief 异常处理程序的执行函数
  */
-void do_default_handler(exception_frame_t* frame, const char* msg);
+static void do_default_handler(exception_frame_t* frame, const char* msg);
 
 /**
  * @brief 打印异常栈寄存器
  */
-void dump_core_regs(exception_frame_t* frame);
+static void dump_core_regs(exception_frame_t* frame);
 
 /**
  * @brief 异常处理程序，在cpu/irq.S中实现，与异常号绑定

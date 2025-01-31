@@ -5,7 +5,6 @@
  */
 #include "cpu/cpu.h"
 #include "cpu/irq.h"
-#include "core/syscall.h"
 #include "ipc/mutex.h"
 #include "common/cpu_instr.h"
 #include "os_cfg.h"
@@ -24,7 +23,7 @@ void cpu_init() {
     gdt_init();
 }
 
-void gdt_init() {
+static void gdt_init() {
     for(int i = 0; i < GDT_TABLE_SIZE; i++) {
         set_segment_desc(i << 3, 0, 0, 0);
     }

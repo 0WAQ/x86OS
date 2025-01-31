@@ -30,7 +30,7 @@ fs_op_t fat16fs_op = {
     .closedir = fat16fs_closedir
 };
 
-int fat16fs_mount(struct _fs_t* fs, int major, int minor) {
+static int fat16fs_mount(struct _fs_t* fs, int major, int minor) {
     
     // 打开设备
     int dev_id = dev_open(major, minor, NULL);
@@ -101,14 +101,14 @@ fat16fs_mount_failed:
     return -1;
 }
 
-void fat16fs_umount(struct _fs_t* fs) {
+static void fat16fs_umount(struct _fs_t* fs) {
     fat16_t* fat = (fat16_t*)fs->data;
 
     dev_close(fs->dev_id);
     memory_free_page((u32_t)fat->fat_buffer);
 }
 
-int fat16fs_unlink(struct _fs_t* fs, const char* filename) {
+static int fat16fs_unlink(struct _fs_t* fs, const char* filename) {
     fat16_t* fat = (fat16_t*)fs->data;
 
     char buf[11];
@@ -163,7 +163,7 @@ int fat16fs_unlink(struct _fs_t* fs, const char* filename) {
     return -1;
 }
 
-int fat16fs_open(struct _fs_t* fs, const char* filepath, file_t* file) {
+static int fat16fs_open(struct _fs_t* fs, const char* filepath, file_t* file) {
     fat16_t* fat = (fat16_t*)fs->data;
     
     diritem_t* item = NULL;
@@ -218,7 +218,7 @@ int fat16fs_open(struct _fs_t* fs, const char* filepath, file_t* file) {
     return -1;
 }
 
-int fat16fs_read(char* buf, int size, file_t* file) {
+static int fat16fs_read(char* buf, int size, file_t* file) {
     fat16_t* fat = (fat16_t*)file->fs->data;
 
     // 调整读取量, 不要超过文件总量
@@ -276,7 +276,7 @@ int fat16fs_read(char* buf, int size, file_t* file) {
     return len;
 }
 
-int fat16fs_write(char* buf, int size, file_t* file) {
+static int fat16fs_write(char* buf, int size, file_t* file) {
     fat16_t* fat = (fat16_t*)file->fs->data;
 
     // 若文件大小不足, 那么先扩充文件
@@ -347,7 +347,7 @@ int fat16fs_write(char* buf, int size, file_t* file) {
     return len;
 }
 
-void fat16fs_close(file_t* file) {
+static void fat16fs_close(file_t* file) {
     if(file->mode == O_RDONLY) {
         return;
     }
@@ -364,7 +364,7 @@ void fat16fs_close(file_t* file) {
     write_dir_entry(fat, item, file->p_index);
 }
 
-int fat16fs_seek(file_t* file, u32_t offset, int dir) {
+static int fat16fs_seek(file_t* file, u32_t offset, int dir) {
     // file->pos <= offset
     if(dir != 0) {
         return -1;
@@ -399,7 +399,7 @@ int fat16fs_seek(file_t* file, u32_t offset, int dir) {
 }
 
 
-int fat16fs_stat(file_t* file, struct stat* st) {
+static int fat16fs_stat(file_t* file, struct stat* st) {
     if (file == NULL || st == NULL) {
         log_print("invalid file or stat structure.");
         return -1;
@@ -448,7 +448,7 @@ int fat16fs_stat(file_t* file, struct stat* st) {
     return 0;
 }
 
-int fat16fs_opendir(struct _fs_t* fs, const char* name, DIR* dir) {
+static int fat16fs_opendir(struct _fs_t* fs, const char* name, DIR* dir) {
     if(dir == NULL) {
         log_print("open dir failed.");
         return -1;
@@ -457,7 +457,7 @@ int fat16fs_opendir(struct _fs_t* fs, const char* name, DIR* dir) {
     return 0;
 }
 
-int fat16fs_readdir(struct _fs_t* fs, DIR* dir, struct dirent* dirent) {
+static int fat16fs_readdir(struct _fs_t* fs, DIR* dir, struct dirent* dirent) {
     fat16_t* fat = (fat16_t*)fs->data;
 
     // 遍历所有目录项
@@ -492,7 +492,7 @@ int fat16fs_readdir(struct _fs_t* fs, DIR* dir, struct dirent* dirent) {
     return -1;
 }
 
-int fat16fs_closedir(struct _fs_t* fs, DIR* dir) {
+static int fat16fs_closedir(struct _fs_t* fs, DIR* dir) {
     // TODO:
     return 0;
 }

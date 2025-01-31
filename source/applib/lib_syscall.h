@@ -7,6 +7,7 @@
 #define LIB_SYSCALL_H
 
 #include "lib_syscall_t.h"
+#include "fs/fs_t.h"
 #include <sys/stat.h>
 #include <sys/time.h>
 

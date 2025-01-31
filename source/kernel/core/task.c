@@ -5,7 +5,7 @@
  */
 #include "core/task.h"
 #include "core/memory.h"
-#include "core/syscall.h"
+#include "sys/syscall.h"
 #include "cpu/cpu.h"
 #include "cpu/irq.h"
 #include "fs/fs.h"
@@ -16,11 +16,11 @@
 #include "os_cfg.h"
 
 // 任务管理器
-static task_manager_t task_manager;
+task_manager_t task_manager;
 
 // 任务控制块
-static task_t task_table[TASK_NR];
-static mutex_t task_table_mutex;
+task_t task_table[TASK_NR];
+mutex_t task_table_mutex;
 
 int task_init(task_t* task, const char* name, u32_t flag, u32_t entry, u32_t esp) {
     ASSERT(task != NULL);
@@ -97,7 +97,7 @@ int task_uninit(task_t* task) {
     kernel_memset(task, 0, sizeof(task_t));
 }
 
-int tss_init(task_t* task, u32_t flag, u32_t entry, u32_t esp) {
+static int tss_init(task_t* task, u32_t flag, u32_t entry, u32_t esp) {
     
 // 1.创建tss, 注册到gdt中
 
@@ -171,7 +171,7 @@ tss_init_failed:
     return -1;
 }
 
-void task_switch_from_to(task_t* from, task_t* to) {
+static void task_switch_from_to(task_t* from, task_t* to) {
     switch_to_tss(to->tss_sel);
     // simple_switch(&from->stack, to->stack);
 }
@@ -253,15 +253,15 @@ void first_task_init() {
     task_start(&task_manager.first_task);
 }
 
-task_t* get_first_task() {
+static task_t* get_first_task() {
     return &task_manager.first_task;
 }
 
-task_t* get_idle_task() {
+static task_t* get_idle_task() {
     return &task_manager.idle_task;
 }
 
-void idle_task_entry() {
+static void idle_task_entry() {
     for(;;) { hlt(); }
 }
 
@@ -309,32 +309,7 @@ task_t* get_curr_task() {
     return task_manager.curr_task;
 }
 
-int sys_yield() {
-
-    /////////////////////////////////////////// 进入临界区
-    irq_state_t state = irq_enter_protection();
-
-
-    // 判断就绪队列中是否有任务
-    if(list_count(&task_manager.ready_list) > 1) {
-        task_t* curr_task = get_curr_task();
-        
-        // 若就绪队列中还有其它任务,则将当前任务移入队列尾部
-        set_task_block(curr_task);  // 先删除
-        set_task_ready(curr_task);  // 再尾插
-    
-        // 任务切换
-        task_dispatch();
-    }
-
-
-    irq_leave_protection(state);
-    /////////////////////////////////////////// 退出临界区
-
-    return 0;
-}
-
-task_t* get_next_task() {
+static task_t* get_next_task() {
 
     if(list_count(&task_manager.ready_list) == 0) {
         return get_idle_task();
@@ -398,88 +373,7 @@ void task_time_tick() {
     task_dispatch();
 }
 
-void sys_sleep(u32_t ms) {
-    
-    /////////////////////////////////////////// 进入临界区
-    irq_state_t state = irq_enter_protection(); 
-    
-    task_t* curr = get_curr_task();
-    set_task_block(curr);
-    set_task_sleep(curr, (ms + (OS_TICK_MS - 1))/ OS_TICK_MS);
-
-    task_dispatch();
-
-    irq_leave_protection(state);
-    /////////////////////////////////////////// 退出临界区
-
-}
-
-int sys_getpid() {
-    return get_curr_task()->pid;
-}
-
-int sys_fork() {
-
-    task_t* parent = get_curr_task();
-
-    // 分配任务结构
-    task_t* child = alloc_task();
-    if(child == NULL) {
-        goto sys_fork_failed;
-    }
-
-    // 获取父进程的栈0的esp寄存器(只有在切换走时才被更新), 强转为syscall_frame_t*
-    exception_frame_t* frame = (exception_frame_t*)(parent->tss.esp0 - sizeof(exception_frame_t));
-
-    // 初始化子进程
-    int ret = task_init(child, parent->name, 0, frame->eip,
-                        frame->esp3);
-    
-    if(ret < 0) {
-        goto sys_fork_failed;
-    }
-
-    // 拷贝父进程的文件描述符表
-    copy_opened_files(child);
-
-    // 从父进程的栈中获取状态, 写入tss
-    tss_t* tss = &child->tss;
-    tss->eax = 0;   // 子进程返回0
-    tss->ebx = frame->ebx;
-    tss->edx = frame->edx;
-    tss->ecx = frame->ecx;
-    tss->esi = frame->esi;
-    tss->edi = frame->edi;
-    tss->ebp = frame->ebp;
-    tss->cs = frame->cs;
-    tss->ds = frame->ds;
-    tss->es = frame->es;
-    tss->fs = frame->fs;
-    tss->gs = frame->gs;
-    tss->eflags = frame->eflags;
-
-    child->parent = parent;
-
-    // 将父进程的页表映射复制到子进程
-    if((tss->cr3 = memory_copy_uvm(parent->tss.cr3, child->tss.cr3)) == 0) {
-        goto sys_fork_failed;
-    }
-
-    // 将子进程加入到就绪队列
-    task_start(child);
-
-    // 创建成功, 返回子进程的pid
-    return child->pid;
-
-sys_fork_failed:
-    if(child) {
-        task_uninit(child);
-        free_task(child);
-    }
-    return -1;
-}
-
-static void copy_opened_files(task_t* child) {
+void copy_opened_files(task_t* child) {
     task_t* parent = get_curr_task();
     for(int i = 0; i < TASK_OFILE_NR; i++) {
         file_t* file = parent->file_table[i];
@@ -490,7 +384,7 @@ static void copy_opened_files(task_t* child) {
     }
 }
 
-static task_t* alloc_task() {
+task_t* alloc_task() {
     task_t* task = NULL;
     
     mutex_lock(&task_table_mutex);
@@ -505,80 +399,14 @@ static task_t* alloc_task() {
     return task;
 }
 
-static void free_task(task_t* task) {
+void free_task(task_t* task) {
     mutex_lock(&task_table_mutex);
     task->name[0] = '\0';
     mutex_unlock(&task_table_mutex);
 }
 
-int sys_execve(char* path, char** argv, char** env) {
-    task_t* task = get_curr_task();
 
-    // 修改任务名
-    kernel_memcpy(task->name, get_filename_from_path(path), TASK_NAME_SIZE);
-
-    // 创建新的页目录表, 防止在中途出现错误
-    u32_t old_page_dir = task->tss.cr3;
-    u32_t new_page_dir = memory_create_uvm();
-
-    // 解析elf文件到内存中
-    u32_t entry = load_elf_file(task, path, new_page_dir);   // TODO: 第二个参数
-    if(!entry) {
-        goto sys_execve_failed;
-    }
-
-    // TODO: 用户栈不是已经分配过了吗
-
-    // 准备用户栈, 为环境变量与参数预留足够的空间
-    u32_t stack_top = MEM_TASK_STACK_TOP - MEM_TASK_ARG_SIZE;
-    int ret = _memory_alloc_page_for(new_page_dir, 
-                                     MEM_TASK_STACK_TOP - MEM_TASK_STACK_SIZE, 
-                                     MEM_TASK_STACK_SIZE, PTE_P | PTE_U | PTE_W);
-    if(ret < 0) {
-        goto sys_execve_failed;
-    }
-
-    // 复制参数到用户栈中
-    int argc = strings_count(argv); 
-    ret = copy_args((char*)stack_top, new_page_dir, argc, argv);
-    if(ret < 0) {
-        goto sys_execve_failed;
-    }
-
-    /// 加载完毕
-
-    // 改变当前进程的执行流以替换进程
-    // syscall_frame_t* frame = (syscall_frame_t*)(task->tss.esp0 - sizeof(syscall_frame_t));
-    exception_frame_t* frame = (exception_frame_t*)(task->tss.esp0 - sizeof(exception_frame_t));
-    frame->eip = entry;
-    frame->eax = frame->ebx = frame->ecx = frame->edx = 0;
-    frame->esi = frame->edi = frame->ebp = 0;
-    frame->eflags = EFLAGS_IF | EFLAGS_DEFAULT;
-
-    // 修改用户栈, 要加上调用门的参数压栈空间
-    frame->esp3 = stack_top; // 通过中断进入内核时, 不会在用户栈压入其它参数
-
-    // 切换至新的页表
-    task->tss.cr3 = new_page_dir;
-    mmu_set_page_dir(new_page_dir);
-
-    // 销毁原页表
-    memory_destory_uvm(old_page_dir);
-
-    return 0;
-
-sys_execve_failed:
-
-    // 切换至旧页表, 销毁新页表
-    if(new_page_dir) {
-        task->tss.cr3 = old_page_dir;
-        mmu_set_page_dir(old_page_dir);
-        memory_destory_uvm(new_page_dir);
-    }
-    return -1;
-}
-
-static u32_t load_elf_file(task_t* task, const char* filename, u32_t page_dir) {
+u32_t load_elf_file(task_t* task, const char* filename, u32_t page_dir) {
     Elf32_Ehdr elf_hdr;
     Elf32_Phdr elf_phdr;
 
@@ -665,7 +493,7 @@ load_elf_file_failed:
     return 0;
 }
 
-static int load_phdr(int fd, Elf32_Phdr* phdr, u32_t page_dir) {
+int load_phdr(int fd, Elf32_Phdr* phdr, u32_t page_dir) {
 
     // 生成的elf文件必须是页边界对齐的
     ASSERT((phdr->p_vaddr & (MEM_PAGE_SIZE - 1)) == 0);
@@ -705,7 +533,7 @@ load_phdr_failed:
     return -1;
 }
 
-static int copy_args(char* to, u32_t page_dir, int argc, char** argv) {
+int copy_args(char* to, u32_t page_dir, int argc, char** argv) {
 
     // 再stack_top中一次写入argc, argv
     task_args_t task_args;
@@ -763,102 +591,4 @@ void task_remove_fd(int fd) {
     if((fd >= 0) && (fd < TASK_OFILE_NR)) {
         get_curr_task()->file_table[fd] = NULL;
     }
-}
-
-void sys_exit(int status) {
-
-    // 清空任务相关的资源
-    task_t* task = get_curr_task();
-    for(int fd = 0; fd < TASK_OFILE_NR; fd++) {
-        file_t* file = task->file_table[fd];
-        if(file) {
-            sys_close(fd);
-            task->file_table[fd] = NULL;
-        }
-    }
-
-    int move_child = 0;
-
-    ////////////////////////////////////////////////
-    mutex_lock(&task_table_mutex);
-    {
-        // 一个进程退出时, 将其所有的子进程交给一号进程
-        for(int i = 0; i < TASK_NR; i++) {
-            task_t* p = task_table + i;
-            if(p->parent == task) {
-                p->parent = &task_manager.first_task;
-
-                // 若有子进程是zombie态
-                if(p->state == TASK_ZOMBIE) {
-                    move_child = 1;
-                }
-            }
-        }
-    }
-    mutex_unlock(&task_table_mutex);
-    ////////////////////////////////////////////////
-
-    task->state = TASK_ZOMBIE;
-    task->status = status;      // 保存进程退出时的状态
-
-    irq_state_t state = irq_enter_protection();
-
-    task_t* parent = task->parent;
-    if(move_child && (parent != &task_manager.first_task)) {
-        if(task_manager.first_task.state == TASK_WAITTING) {
-            set_task_ready(&task_manager.first_task);
-        }
-    }
-
-    if(parent->state == TASK_WAITTING) {
-        set_task_ready(parent);
-    }
-
-    set_task_block(task);
-    task_dispatch();
-
-    irq_leave_protection(state);
-}
-
-int sys_wait(int* status) {
-    task_t* task = get_curr_task();
-
-    // 循环
-    while(1) {
-
-        // 一直寻找处于zombie态的子进程, 若找不到则sleep
-        mutex_lock(&task_table_mutex);
-        for(int i = 0; i < TASK_NR; i++) {
-            task_t* p = task_table + i;
-            if(p->parent != task) {
-                continue;
-            }
-
-            // 若子进程是zombie态
-            if(p->state == TASK_ZOMBIE) {
-                int pid = p->pid;
-                *status = p->status;
-
-                memory_destory_uvm(p->tss.cr3);
-                memory_free_page(p->tss.esp0 - MEM_PAGE_SIZE);
-                kernel_memset(p, 0, sizeof(task_t));
-            
-                mutex_unlock(&task_table_mutex);
-                return pid;
-            }
-        }
-        mutex_unlock(&task_table_mutex);
-
-        // 找不到就让父进程睡眠, 直到有子进程唤醒
-        irq_state_t state = irq_enter_protection();
-        set_task_block(task);
-        task->state = TASK_WAITTING;
-
-        // 切换到其它进程
-        task_dispatch();
-
-        irq_leave_protection(state);
-    }
-
-    return 0;
 }

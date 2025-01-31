@@ -20,12 +20,12 @@ void memroy_init(boot_info_t* boot_info);
 /**
  * @brief 根据内存映射表, 构造内核页表
  */
-void create_kernel_table();
+static void create_kernel_table();
 
 /**
  * @brief 只处理一个地址映射关系
  */
-int memory_create_map(pde_t* page_dir, u32_t vaddr, u32_t paddr, u32_t page_nr, u32_t perm);
+static int memory_create_map(pde_t* page_dir, u32_t vaddr, u32_t paddr, u32_t page_nr, u32_t perm);
 
 /**
  * @brief 创建用户虚拟内存空间
@@ -55,7 +55,7 @@ void memory_free_page(u32_t addr);
 /**
  * @brief 打印内存空间
  */
-void show_mem_info(boot_info_t* boot_info);
+static void show_mem_info(boot_info_t* boot_info);
 
 
 /**
@@ -140,12 +140,5 @@ u32_t memory_vaddr_to_paddr(u32_t page_dir, u32_t vaddr);
  * @brief 在不同页表间拷贝数据
  */
 int memory_copy_uvm_data(u32_t to, u32_t page_dir, u32_t from, u32_t size);
-
-/**
- * @brief 控制堆的增长
- * @param incr increment, 堆增长的字节
- * @return 成功返回新分配空间的起始地址(原堆的结束地址), 失败返回-1
- */
-char* sys_sbrk(int incr);
 
 #endif // MEMORY_H

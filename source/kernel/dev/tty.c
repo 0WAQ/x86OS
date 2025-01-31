@@ -27,14 +27,14 @@ dev_desc_t dev_tty_desc = {
 static tty_t tty_devs[TTY_NR];
 static int curr_tty_idx = 0;
 
-void tty_fifo_init(tty_fifo_t* fifo, char* buf, int len) {
+static void tty_fifo_init(tty_fifo_t* fifo, char* buf, int len) {
     fifo->buf = buf;
     fifo->size = len;
     fifo->cnt = 0;
     fifo->read = fifo->write = 0;
 }
 
-int tty_open(device_t* dev) {
+static int tty_open(device_t* dev) {
 
     int idx = dev->minor;
     if(idx < 0 || idx > TTY_NR) {
@@ -63,7 +63,7 @@ int tty_open(device_t* dev) {
     return 0;
 }
 
-int tty_read(device_t* dev, int addr , char* buf , int size) {
+static int tty_read(device_t* dev, int addr , char* buf , int size) {
     if(size < 0) {
         return -1;
     }
@@ -125,7 +125,7 @@ int tty_read(device_t* dev, int addr , char* buf , int size) {
     return len;
 }
 
-int tty_write(device_t* dev, int addr , char* buf , int size) {
+static int tty_write(device_t* dev, int addr , char* buf , int size) {
     if(size < 0) {
         return -1;
     }
@@ -166,7 +166,7 @@ int tty_write(device_t* dev, int addr , char* buf , int size) {
     return len;
 }
 
-int tty_control(device_t* dev, int cmd, int arg0, int arg1) {
+static int tty_control(device_t* dev, int cmd, int arg0, int arg1) {
     tty_t* tty = get_tty(dev);
     switch (cmd)
     {
@@ -194,7 +194,7 @@ int tty_control(device_t* dev, int cmd, int arg0, int arg1) {
     return 0;
 }
 
-void tty_close(device_t* dev) {
+static void tty_close(device_t* dev) {
 
 }
 
@@ -207,7 +207,7 @@ static tty_t* get_tty(device_t* dev) {
     return tty_devs + minor;
 }
 
-int tty_fifo_put(tty_fifo_t* fifo, char ch) {
+static int tty_fifo_put(tty_fifo_t* fifo, char ch) {
 
     irq_state_t state = irq_enter_protection();
 

@@ -11,7 +11,6 @@
 #include "sys/stat.h"
 #include "ipc/mutex.h"
 #include "fat16fs/fat16fs_t.h"
-#include "applib/lib_syscall_t.h"
 #include "tools/list.h"
 
 #define FS_MOUNTP_SIZE      (512)
@@ -19,6 +18,24 @@
 
 struct _fs_t;
 typedef struct _fs_t fs_t;
+
+/**
+ * @brief 描述目录项结构(文件, 目录, ...)
+ */
+struct dirent {
+    int index;
+    int type;
+    char name[255];
+    int size;
+};
+
+/**
+ * @brief 描述目录结构
+ */
+typedef struct _DIR {
+    int index;
+    struct dirent dirent;
+}DIR;
 
 /**
  * @brief 文件系统的回调函数

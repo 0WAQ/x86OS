@@ -142,7 +142,7 @@ static int detect_part_info(disk_t* disk) {
     }
 }
 
-int disk_open(device_t* dev) {
+static int disk_open(device_t* dev) {
     // 0xa0 -- 磁盘编号: a, b, c 
     //      -- 分区号: 0, 1, 2
     int disk_idx = (dev->minor >> 4) - 0xa;
@@ -173,7 +173,7 @@ int disk_open(device_t* dev) {
     return 0;
 }
 
-int disk_read(device_t* dev, int start_sector, char* buf, int count) {
+static int disk_read(device_t* dev, int start_sector, char* buf, int count) {
     // 获取分区信息
     partinfo_t* part_info = (partinfo_t*)dev->data;
     if(part_info == NULL) {
@@ -216,7 +216,7 @@ int disk_read(device_t* dev, int start_sector, char* buf, int count) {
     return cnt;
 }
 
-int disk_write(device_t* dev, int start_sector, char* buf, int count) {
+static int disk_write(device_t* dev, int start_sector, char* buf, int count) {
     // 获取分区信息
     partinfo_t* part_info = (partinfo_t*)dev->data;
     if(part_info == NULL) {
@@ -259,11 +259,11 @@ int disk_write(device_t* dev, int start_sector, char* buf, int count) {
     return cnt;
 }
 
-int disk_control(device_t* dev, int cmd, int arg0, int arg1) {
+static int disk_control(device_t* dev, int cmd, int arg0, int arg1) {
     return -1;
 }
 
-void disk_close(device_t* dev) {
+static void disk_close(device_t* dev) {
 
 }
 

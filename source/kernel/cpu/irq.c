@@ -6,7 +6,7 @@
 #include "cpu/cpu.h"
 #include "cpu/irq.h"
 #include "core/task.h"
-#include "core/syscall.h"
+#include "sys/syscall.h"
 #include "os_cfg.h"
 #include "common/cpu_instr.h"
 #include "tools/log.h"
@@ -60,7 +60,7 @@ int irq_install(int irq_num, int perm, irq_handler_t handler) {
         GATE_ATTR_TYPE_INTR | GATE_ATTR_P | perm | GATE_ATTR_D);
 }
 
-void pic_init(void) {
+static void pic_init(void) {
     // 边缘触发，级联，需要配置icw4, 8086模式
     outb(PIC0_ICW1, PIC_ICW1_ALWAYS_1 | PIC_ICW1_ICW4);
 
@@ -90,11 +90,11 @@ void pic_init(void) {
     outb(PIC1_IMR, 0xFF);
 }
 
-void irq_disable_global() {
+static void irq_disable_global() {
 	cli();
 }
 
-void irq_enalbe_global() {
+static void irq_enalbe_global() {
 	sti();
 }
 
@@ -143,7 +143,7 @@ void pic_send_eoi(int irq_num) {
     outb(PIC0_OCW2, PIC_OCW2_EOI);
 }
 
-void do_default_handler(exception_frame_t* frame, const char* msg) {
+static void do_default_handler(exception_frame_t* frame, const char* msg) {
 	log_print("------------------------------");
 	log_print("IRQ/Exception happened %s", msg);
 	dump_core_regs(frame);
@@ -159,7 +159,7 @@ void do_default_handler(exception_frame_t* frame, const char* msg) {
 	}
 }
 
-void dump_core_regs(exception_frame_t* frame) {
+static void dump_core_regs(exception_frame_t* frame) {
 	log_print("IRQ: %d, Error Code: %d", frame->num, frame->errno);
 	
 	u32_t ss, esp;

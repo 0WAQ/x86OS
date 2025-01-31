@@ -32,27 +32,27 @@ static int detect_part_info(disk_t* disk);
 /**
  * @brief 打开disk设备
  */
-int disk_open(device_t* dev);
+static int disk_open(device_t* dev);
 
 /**
  * @brief 从disk读取数据
  */
-int disk_read(device_t* dev, int start_sector, char* buf, int count);
+static int disk_read(device_t* dev, int start_sector, char* buf, int count);
 
 /**
  * @brief 向disk写入数据
  */
-int disk_write(device_t* dev, int start_sector, char* buf, int count);
+static int disk_write(device_t* dev, int start_sector, char* buf, int count);
 
 /**
  * @brief 向disk发出命令
  */
-int disk_control(device_t* dev, int cmd, int arg0, int arg1);
+static int disk_control(device_t* dev, int cmd, int arg0, int arg1);
 
 /**
  * @brief 关闭disk设备
  */
-void disk_close(device_t* dev);
+static void disk_close(device_t* dev);
 
 /**
  * @brief 发送ATA命令, 支持最多16位的扇区

@@ -19,6 +19,8 @@
 #define SYS_exit        5
 #define SYS_wait        6
 
+#define SYS_sbrk        20
+
 #define SYS_unlink      48
 #define SYS_open        50
 #define SYS_read        51
@@ -27,13 +29,12 @@
 #define SYS_close       54
 #define SYS_isatty      55
 #define SYS_fstat       56
-#define SYS_sbrk        57
-#define SYS_dup         58
-#define SYS_ioctl       59
+#define SYS_dup         57
+#define SYS_ioctl       58
 
-#define SYS_opendir     60
-#define SYS_readdir     61
-#define SYS_closedir    62
+#define SYS_opendir     59
+#define SYS_readdir     60
+#define SYS_closedir    61
 
 #define SYS_gettimeofday 70
 

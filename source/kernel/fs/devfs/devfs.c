@@ -60,7 +60,7 @@ void devfs_umount(fs_t* fs) {
     return;
 }
 
-int devfs_open(fs_t* fs, const char* filepath, file_t* file) {
+static int devfs_open(fs_t* fs, const char* filepath, file_t* file) {
 
     // 从devfs_type_table中查找相同的文件路径
     for(int i = 0; i < sizeof(dev_type_table)/sizeof(devfs_type_t); i++) {
@@ -95,24 +95,24 @@ int devfs_open(fs_t* fs, const char* filepath, file_t* file) {
     return 0;
 }
 
-int devfs_read(char* buf, int size, file_t* file) {
+static int devfs_read(char* buf, int size, file_t* file) {
     return dev_read(file->dev_id, file->pos, buf, size);
 }
 
-int devfs_write(char* buf, int size, file_t* file) {
+static int devfs_write(char* buf, int size, file_t* file) {
     return dev_write(file->dev_id, file->pos, buf, size);
 }
 
-void devfs_close(file_t* file) {
+static void devfs_close(file_t* file) {
     dev_close(file->dev_id);
 }
 
-int devfs_seek(file_t* file, u32_t offset, int dir) {
+static int devfs_seek(file_t* file, u32_t offset, int dir) {
     // TODO:
     return -1;
 }
 
-int devfs_stat(file_t* file, struct stat* st) {
+static int devfs_stat(file_t* file, struct stat* st) {
     if(file == NULL || st == NULL) {
         log_print("invalid file or stat structure.");
         return -1;
@@ -140,11 +140,11 @@ int devfs_stat(file_t* file, struct stat* st) {
     return 0;
 }
 
-int devfs_ioctl(file_t* file, int cmd, int arg0, int arg1) {
+static int devfs_ioctl(file_t* file, int cmd, int arg0, int arg1) {
     return dev_control(file->dev_id, cmd, arg0, arg1);
 }
 
-int devfs_opendir(struct _fs_t* fs, const char* name, DIR* dir) {
+static int devfs_opendir(struct _fs_t* fs, const char* name, DIR* dir) {
     if(dir == NULL) {
         log_print("open directory failed.");
         return -1;
@@ -153,7 +153,7 @@ int devfs_opendir(struct _fs_t* fs, const char* name, DIR* dir) {
     return 0;
 }
 
-int devfs_readdir(struct _fs_t* fs, DIR* dir, struct dirent* dirent) {
+static int devfs_readdir(struct _fs_t* fs, DIR* dir, struct dirent* dirent) {
     if(dir->index++ < 10) {
         dirent->type = FILE_NORMAL;
         dirent->size = 1000;
@@ -163,7 +163,7 @@ int devfs_readdir(struct _fs_t* fs, DIR* dir, struct dirent* dirent) {
     return -1;
 }
 
-int devfs_closedir(struct _fs_t* fs, DIR* dir) {
+static int devfs_closedir(struct _fs_t* fs, DIR* dir) {
     // TODO:
     return 0;
 }

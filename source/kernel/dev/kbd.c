@@ -165,7 +165,7 @@ void do_handler_kbd(exception_frame_t* frame) {
     }
 }
 
-void do_e0_key(u8_t raw) {
+static void do_e0_key(u8_t raw) {
     char key = get_key(raw);
     int is_make = is_make_code(raw);
 
@@ -181,7 +181,7 @@ void do_e0_key(u8_t raw) {
     }
 }
 
-void do_normal_key(u8_t raw) {
+static void do_normal_key(u8_t raw) {
     char key = get_key(raw);
     int is_make = is_make_code(raw);
 
@@ -273,7 +273,7 @@ void do_normal_key(u8_t raw) {
     }
 }
 
-void do_fx_key(char key) {
+static void do_fx_key(char key) {
     int idx = key - KBD_KEY_F1;
     
     // 若同时按下ctrl, 那么执行切换
@@ -300,17 +300,17 @@ static void update_numlk_led_status() {
     kbd_read();
 }
 
-u8_t kbd_read() {
+static u8_t kbd_read() {
     kbd_wait_recv_ready();
     return inb(KBD_PORT_DATA);
 }
 
-void kbd_write(u8_t port, u8_t data) {
+static void kbd_write(u8_t port, u8_t data) {
     kbd_wait_send_ready();
     outb(port, data);
 }
 
-void kbd_wait_send_ready() {
+static void kbd_wait_send_ready() {
     u32_t timeout = 100000;
     while(timeout--) {
         if((inb(KBD_PORT_STAT) & KBD_STAT_SEND_FULL) == 0) {
@@ -319,7 +319,7 @@ void kbd_wait_send_ready() {
     }
 }
 
-void kbd_wait_recv_ready() {
+static void kbd_wait_recv_ready() {
     u32_t timeout = 100000;
     while(timeout--) {
         if((inb(KBD_PORT_STAT) & KBD_STAT_RECV_READY) == 0) {

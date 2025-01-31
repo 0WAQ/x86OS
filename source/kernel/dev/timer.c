@@ -30,7 +30,7 @@ void timer_init() {
     pit_init();
 }
 
-void pit_init() {
+static void pit_init() {
     u32_t reload_count = PIT_OSC_FREQ * OS_TICK_MS / 1000.0;
 
     outb(PIT_COMMAND_MODE_PORT, PIT_CHANNEL0 | PIT_LOAD_LOHI | PIT_MODE3);

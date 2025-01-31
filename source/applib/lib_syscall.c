@@ -4,7 +4,7 @@
  * 
  */
 #include "lib_syscall.h"
-#include "core/syscall_t.h"
+#include "sys/syscall_t.h"
 #include "os_cfg.h"
 
 #ifndef FIRST_TASK

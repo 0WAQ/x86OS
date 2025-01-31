@@ -16,7 +16,7 @@ void cpu_init();
 /**
  * @brief 初始化gdt
  */
-void gdt_init();
+static void gdt_init();
 
 /**
  * @brief 在GDT中设置段描述符

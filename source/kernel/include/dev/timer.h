@@ -17,7 +17,7 @@ void timer_init();
 /**
  * @brief 初始化硬件定时器
  */
-void pit_init();
+static void pit_init();
 
 /**
  * @brief 定时器中断处理函数
