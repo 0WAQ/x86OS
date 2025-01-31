@@ -21,7 +21,7 @@ void sys_exit(int status) {
         for(int i = 0; i < TASK_NR; i++) {
             task_t* p = task_table + i;
             if(p->parent == task) {
-                p->parent = &task_manager.first_task;
+                p->parent = task_manager.first_task;
 
                 // 若有子进程是zombie态
                 if(p->state == TASK_ZOMBIE) {
@@ -39,9 +39,9 @@ void sys_exit(int status) {
     irq_state_t state = irq_enter_protection();
 
     task_t* parent = task->parent;
-    if(move_child && (parent != &task_manager.first_task)) {
-        if(task_manager.first_task.state == TASK_WAITTING) {
-            set_task_ready(&task_manager.first_task);
+    if(move_child && (parent != task_manager.first_task)) {
+        if(task_manager.first_task->state == TASK_WAITTING) {
+            set_task_ready(task_manager.first_task);
         }
     }
 

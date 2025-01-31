@@ -10,7 +10,7 @@
 int first_task_main() {
 
     char tty[] = "/dev/tty?";
-    for(int i = 0; i < 1; i++) {
+    for(int i = 0; i < TTY_NR; i++) {
         int pid = fork();
         if(pid < 0) {
             // printf("create shell failed.\n");

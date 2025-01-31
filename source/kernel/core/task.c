@@ -45,7 +45,6 @@ int task_init(task_t* task, const char* name, u32_t flag, u32_t entry, u32_t esp
     kernel_strncpy(task->name, name, TASK_NAME_SIZE);
     task->heap_start = 0;
     task->heap_end = 0;
-    task->pid = (u32_t)task;
     task->parent = task_manager.curr_task;
     task->state = TASK_CREATED;
     task->time_ticks = TASK_TIME_SLICE_DEFAULT;
@@ -203,11 +202,12 @@ void task_manager_init() {
 
     // 初始化空闲任务
     u32_t flag = TASK_FLAGS_SYSTEM;
-    task_init(&task_manager.idle_task, "idle task", flag, (u32_t)idle_task_entry, 0);
+    task_manager.idle_task = alloc_task();
+    task_init(task_manager.idle_task, "idle task", flag, (u32_t)idle_task_entry, 0);
 
     task_manager.curr_task = NULL;
 
-    task_start(&task_manager.idle_task);
+    task_start(task_manager.idle_task);
 }
 
 void first_task_init() {
@@ -229,19 +229,20 @@ void first_task_init() {
     // cpu会自动保存来源
 
     u32_t flag = TASK_FLAGS_USER;
-    task_init(&task_manager.first_task, "first task", flag, 
+    task_manager.first_task = alloc_task();
+    task_init(task_manager.first_task, "first task", flag, 
             (u32_t)first_task_entry, (u32_t)first_task_entry + alloc_size);
     
-    task_manager.first_task.heap_start = (u32_t)e_first_task;
-    task_manager.first_task.heap_end = (u32_t)e_first_task;
+    task_manager.first_task->heap_start = (u32_t)e_first_task;
+    task_manager.first_task->heap_end = (u32_t)e_first_task;
 
-    task_manager.curr_task = &task_manager.first_task;
+    task_manager.curr_task = task_manager.first_task;
 
     // 加载tss到tr寄存器中
-    ltr(task_manager.first_task.tss_sel);
+    ltr(task_manager.first_task->tss_sel);
 
     // 加载cr3
-    mmu_set_page_dir(task_manager.first_task.tss.cr3);
+    mmu_set_page_dir(task_manager.first_task->tss.cr3);
     
     // 为first_task分配物理页, 从first_task_entry(0x80000000)处分配
     memory_alloc_page_for((u32_t)first_task_entry, alloc_size, PTE_P | PTE_W | PTE_U);
@@ -250,15 +251,15 @@ void first_task_init() {
     kernel_memcpy((void*)first_task_entry, (void*)&s_first_task, copy_size);
 
     // 启动一号进程
-    task_start(&task_manager.first_task);
+    task_start(task_manager.first_task);
 }
 
 static task_t* get_first_task() {
-    return &task_manager.first_task;
+    return task_manager.first_task;
 }
 
 static task_t* get_idle_task() {
-    return &task_manager.idle_task;
+    return task_manager.idle_task;
 }
 
 static void idle_task_entry() {
@@ -392,6 +393,7 @@ task_t* alloc_task() {
         task_t* curr = task_table + i;
         if(curr->name[0] == '\0') {
             task = curr;
+            task->pid = i;
             break;
         }
     }
