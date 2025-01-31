@@ -130,6 +130,7 @@ static int devfs_stat(file_t* file, struct stat* st) {
             break;
     }
 
+    // TODO: time
     st->st_size = file->size;   // 文件大小
     st->st_rdev = file->dev_id; // 设备号
     st->st_ino = file->dev_id;  // inode号, 直接使用设备号 TODO:

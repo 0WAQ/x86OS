@@ -440,6 +440,7 @@ static int fat16fs_stat(file_t* file, struct stat* st) {
     st->st_blksize = fat->cluster_bytes_size;  // 块大小 (cluster size)
     st->st_blocks = (st->st_size + st->st_blksize - 1) / st->st_blksize;  // 块数量, 向上取整
 
+    // TODO: time
     // 时间戳(FAT16 does not store creation/modification times in Unix format)
     st->st_atime = 0;  // Last access time (not available)
     st->st_mtime = 0;  // Last modification time (not available)

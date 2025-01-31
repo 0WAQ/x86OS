@@ -111,7 +111,7 @@ typedef struct _part_item_t {
  */
 typedef struct _mbr_t {
     u8_t code[446];
-    part_item_t part_time[MBR_PRIMARY_PART_NR];
+    part_item_t part_item[MBR_PRIMARY_PART_NR];
     u8_t boot_sig[2];
 }mbr_t;
 

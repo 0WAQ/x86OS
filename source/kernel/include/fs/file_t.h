@@ -36,7 +36,7 @@ typedef struct _file_t {
     int mode;                       // 文件相关属性
     int sblk;                       // 文件起始的块号
     int cblk;                       // 当前读取的块号
-
+    // TODO: time
     struct _fs_t* fs;               // 
     int p_index;
 }file_t;

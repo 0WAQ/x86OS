@@ -121,7 +121,7 @@ static int detect_part_info(disk_t* disk) {
     ata_read_data(disk, &mbr, sizeof(mbr_t));
 
     // 遍历4个主分区描述，不考虑支持扩展分区
-    part_item_t* item = mbr.part_time;
+    part_item_t* item = mbr.part_item;
     partinfo_t* part_info = disk->partinfo + 1;
     for(int i = 0; i < MBR_PRIMARY_PART_NR; i++, item++, part_info++) {
         part_info->type = item->system_id;
