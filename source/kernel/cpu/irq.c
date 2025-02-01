@@ -297,8 +297,8 @@ void do_handler_page_fault(exception_frame_t * frame) {
         log_print("  The access causing the fault was a write: 0x%x", read_cr2());
 
 		// 写保护异常
-		// do_wp_page(read_cr2());
-		// goto page_fault;
+		do_wp_page(read_cr2());
+		goto page_fault;
 	}
 	else {
         log_print("  The access causing the fault was a read: 0x%x", read_cr2());

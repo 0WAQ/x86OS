@@ -140,7 +140,7 @@ int _memory_alloc_page_for(u32_t page_dir, u32_t vaddr, u32_t size, u32_t perm) 
     for(u32_t i = 0; i < page_count; ++i) {
 
         // 分配一个物理页
-        u32_t paddr = addr_alloc_page(&paddr_alloc, 1);
+        u32_t paddr = memory_alloc_page();
         if(paddr == 0) {
             log_print("memory_alloc_page failed. no memory");
             return -1;
@@ -271,7 +271,7 @@ u32_t memory_share_uvm(u32_t from, u32_t to) {
 
         // 为子进程分配一页物理内存作为pde的地址
         u32_t to_page_table_addr = memory_alloc_page();
-        if(to_page_table_addr < 0) {
+        if(to_page_table_addr == 0) {
             return -1;  // Out of memory
         }
 
@@ -322,14 +322,8 @@ void do_wp_page(u32_t addr) {
     // 拷贝
     kernel_memcpy((void*)new_page, (void*)old_page, MEM_PAGE_SIZE);
 
-    // 
+    // 将页表映射到新的物理页面
     pte->v = new_page | PTE_P | PTE_W | PTE_U;
-
-    // TODO:
-    task = task->parent;
-    pde = (pde_t*)task->tss.cr3 + pde_index(addr);
-    pte = (pte_t*)pde_addr(pde) + pte_index(addr);
-    pte->write_enable = 1; 
 }
 
 void memory_destory_uvm(u32_t page_dir) {

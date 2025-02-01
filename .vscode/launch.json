@@ -19,7 +19,7 @@
             "miDebuggerServerAddress": "127.0.0.1:54321",
             "targetArchitecture": "x86",
             "stopAtConnect": true,
-            "serverLaunchTimeout": 30000,
+            "serverLaunchTimeout": 5000,
             // 启动gdb之前，做些准备：写映像文件、启动qemu
             "windows": {
                 "preLaunchTask": "调试准备", // 仅在windows下可自动运行
