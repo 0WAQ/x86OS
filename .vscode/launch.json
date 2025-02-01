@@ -39,8 +39,8 @@
                     "ignoreFailures": true
                 },
                 {
-                    "description": "将反汇编风格设置为 Intel",
-                    "text": "-gdb-set disassembly-flavor intel",
+                    "description": "将反汇编风格设置为 AT&T",
+                    "text": "-gdb-set disassembly-flavor att",
                     "ignoreFailures": true
                 },
                 // 设置体系结构: i8086，方便以16位方式进行反汇编

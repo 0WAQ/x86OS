@@ -255,6 +255,83 @@ copy_uvm_failed:
     return 0;
 }
 
+u32_t memory_share_uvm(u32_t from, u32_t to) {
+    // 共享用户空间的页表
+    u32_t user_pde_start = pde_index(MEMORY_TASK_BASE);
+
+    pde_t* pde_from = (pde_t*)from + user_pde_start;
+    pde_t* pde_to   = (pde_t*)to + user_pde_start;      // 从这里开始, 子进程的页目录项是空的
+
+    // 遍历页目录项
+    for(int i = user_pde_start; i < PDE_CNT; ++i, ++pde_from, ++pde_to) {
+        // 若from没有该项, 则跳过
+        if(!pde_from->present) {
+            continue;
+        }
+
+        // 为子进程分配一页物理内存作为pde的地址
+        u32_t to_page_table_addr = memory_alloc_page();
+        if(to_page_table_addr < 0) {
+            return -1;  // Out of memory
+        }
+
+        // 设置页目录项的属性
+        pde_to->v = to_page_table_addr | PDE_P | PDE_U | PDE_W;
+        
+        // 遍历页表项
+        pte_t* pte_from = (pte_t*)pde_addr(pde_from);
+        pte_t* pte_to   = (pte_t*)to_page_table_addr;
+        for(int j = 0; j < PTE_CNT; ++j, ++pte_from, ++pte_to) {
+            // 若父进程的页表项没有映射, 则跳过
+            if(!pte_from->present) {
+                continue;
+            }
+
+            // 让页只读, 并且映射到相同的页
+            pte_from->write_enable = 0;
+            pte_to->v = pte_from->v;
+        }
+    }
+    return 0;
+}
+
+void do_wp_page(u32_t addr) {
+
+    task_t* task = get_curr_task();
+
+    // 页目录表与目录表项
+    u32_t dir_addr = task->tss.cr3;
+    pde_t* pde = (pde_t*)dir_addr + pde_index(addr);
+
+    // 页表与页表项
+    u32_t table_addr = pde_addr(pde);
+    pte_t* pte = (pte_t*)table_addr + pte_index(addr); 
+
+    // 物理页
+    u32_t old_page = pte_addr(pte);
+
+    // 表示页面没有被共享 TODO:
+
+    // 分配一页物理内存
+    u32_t new_page = memory_alloc_page();
+    ASSERT(new_page >= 0);
+
+    // 减少引用计数
+    // TODO:
+
+    // 拷贝
+    kernel_memcpy((void*)new_page, (void*)old_page, MEM_PAGE_SIZE);
+
+    // 
+    pte->v = new_page | PTE_P | PTE_W | PTE_U;
+
+    // TODO:
+    task = task->parent;
+    pde = (pde_t*)task->tss.cr3 + pde_index(addr);
+    pte = (pte_t*)pde_addr(pde) + pte_index(addr);
+    pte->write_enable = 1; 
+}
+
 void memory_destory_uvm(u32_t page_dir) {
     u32_t user_pde_start = pde_index(MEMORY_TASK_BASE);
     pde_t* pde = (pde_t*)page_dir + user_pde_start;

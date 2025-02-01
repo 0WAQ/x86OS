@@ -286,20 +286,30 @@ void do_handler_page_fault(exception_frame_t * frame) {
     log_print("--------------------------------");
     log_print("IRQ/Exception happend: Page fault.");
 
-    if (frame->errno & ERR_PAGE_P)
+    if (frame->errno & ERR_PAGE_P) {
     	log_print("  page-level protection violation: 0x%x.", read_cr2());
-	else
+	}
+	else {
         log_print("  Page doesn't present: 0x%x", read_cr2());
+	}
     
-    if (frame->errno & ERR_PAGE_WR)
+    if (frame->errno & ERR_PAGE_WR) {
         log_print("  The access causing the fault was a write: 0x%x", read_cr2());
-	else
+
+		// 写保护异常
+		// do_wp_page(read_cr2());
+		// goto page_fault;
+	}
+	else {
         log_print("  The access causing the fault was a read: 0x%x", read_cr2());
+	}
     
-    if (frame->errno & ERR_PAGE_US)
+    if (frame->errno & ERR_PAGE_US) {
         log_print("  A user-mode access caused the fault: 0x%x", read_cr2());
-	else
+	}
+	else {
         log_print("  A supervisor-mode access caused the fault: 0x%x", read_cr2());
+	}
 
     dump_core_regs(frame);
 
@@ -312,6 +322,9 @@ void do_handler_page_fault(exception_frame_t * frame) {
 			hlt();
 		}
 	}
+
+page_fault:
+	return;
 }
 
 void do_handler_fpu_error(exception_frame_t * frame) {

@@ -127,6 +127,16 @@ static pde_t* curr_page_dir() {
 u32_t memory_copy_uvm(u32_t page_dir, u32_t to_page_dir);
 
 /**
+ * @brief 共享页表
+ */
+u32_t memory_share_uvm(u32_t from, u32_t to);
+
+/**
+ * @brief 写时复制
+ */
+void do_wp_page(u32_t address);
+
+/**
  * @brief 销毁子进程创建过的代码和数据
  */
 void memory_destory_uvm(u32_t page_dir);
