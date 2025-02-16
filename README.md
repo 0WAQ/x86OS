@@ -15,6 +15,8 @@
    sudo apt install gdb
 
    sudo apt install cmake
+   
+   sudo apt install texinfo
    ```
    - 安装qemu
    ```shell
