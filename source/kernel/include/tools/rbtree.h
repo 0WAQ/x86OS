@@ -34,7 +34,9 @@ void rb_insert_color(rb_node* node, rb_root* root);
 /**
  * @brief 删除节点
  */
-void rb_erase(rb_node* node, rb_root* root);
+void rb_erase_next(rb_node* node, rb_root* root);
+void rb_erase_prev(rb_node* node, rb_root* root);
+
 
 /**
  * @brief 修复删除节点后红黑树的不平衡问题
