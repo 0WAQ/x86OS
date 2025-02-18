@@ -2,15 +2,21 @@
 1. 安装工具链
    - 安装`gcc-i686-linux-gnu`, `gdb`, `cmake`
    ```shell
+   sudo dpkg --add-architecture i386
+
    sudo apt update
 
    sudo apt upgrade
+
+   sudo apt install libc6-i386
 
    sudo apt install gcc-i686-linux-gnu
 
    sudo apt install gdb
 
    sudo apt install cmake
+   
+   sudo apt install texinfo
    ```
    - 安装qemu
    ```shell
