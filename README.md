@@ -1,4 +1,5 @@
-# 如何开始
+# x86OS: 一个基于Linux 0.11的x86操作系统
+## 如何开始
 1. 安装工具链
    - 安装`gcc-i686-linux-gnu`, `gdb`, `cmake`
    ```shell
@@ -72,59 +73,3 @@ TODO:
    ```shell
    cd image
    ```
-
-# 目录结构
-``` shell
-x86OS/
-|
-|-- .vscode/    # vscode相关配置文件
-|
-|-- doc/
-|
-|-- image/      # 虚拟硬盘文件
-|
-|-- script/     # 运行脚本
-|
-|-- source/
-| |-- applib/
-| |
-| |-- boot/         # boot模块
-| |
-| |-- common/       # common模块, 封装了其余三个模块公用类型
-| |
-| |-- kernel/       # kernel模块, OS内核
-| | |-- core/           # 内存管理等核心功能
-| | |
-| | |-- cpu/            # cpu抽象
-| | |
-| | |-- dev/            # 其余硬件抽象
-| | |
-| | |-- include/        # 头文件
-| | |
-| | |-- init/           # 内核初始化
-| | |
-| | |-- ipc/            # 进程间通信
-| | |
-| | |-- tools/          # kernel中的公用模块
-| | |
-| | |-- CMakeLists.txt
-| | |
-| | |-- kernel.lds      # 链接脚本
-| |
-| |-- loader/       # loader模块
-| |
-| |-- shell/
-| | |-- cmd/
-| | |
-| | |-- include/
-| |
-| |-- snake/
-|
-|-- .gitignore
-|
-|-- CMakeList.txt
-|
-|-- README.md
-```
-
-# 
