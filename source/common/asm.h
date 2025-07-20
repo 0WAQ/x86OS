@@ -1,10 +1,8 @@
 /**
- * 
- * 汇编指令的封装
- * 
+ * 封装汇编指令
  */
-#ifndef CPU_INSTR_H
-#define CPU_INSTR_H
+#ifndef ASM_H
+#define ASM_H
 
 #include "types.h"
 
@@ -268,4 +266,4 @@ static inline void write_eflags(u32_t eflags) {
     );
 }
 
-#endif // CPU_INSTR_H
+#endif // ASM_H

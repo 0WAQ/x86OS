@@ -1,8 +1,4 @@
-/**
- * 
- * dev文件系统c文件
- * 
- */
+#include "fs/devfs//devfs_t.h"
 #include "fs/devfs/devfs.h"
 #include "fs/fs.h"
 #include "dev/dev.h"

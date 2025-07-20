@@ -1,19 +1,18 @@
 /**
- * 
- * 任务管理
- * 
+ * 任务管理模块
  */
 #include "core/task.h"
 #include "core/memory.h"
 #include "sys/syscall.h"
 #include "cpu/cpu.h"
 #include "cpu/irq.h"
-#include "fs/fs.h"
+#include "cpu/mmu.h"
 #include "fs/file.h"
+#include "tools/list.h"
 #include "tools/log.h"
 #include "tools/klib.h"
-#include "common/cpu_instr.h"
-#include "os_cfg.h"
+#include "common/asm.h"
+#include "common/cfg.h"
 
 // 任务管理器
 task_manager_t task_manager;
@@ -80,7 +79,7 @@ void task_start(task_t* task) {
 
 }
 
-int task_uninit(task_t* task) {
+void task_uninit(task_t* task) {
     if(task->tss_sel) {
         gdt_free_desc(task->tss_sel);
     }
@@ -317,7 +316,7 @@ static task_t* get_next_task() {
     }
 
     list_node_t* task_node = list_first(&task_manager.ready_list);
-    return list_entry_of(task_node, task_t, run_node);
+    return entry_of(task_node, task_t, run_node);
 }
 
 void task_dispatch() {
@@ -361,7 +360,7 @@ void task_time_tick() {
     while(curr) {
         list_node_t* next = list_node_next(curr);
 
-        task_t* task = list_entry_of(curr, task_t, run_node);
+        task_t* task = entry_of(curr, task_t, run_node);
         // 睡眠时间已到
         if(--task->sleep_ticks == 0) {
             set_task_wakeup(task);
@@ -561,7 +560,7 @@ int copy_args(char* to, u32_t page_dir, int argc, char** argv) {
     }
 
     if(argc) {
-        dest_arg_tb[argc] = '\0';
+        dest_arg_tb[argc] = "\0";
     }
 
     // 写入task_args

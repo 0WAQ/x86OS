@@ -1,12 +1,6 @@
-/**
- * 
- * tty 基本类型
- * 
- */
 #ifndef TTY_T_H
 #define TTY_T_H
 
-#include "dev/dev_t.h"
 #include "ipc/sem_t.h"
 
 #define TTY_NR              (8)         // 最多支持的tty设备

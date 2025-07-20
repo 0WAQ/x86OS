@@ -1,7 +1,5 @@
 /**
- * 
  * 系统公用宏定义
- * 
  */
 #ifndef MACROS_H
 #define MACROS_H

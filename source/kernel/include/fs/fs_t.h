@@ -1,23 +1,14 @@
-/**
- * 
- * 文件系统基本类型
- * 
- */
 #ifndef FS_T_H
 #define FS_T_H
 
 #include "common/types.h"
-#include "file.h"
-#include "sys/stat.h"
-#include "ipc/mutex.h"
-#include "fat16fs/fat16fs_t.h"
-#include "tools/list.h"
+#include "fs/file_t.h"
+#include "fs/fat16fs/fat16fs_t.h"
+#include "ipc/mutex_t.h"
+#include "tools/list_t.h"
 
 #define FS_MOUNTP_SIZE      (512)
 #define FS_TABLE_SIZE       (10)
-
-struct _fs_t;
-typedef struct _fs_t fs_t;
 
 /**
  * @brief 描述目录项结构(文件, 目录, ...)
@@ -37,14 +28,17 @@ typedef struct _DIR {
     struct dirent dirent;
 }DIR;
 
+struct _fs_t;
+struct stat;
+
 /**
  * @brief 文件系统的回调函数
  */
 typedef struct _fs_op_t {
-    int  (*mount)(fs_t* fs, int major, int minor);
-    void (*umount)(fs_t* fs);
-    int  (*unlink)(fs_t* fs, const char* filename);
-    int  (*open)(fs_t* fs, const char* filepath, file_t* file);
+    int  (*mount)(struct _fs_t* fs, int major, int minor);
+    void (*umount)(struct _fs_t* fs);
+    int  (*unlink)(struct _fs_t* fs, const char* filename);
+    int  (*open)(struct _fs_t* fs, const char* filepath, file_t* file);
     int  (*read)(char* buf, int size, file_t* file);
     int  (*write)(char* buf, int size, file_t* file);
     void (*close)(file_t* file);

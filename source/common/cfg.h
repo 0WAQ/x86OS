@@ -1,7 +1,5 @@
 /**
- * 
  * 内核配置文件
- * 
  */
 #ifndef OS_CFG_H
 #define OS_CFG_H

@@ -1,7 +1,5 @@
 /**
- * 
- * 文件相关头文件
- * 
+ * 文件
  */
 #ifndef FILE_H
 #define FILE_H

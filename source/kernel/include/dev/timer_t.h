@@ -1,8 +1,3 @@
-/**
- * 
- * 硬件定时器配置相关参数
- * 
- */
 #ifndef TIMER_T_H
 #define TIMER_T_H
 

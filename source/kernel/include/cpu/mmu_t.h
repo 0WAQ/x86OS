@@ -1,8 +1,3 @@
-/***
- * 
- * mmu基本类型
- * 
- */
 #ifndef MMU_T_H
 #define MMU_T_H
 

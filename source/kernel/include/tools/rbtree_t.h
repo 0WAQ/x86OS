@@ -1,13 +1,5 @@
-/**
- * 
- * rbtree基本类型
- * 
- */
 #ifndef RBTREE_T_H
 #define RBTREE_T_H
-
-#include "common/types.h"
-#include "common/macros.h"
 
 /***
  * 

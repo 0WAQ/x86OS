@@ -1,7 +1,7 @@
 
 # gcc汇编器默认代码是32位
 
-#include "os_cfg.h"
+#include "common/cfg.h"
 
     .text
     .extern kernel_init

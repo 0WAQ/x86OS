@@ -1,8 +1,3 @@
-/**
- * 
- * shell基本类型
- * 
- */
 #ifndef SHELL_T_H
 #define SHELL_T_H
 

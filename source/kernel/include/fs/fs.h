@@ -1,12 +1,12 @@
 /**
- * 
- * 文件系统头文件
- * 
+ * 文件系统
  */
 #ifndef FS_H
 #define FS_H
 
-#include "fs_t.h"
+#include "fs/fs_t.h"
+
+#include <sys/stat.h>
 
 /**
  * @brief 初始化文件系统

@@ -1,11 +1,5 @@
-/**
- * 
- * 系统调用接口
- * 
- */
-#include "lib_syscall.h"
+#include "applib/lib_syscall.h"
 #include "sys/syscall_t.h"
-#include "os_cfg.h"
 
 #ifndef FIRST_TASK
 #include <stdlib.h>
@@ -152,6 +146,7 @@ int dup(int fd) {
 }
 
 #ifndef FIRST_TASK
+
 DIR* opendir(const char* path) {
     DIR* dir = (DIR*)malloc(sizeof(DIR));
     if(dir == NULL) {
@@ -169,9 +164,7 @@ DIR* opendir(const char* path) {
 
     return dir;
 }
-#endif // FIRST_TASK
 
-#ifndef FIRST_TASK
 struct dirent* readdir(DIR* dir) {
     syscall_args_t args;
     args.arg0 = (int)dir;
@@ -182,9 +175,7 @@ struct dirent* readdir(DIR* dir) {
     }
     return &dir->dirent;
 }
-#endif // FIRST_TASK
 
-#ifndef FIRST_TASK
 int closedir(DIR* dir) {
     syscall_args_t args;
     args.arg0 = (int)dir;
@@ -192,6 +183,7 @@ int closedir(DIR* dir) {
     free(dir);
     return 0;
 }
+
 #endif // FIRST_TASK
 
 int gettimeofday(struct timeval* tv, void* tz) {

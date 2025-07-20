@@ -6,9 +6,10 @@
 #include "dev/console.h"
 #include "dev/tty.h"
 #include "ipc/sem.h"
+#include "ipc/mutex.h"
 #include "cpu/irq.h"
 #include "tools/klib.h"
-#include "common/cpu_instr.h"
+#include "common/asm.h"
 
 /**
  * @brief console表
@@ -99,7 +100,7 @@ int console_write(tty_t* tty) {
     return len;
 }
 
-static int write_normal(console_t* c, char ch) {
+static void write_normal(console_t* c, char ch) {
     switch (ch)
     {
     case ASCII_ESC:
@@ -130,7 +131,7 @@ static int write_normal(console_t* c, char ch) {
     }
 }
 
-static int write_esc(console_t* c, char ch) {
+static void write_esc(console_t* c, char ch) {
     switch (ch)
     {
     case '7':

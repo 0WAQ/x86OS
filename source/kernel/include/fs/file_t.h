@@ -1,8 +1,3 @@
-/**
- * 
- * 文件相关基本类型
- * 
- */
 #ifndef FILE_T_H
 #define FILE_T_H
 

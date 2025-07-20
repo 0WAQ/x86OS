@@ -1,7 +1,5 @@
 /**
- * 
- * 16位loader的头文件
- * 
+ * 16位loader
  */
 #ifndef LOADER_16_H
 #define LOADER_16_H

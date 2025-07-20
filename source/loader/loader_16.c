@@ -1,8 +1,6 @@
 /**
- *
  * 16位引导代码
  * 二级引导，负责进行硬件检测，进入保护模式，然后加载内核，并跳转至内核运行
- *
  */
 
 // 16位代码，必须加上放在开头，以便有些io指令生成为32位
@@ -10,6 +8,7 @@ __asm__(".code16gcc");
 
 #include "loader.h"
 #include "loader_16.h"
+#include "common/asm.h"
 
 // 声明全局的启动信息参数
 boot_info_t boot_info;

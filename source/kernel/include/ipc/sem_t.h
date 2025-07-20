@@ -1,20 +1,12 @@
-/**
- * 
- * 信号量基本类型头文件
- * 
- */
-#ifndef SEM_H
-#define SEM_H
+#ifndef SEM_T_H
+#define SEM_T_H
 
 #include "common/types.h"
-#include "tools/list.h"
+#include "tools/list_t.h"
 
-/**
- * @brief 信号量
- */
 typedef struct _sem_t {
-    u32_t count;     // 计数
+    u32_t count;        // 计数
     list_t wait_list;   // 等待队列
 }sem_t;
 
-#endif // SEM_H
+#endif // SEM_T_H

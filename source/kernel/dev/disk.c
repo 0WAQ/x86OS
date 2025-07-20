@@ -6,8 +6,11 @@
  * 
  */
 #include "cpu/irq.h"
-#include "dev/dev.h"
+#include "core/task.h"
+#include "dev/dev_t.h"
 #include "dev/disk.h"
+#include "ipc/sem.h"
+#include "ipc/mutex.h"
 #include "tools/log.h"
 #include "tools/klib.h"
 #include "common/boot_info.h"
@@ -140,6 +143,7 @@ static int detect_part_info(disk_t* disk) {
             part_info->disk = disk;
         }
     }
+    return 0;
 }
 
 static int disk_open(device_t* dev) {

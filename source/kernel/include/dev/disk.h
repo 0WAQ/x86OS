@@ -1,13 +1,12 @@
 /**
- * 
  * 磁盘驱动头文件
- * 
  */
 #ifndef DISK_H
 #define DISK_H
 
-#include "disk_t.h"
-#include "common/cpu_instr.h"
+#include "dev/disk_t.h"
+#include "dev/dev_t.h"
+#include "common/asm.h"
 
 /**
  * @brief 磁盘初始化

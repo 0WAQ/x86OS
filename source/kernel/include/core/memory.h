@@ -1,13 +1,15 @@
 /***
  * 
- * 内存管理相关头文件
+ * 内存管理
  * 
  */
 #ifndef MEMORY_H
 #define MEMORY_H
 
 #include "memory_t.h"
-#include "cpu/mmu.h"
+#include "ipc/mutex.h"
+#include "tools/bitmap.h"
+#include "cpu/mmu_t.h"
 #include "common/boot_info.h"
 
 /**
@@ -117,9 +119,7 @@ static u32_t total_mem_size(boot_info_t* boot_info) {
 /**
  * @brief 返回当前使用的页目录表
  */
-static pde_t* curr_page_dir() {
-    return (pde_t*)(get_curr_task()->tss.cr3);
-}
+static pde_t* curr_page_dir();
 
 /**
  * @brief 为子进程拷贝父进程的代码和数据

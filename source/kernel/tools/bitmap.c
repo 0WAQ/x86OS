@@ -1,8 +1,3 @@
-/***
- * 
- * 位图
- * 
- */
 #include "tools/bitmap.h"
 #include "tools/klib.h"
 
@@ -34,7 +29,7 @@ void bitmap_set_bit(bitmap_t* bitmap, u32_t index, u32_t count, int val)
     }
 }
 
-int bitmap_is_set(bitmap_t* bitmap, u32_t index)
+bool bitmap_is_set(bitmap_t* bitmap, u32_t index)
 {
     return bitmap_get_bit(bitmap, index) ? 1 : 0;
 }

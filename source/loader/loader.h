@@ -8,7 +8,6 @@
 
 #include "common/types.h"
 #include "common/boot_info.h"
-#include "common/cpu_instr.h"
 
 // 全局的启动信息参数，来自loader_16.c
 extern boot_info_t boot_info;

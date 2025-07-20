@@ -1,13 +1,10 @@
 /**
- * 
  * CPU设置
- * 
  */
 #include "cpu/cpu.h"
-#include "cpu/irq.h"
 #include "ipc/mutex.h"
-#include "common/cpu_instr.h"
-#include "os_cfg.h"
+#include "common/asm.h"
+#include "common/cfg.h"
 
 // 全局段描述符表
 static segment_desc_t gdt_table[GDT_TABLE_SIZE];
@@ -51,7 +48,7 @@ void set_segment_desc(int selector, u32_t base, u32_t limit, u16_t attr) {
     // 若limit超过20位，则界限位G为1
     if(limit > 0xFFFFF) {
         attr |= 0x8000;
-        limit >> 12;
+        limit >>= 12;
     }
     
     desc->limit15_0 = limit & 0xFFFF;

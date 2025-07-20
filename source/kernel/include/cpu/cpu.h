@@ -1,7 +1,5 @@
-/**
- * 
+/** 
  * 与x86的体系结构相关的接口
- * 
  */
 #ifndef CPU_H
 #define CPU_H

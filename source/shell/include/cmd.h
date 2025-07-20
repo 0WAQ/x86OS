@@ -1,54 +1,25 @@
 /**
- * 
- * shell内置命令头文件
- * 
+ * shell内置命令
  */
 #ifndef CMD_H
 #define CMD_H
 
-/**
- * @brief help
- */
+#include "shell.h"
+#include "applib/lib_syscall.h"
+
 int do_help(int argc, char** argv);
-
-/**
- * @brief clear
- */
 int do_clear(int argc, char** argv);
-
-/**
- * @brief echo
- */
 int do_echo(int argc, char** argv);
-
-/**
- * @brief ls
- */
 int do_ls(int argc, char** argv);
-
-/**
- * @brief less
- */
 int do_less(int argc, char** argv);
-
-/**
- * @brief cp
- */
 int do_cp(int argc, char** argv);
-
-/**
- * @brief rm
- */
 int do_rm(int argc, char** argv);
-
-/**
- * @brief date
- */
 int do_date(int argc, char** argv);
-
-/**
- * @brief quit
- */
 int do_quit(int argc, char** argv);
 
 #endif // CMD_H
+
+#ifdef SHELL_H
+#endif
+#ifdef LIB_SYSCALL_H
+#endif

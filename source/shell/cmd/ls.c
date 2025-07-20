@@ -1,5 +1,7 @@
-#include "macros.h"
-#include "fs/file.h"
+#include "cmd.h"
+
+#include "fs/file_t.h"
+#include "fs/fs_t.h"
 
 #include <stdio.h>
 #include <string.h>

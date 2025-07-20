@@ -1,13 +1,10 @@
 /**
- * 
  * 键盘相关头文件
- * 
  */
 #ifndef KBD_H
 #define KBD_H
 
-#include "kbd_t.h"
-#include "cpu/cpu_t.h"
+#include "dev/kbd_t.h"
 #include "cpu/irq_t.h"
 
 /**
@@ -79,5 +76,8 @@ static void kbd_wait_send_ready();
  * @brief 等待可用的键盘数据
  */
 static void kbd_wait_recv_ready();
+
+
+static void dummy_kbd_h(key_map_t k);   // TODO: 防止头文件警告
 
 #endif // KBD_H

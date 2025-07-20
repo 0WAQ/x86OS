@@ -1,8 +1,3 @@
-/**
- * 
- * 与x86的体系结构相关的类型
- * 
- */
 #ifndef CPU_T_H
 #define CPU_T_H
 

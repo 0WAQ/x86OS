@@ -1,5 +1,8 @@
 #include "sys/syscall.h"
 
+/**
+ * @brief execve系统调用, 会涉及到不同进程空间中数据的传递
+ */
 int sys_execve(char* path, char** argv, char** env) {
     task_t* task = get_curr_task();
 

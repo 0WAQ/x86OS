@@ -7,6 +7,7 @@
 #include "ipc/sem.h"
 #include "core/task.h"
 #include "cpu/irq.h"
+#include "tools/list.h"
 
 void sem_init(sem_t* sem, u32_t count) {
     list_init(&sem->wait_list);
@@ -40,7 +41,7 @@ void sem_notify(sem_t* sem) {
     // 若等待队列中有任务, 则将第一个任务移指就绪队列
     if(list_count(&sem->wait_list) > 0) {
         list_node_t* node = list_remove_first(&sem->wait_list);
-        task_t* task = list_entry_of(node, task_t, wait_node);
+        task_t* task = entry_of(node, task_t, wait_node);
     
         set_task_ready(task);
 

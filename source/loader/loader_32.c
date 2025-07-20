@@ -5,8 +5,10 @@
  *
  */
 
-#include "loader.h"
-#include "loader_32.h"
+ #include "loader.h"
+ #include "loader_32.h"
+ #include "common/elf.h"
+ #include "common/asm.h"
 
 void loader_kernel() {
 

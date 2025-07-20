@@ -1,12 +1,8 @@
-/**
- * 
- * rbtree头文件
- * 
- */
 #ifndef RBTREE_H
 #define RBTREE_H
 
-#include "rbtree_t.h"
+#include "common/macros.h"
+#include "tools/rbtree_t.h"
 
 /**
  * @brief 初始化新节点
@@ -14,14 +10,7 @@
  */
 void rb_link_node(rb_node* node, rb_node* parent, rb_node** rb_link);
 
-/**
- * @brief 左旋
- */
 void __rb_rotate_left(rb_node* node, rb_root* root);
-
-/**
- * @brief 右旋
- */
 void __rb_rotate_right(rb_node* node, rb_root* root);
 
 /**
@@ -31,18 +20,9 @@ void __rb_rotate_right(rb_node* node, rb_root* root);
  */
 void rb_insert_color(rb_node* node, rb_root* root);
 
-/**
- * @brief 删除节点
- */
 void rb_erase_next(rb_node* node, rb_root* root);
 void rb_erase_prev(rb_node* node, rb_root* root);
-
-
-/**
- * @brief 修复删除节点后红黑树的不平衡问题
- */
 void __rb_erase_color(rb_node* node, rb_node* parent, rb_root* root);
-
 
 rb_node* rb_next(rb_node* node);
 rb_node* rb_prev(rb_node* node);

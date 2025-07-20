@@ -1,14 +1,9 @@
-/***
- * 
- * 内存管理相关的基本类型
- * 
- */
 #ifndef MEMORY_T_H
 #define MEMORY_T_H
 
 #include "common/types.h"
-#include "tools/bitmap.h"
-#include "ipc/mutex.h"
+#include "ipc/mutex_t.h"
+#include "tools/bitmap_t.h"
 
 #define MEM_EXT_START       (1024*1024)
 #define MEM_EXT_END         (128 * 1024 * 1024 - 1) // 0x08000000, 目前qemu中设置的内存大小
@@ -23,15 +18,11 @@
  * @brief 物理内存分配与释放的管理结构
  */
 typedef struct _addr_alloc_t {
-
     bitmap_t bitmap;    // 辅助分配的位图
-
-    u32_t start;     // 内存块的起始地址
-    u32_t size;      // 内存块的大小
-    u32_t page_size; // 页大小, 页数 = size / page_size
-
+    u32_t start;        // 内存块的起始地址
+    u32_t size;         // 内存块的大小
+    u32_t page_size;    // 页大小, 页数 = size / page_size
     mutex_t mutex;      // 互斥锁    
-
 }addr_alloc_t;
 
 /**

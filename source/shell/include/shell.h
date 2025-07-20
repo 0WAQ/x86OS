@@ -1,8 +1,3 @@
-/**
- * 
- * shell相关头文件
- * 
- */
 #ifndef SHELL_H
 #define SHELL_H
 

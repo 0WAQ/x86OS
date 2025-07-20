@@ -4,7 +4,6 @@
  * 
  */
 #include "dev/tty.h"
-#include "dev/dev.h"
 #include "dev/console.h"
 #include "dev/kbd.h"
 #include "ipc/sem.h"

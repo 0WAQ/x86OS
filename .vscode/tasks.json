@@ -7,7 +7,6 @@
             "label": "image write",
             "type": "shell",
             "windows": {
-                // windows下特殊一些
                 "command": "${workspaceRoot}/script/img-write-win.bat",
             },
             "linux":{
@@ -24,7 +23,6 @@
             "label": "start qemu",
             "type": "shell",
             "windows": {
-                // windows下特殊一些
                 "command": "${workspaceRoot}/script/qemu-debug-win.bat",
             },
             "linux":{
@@ -34,11 +32,11 @@
                 "command": "bash ${workspaceRoot}/script/qemu-debug-osx.sh",
             },
             "options": {
-                "cwd": "${workspaceRoot}/image/"
+                "cwd": "${workspaceRoot}/image"
             },
         },
         {
-            "label": "调试准备",
+            "label": "debug os",
             "dependsOrder": "sequence",
             "dependsOn": [
                 "image write",

@@ -1,13 +1,8 @@
-/***
- * 
- * 终端显示基本类型 
- * 
- */
 #ifndef CONSOLE_T_H
 #define CONSOLE_T_H
 
 #include "common/types.h"
-#include "ipc/mutex.h"
+#include "ipc/mutex_t.h"
 
 #define CONSOLE_DISP_ADDR_START     (0xB8000)
 #define CONSOLE_DISP_ADDR_END       (0xB8000 + 32 * 1024)    

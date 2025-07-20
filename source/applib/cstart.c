@@ -3,9 +3,9 @@
  * 
  * 
  */
-#include <stdint.h>
 #include <stdlib.h>
-#include "lib_syscall.h"
+
+#include "common/types.h"
 
 extern u8_t __bss_start__[], __bss_end__[];
 

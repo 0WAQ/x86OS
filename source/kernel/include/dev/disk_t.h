@@ -1,14 +1,9 @@
-/**
- * 
- * 磁盘驱动基本类型
- * 
- */
 #ifndef DISK_T_H
 #define DISK_T_H
 
 #include "common/types.h"
-#include "ipc/mutex.h"
-#include "ipc/sem.h"
+#include "ipc/mutex_t.h"
+#include "ipc/sem_t.h"
 
 #define DISK_NAME_SIZE          (32)        // 磁盘名称大小
 #define PART_NAME_SIZE          (32)        // 分区名称大小

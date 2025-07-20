@@ -1,12 +1,5 @@
-/***
- * 
- * 日志输出
- * 
- */
 #include "tools/log.h"
 #include "tools/klib.h"
-#include "common/cpu_instr.h"
-#include "cpu/irq.h"
 #include "ipc/mutex.h"
 #include "dev/dev.h"
 

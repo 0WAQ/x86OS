@@ -1,12 +1,6 @@
-/**
- * 
- * 内核通用函数
- *
- */ 
-
 #include "tools/klib.h"
 #include "tools/log.h"
-#include "common/cpu_instr.h"
+#include "common/asm.h"
 
 void kernel_sprintf(char* buf, const char* fmt, ...) {
     va_list args;
@@ -153,8 +147,8 @@ int kernel_strcmp(const char* s1, const char* s2) {
     ASSERT(s1 != NULL && s2 != NULL);
 
     while(*s1 && *s2 && (*s1 == *s2)) {
-        *s1++;
-        *s2++;
+        ++s1;
+        ++s2;
     }
     return (unsigned char)*s1 - (unsigned char)*s2;
 }

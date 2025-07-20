@@ -1,7 +1,5 @@
-/**
- * 
+/** 
  * 内核初始化及测试代码
- * 
  */
 #ifndef INIT_H
 #define INIT_H

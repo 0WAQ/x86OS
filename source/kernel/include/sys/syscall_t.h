@@ -1,8 +1,3 @@
-/**
- * 
- * 系统调用基本类型
- * 
- */
 #ifndef SYSCALL_T_H
 #define SYSCALL_T_H
 

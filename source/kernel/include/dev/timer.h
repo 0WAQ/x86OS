@@ -1,13 +1,11 @@
 /**
- * 
  * 硬件定时器配置头文件
- * 
  */
-#ifndef TIMERR_H
+#ifndef TIMER_H
+#define TIMER_H
 
-#include "timer_t.h"
-#include "cpu/cpu_t.h"
-#include "cpu/irq.h"
+#include "dev/timer_t.h"
+#include "cpu/irq_t.h"
 
 /**
  * @brief 初始化定时器
@@ -25,5 +23,6 @@ static void pit_init();
 void exception_handler_timer();
 void do_handler_timer(exception_frame_t* frame);
 
+static int dummy_timer_h = PIT_OSC_FREQ;
 
 #endif // TIMER_H

@@ -1,5 +1,8 @@
 #include "sys/syscall.h"
 
+/**
+ * @brief 系统调用: 拷贝(增加引用计数)fd对应的file
+ */
 int sys_dup(int fd) {
     if(is_fd_bad(fd)) {
         log_print("file %d is invalid.", fd);

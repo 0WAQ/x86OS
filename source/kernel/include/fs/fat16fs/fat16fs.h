@@ -1,73 +1,26 @@
 /**
- * 
- * FAT16文件系统头文件
- * 
+ * FAT16文件系统
  */
 #ifndef FAT16FS_H
 #define FAT16FS_H
 
-#include "fat16fs_t.h"
+#include "fs/fat16fs/fat16fs_t.h"
 #include "fs/fs_t.h"
-#include "ipc/mutex.h"
 
-/**
- * @brief fat16fs的挂载函数
- */
 static int fat16fs_mount(struct _fs_t* fs, int major, int minor);
-
-/**
- * @brief fat16fs的取消挂载函数
- */
 static void fat16fs_umount(struct _fs_t* fs);
-
-/**
- * @brief fa16fs的解引用函数
- */
 static int fat16fs_unlink(struct _fs_t* fs, const char* filename);
 
-/**
- * @brief fat16fs的打开函数
- */
 static int fat16fs_open(struct _fs_t* fs, const char* filepath, file_t* file);
-
-/**
- * @brief fat16fs的读取函数
- */
 static int fat16fs_read(char* buf, int size, file_t* file);
-
-/**
- * @brief fat16fs的写入函数
- */
 static int fat16fs_write(char* buf, int size, file_t* file);
-
-/**
- * @brief fat16fs的关闭函数
- */
 static void fat16fs_close(file_t* file);
 
-/**
- * @brief fat16fs的定位函数
- */
 static int fat16fs_seek(file_t* file, u32_t offset, int dir);
-
-/**
- * @brief fat16fs的状态函数
- */
 static int fat16fs_stat(file_t* file, struct stat* st);
 
-/**
- * @brief fat16fs的打开目录函数
- */
 static int fat16fs_opendir(struct _fs_t* fs, const char* name, DIR* dir);
-
-/**
- * @brief fat16fs的读取目录函数
- */
 static int fat16fs_readdir(struct _fs_t* fs, DIR* dir, struct dirent* dirent);
-
-/**
- * @brief fat16fs的关闭目录函数
- */
 static int fat16fs_closedir(struct _fs_t* fs, DIR* dir);
 
 /**

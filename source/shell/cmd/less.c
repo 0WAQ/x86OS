@@ -1,5 +1,7 @@
-#include "macros.h"
-#include "dev/tty.h"
+#include "cmd.h"
+#include "lib_syscall.h"
+
+#include "dev/tty_t.h"
 
 #include <stdio.h>
 #include <stdlib.h>

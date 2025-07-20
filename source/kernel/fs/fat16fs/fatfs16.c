@@ -4,7 +4,6 @@
  * 
  */
 #include "fs/fat16fs/fat16fs.h"
-#include "fs/fs.h"
 #include "dev/dev.h"
 #include "core/memory.h"
 #include "tools/klib.h"
@@ -138,7 +137,7 @@ static int fat16fs_unlink(struct _fs_t* fs, const char* filename) {
         }
 
         // 若匹配, 则删除
-        if(kernel_strncmp(buf, p->DIR_Name, 11) == 0) {
+        if(kernel_strncmp(buf, (char*)p->DIR_Name, 11) == 0) {
             // 释放对应的簇
             cluster_t cluster = (p->DIR_FstClusHI << 16) | (p->DIR_FstClusLO);
             if(cluster_is_valid(cluster)) {
@@ -257,7 +256,7 @@ static int fat16fs_read(char* buf, int size, file_t* file) {
             }
 
             fat->last_sector = -1;
-            int ret = dev_read(fat->fs->dev_id, start_sector, fat->fat_buffer, fat->sectors_per_cluster);
+            int ret = dev_read(fat->fs->dev_id, start_sector, (char*)fat->fat_buffer, fat->sectors_per_cluster);
             if(ret < 0) {
                 return len;
             }
@@ -317,7 +316,7 @@ static int fat16fs_write(char* buf, int size, file_t* file) {
             }
 
             fat->last_sector = -1;
-            int ret = dev_read(fat->fs->dev_id, start_sector, fat->fat_buffer, fat->sectors_per_cluster);
+            int ret = dev_read(fat->fs->dev_id, start_sector, (char*)fat->fat_buffer, fat->sectors_per_cluster);
             if(ret < 0) {
                 return len;
             }
@@ -325,7 +324,7 @@ static int fat16fs_write(char* buf, int size, file_t* file) {
             kernel_memcpy(fat->fat_buffer + cluster_offset, buf, curr_write);
 
             // 写入
-            ret = dev_write(fat->fs->dev_id, start_sector, fat->fat_buffer, fat->sectors_per_cluster);
+            ret = dev_write(fat->fs->dev_id, start_sector, (char*)fat->fat_buffer, fat->sectors_per_cluster);
             if(ret < 0) {
                 return len;
             }
@@ -570,7 +569,7 @@ static int bread_sector(fat16_t* fat, int sector) {
         return 0;
     }
 
-    int cnt = dev_read(fat->fs->dev_id, sector, fat->fat_buffer, 1);
+    int cnt = dev_read(fat->fs->dev_id, sector, (char*)fat->fat_buffer, 1);
     if(cnt == 1) {
         fat->last_sector = sector;
         return 0;
@@ -579,7 +578,7 @@ static int bread_sector(fat16_t* fat, int sector) {
 }
 
 static int bwrite_sector(fat16_t* fat, int sector) {
-    int cnt = dev_write(fat->fs->dev_id, sector, fat->fat_buffer, 1);
+    int cnt = dev_write(fat->fs->dev_id, sector, (char*)fat->fat_buffer, 1);
     return (cnt == 1) ? 0 : -1;
 }
 

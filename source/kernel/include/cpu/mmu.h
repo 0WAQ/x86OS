@@ -1,13 +1,11 @@
 /***
- * 
- * mmu相关头文件
- * 
+ * mmu
  */
 #ifndef MMU_H
 #define MMU_H
 
 #include "mmu_t.h"
-#include "common/cpu_instr.h"
+#include "common/asm.h"
 
 
 /**

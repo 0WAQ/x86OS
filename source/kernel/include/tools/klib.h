@@ -1,8 +1,3 @@
-/***
- * 
- * 内核通用函数相关头文件
- *  
- */
 #ifndef KLIB_H
 #define KLIB_H
 
@@ -36,9 +31,7 @@ void kernel_sprintf(char* buf, const char* fmt, ...);
  */
 void kernel_itoa(char* dest, int num, u32_t base);
 
-/**
- * @brief 复制字符串
- */
+
 void kernel_strcpy(char* dest, const char* src);
 void kernel_strncpy(char* dest, const char* src, int size);
 
@@ -51,24 +44,9 @@ void kernel_strncpy(char* dest, const char* src, int size);
 int kernel_strcmp(const char* s1, const char* s2);
 int kernel_strncmp(const char* s1, const char* s2, int size);
 
-/**
- * @brief 获取字符串长度
- */
 int kernel_strlen(const char* str);
-
-/**
- * @brief 按字节拷贝
- */
 void kernel_memcpy(void* dest, void* src, int size);
-
-/**
- * @brief 初始化
- */
 void kernel_memset(void* dest, u8_t v, int size);
-
-/**
- * @brief 比较
- */
 int kernel_memcmp(void* d1, void* d2, int size);
 
 /**
@@ -82,14 +60,7 @@ void panic(const char* file, int line, const char* func, const char* msg);
     #define ASSERT(expr)    ((void)0)
 #endif // RELEASE
 
-/**
- * @brief 计算字符串的个数
- */
 int strings_count(char** addr);
-
-/**
- * @brief 从路径中解析文件名
- */
 char* get_filename_from_path(const char* path);
 
 #endif // KLIB_H

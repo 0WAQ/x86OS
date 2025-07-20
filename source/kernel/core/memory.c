@@ -1,10 +1,10 @@
-/***
- * 
- * 内存管理
- * 
+/**
+ * 内存管理模块
  */
 #include "core/memory.h"
-#include "dev/console.h"
+#include "core/task.h"
+#include "cpu/mmu.h"
+#include "dev/console_t.h"
 #include "tools/log.h"
 #include "tools/klib.h"
 
@@ -205,6 +205,10 @@ static void show_mem_info(boot_info_t* boot_info) {
     log_print("");
 }
 
+pde_t* curr_page_dir() {
+    return (pde_t*)(get_curr_task()->tss.cr3);
+}
+
 u32_t memory_copy_uvm(u32_t from, u32_t to) {
 
     // 复制用户空间的页表
@@ -383,4 +387,6 @@ int memory_copy_uvm_data(u32_t to, u32_t page_dir, u32_t from, u32_t size) {
         to += cur_size;
         from += cur_size;
     }
+
+    return 0;
 }

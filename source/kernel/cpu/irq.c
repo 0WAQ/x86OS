@@ -5,10 +5,9 @@
  */
 #include "cpu/cpu.h"
 #include "cpu/irq.h"
-#include "core/task.h"
 #include "sys/syscall.h"
-#include "os_cfg.h"
-#include "common/cpu_instr.h"
+#include "common/cfg.h"
+#include "common/asm.h"
 #include "tools/log.h"
 
 // IDT
@@ -58,6 +57,8 @@ int irq_install(int irq_num, int perm, irq_handler_t handler) {
     // 设置门描述符，将irq_num这个异常号与handler绑定
     set_gate_desc(idt_table + irq_num, KERNEL_SELECTOR_CS, (u32_t)handler, 
         GATE_ATTR_TYPE_INTR | GATE_ATTR_P | perm | GATE_ATTR_D);
+
+	return 0;
 }
 
 static void pic_init(void) {
@@ -288,8 +289,7 @@ void do_handler_page_fault(exception_frame_t * frame) {
 
     if (frame->errno & ERR_PAGE_P) {
     	log_print("  page-level protection violation: 0x%x.", read_cr2());
-	}
-	else {
+	} else {
         log_print("  Page doesn't present: 0x%x", read_cr2());
 	}
     
@@ -299,15 +299,13 @@ void do_handler_page_fault(exception_frame_t * frame) {
 		// 写保护异常
 		do_wp_page(read_cr2());
 		goto page_fault;
-	}
-	else {
+	} else {
         log_print("  The access causing the fault was a read: 0x%x", read_cr2());
 	}
     
     if (frame->errno & ERR_PAGE_US) {
         log_print("  A user-mode access caused the fault: 0x%x", read_cr2());
-	}
-	else {
+	} else {
         log_print("  A supervisor-mode access caused the fault: 0x%x", read_cr2());
 	}
 

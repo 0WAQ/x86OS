@@ -4,9 +4,11 @@
  * 
  */
 #include "dev/timer.h"
-#include "dev/dev.h"
-#include "common/cpu_instr.h"
-#include "os_cfg.h"
+#include "dev/dev_t.h"
+#include "cpu/cpu_t.h"
+#include "cpu/irq.h"
+#include "common/asm.h"
+#include "common/cfg.h"
 #include "core/task.h"
 
 /**

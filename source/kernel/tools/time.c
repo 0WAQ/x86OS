@@ -1,10 +1,5 @@
-/**
- * 
- * 时间相关源文件
- * 
- */
+#include "tools/time_t.h"
 #include "tools/time.h"
-#include "os_cfg.h"
 
 // 每个月的起始天数
 static int month[12] = {
@@ -24,7 +19,6 @@ static int month[12] = {
 
 // TODO: change func-signature
 int get_tm(struct tm* tm) {
-	
     do {
 		tm->tm_sec = CMOS_READ(0);
 		tm->tm_min = CMOS_READ(2);
@@ -56,21 +50,21 @@ int get_tm(struct tm* tm) {
 }
 
 // TODO: debug
-time_t kernel_mktime(struct tm * tm)
-{
+time_t kernel_mktime(struct tm * tm) {
 	long res;
 	int year;
 
 	year = tm->tm_year - 70;
 /* magic offsets (y+1) needed to get leapyears right.*/
-	res = YEAR*year + DAY*((year+1)/4);
+	res = YEAR * year + DAY * ((year + 1) / 4);
 	res += month[tm->tm_mon];
 /* and (y+2) here. If it wasn't a leap-year, we have to adjust */
-	if (tm->tm_mon>1 && ((year+2)%4))
+	if (tm->tm_mon > 1 && ((year + 2) % 4)) {
 		res -= DAY;
-	res += DAY*(tm->tm_mday-1);
-	res += HOUR*tm->tm_hour;
-	res += MINUTE*tm->tm_min;
+	}
+	res += DAY * (tm->tm_mday - 1);
+	res += HOUR * tm->tm_hour;
+	res += MINUTE * tm->tm_min;
 	res += tm->tm_sec;
 	return res;
 }

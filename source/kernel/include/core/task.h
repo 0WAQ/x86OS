@@ -1,7 +1,5 @@
 /**
- * 
- * 任务管理头文件
- * 
+ * 任务管理
  */
 #ifndef TASK_H
 #define TASK_H
@@ -23,7 +21,7 @@ void task_start(task_t* task);
 /**
  * @brief 反初始化任务
  */
-int task_uninit(task_t* task);
+void task_uninit(task_t* task);
 
 /**
  * @brief 初始化任务状态段

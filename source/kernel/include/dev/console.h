@@ -1,12 +1,10 @@
 /***
- * 
  * 终端显示头文件 
- * 
  */
 #ifndef CONSOLE_H
 #define CONSOLE_H
 
-#include "console_t.h"
+#include "dev/console_t.h"
 #include "dev/tty_t.h"
 
 /**
@@ -22,12 +20,12 @@ int console_write(tty_t* tty);
 /**
  * @brief 写普通数据
  */
-static int write_normal(console_t* c, char ch);
+static void write_normal(console_t* c, char ch);
 
 /**
  * @brief 写esc序列
  */
-static int write_esc(console_t* c, char ch);
+static void write_esc(console_t* c, char ch);
 
 /**
  * @brief 写esc序列的 [ 参数列表

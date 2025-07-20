@@ -1,7 +1,5 @@
 /***
- * 
  * 中断处理头文件
- * 
  */
 #ifndef IRQ_H
 #define IRQ_H

@@ -1,5 +1,10 @@
 #include "sys/syscall.h"
 
+/**
+ * @brief 控制堆的增长
+ * @param incr increment, 堆增长的字节
+ * @return 成功返回新分配空间的起始地址(原堆的结束地址), 失败返回-1
+ */
 char* sys_sbrk(int incr) {
     
     task_t* task = get_curr_task();

@@ -1,13 +1,8 @@
-/**
- * 
- * 任务管理相关类型和参数
- * 
- */
 #ifndef TASK_T_H
 #define TASK_T_H
 
 #include "common/types.h"
-#include "tools/list.h"
+#include "tools/list_t.h"
 #include "cpu/cpu_t.h"
 #include "fs/file_t.h"
 
@@ -42,7 +37,7 @@ typedef struct _task_t {
     int pid;
     struct _task_t* parent; // 父进程
 
-    tss_t tss;
+    struct _tss_t tss;
     int tss_sel;    // 该任务对应的tss段的选择子
 
     list_node_t run_node;   // task在就绪队列中的节点

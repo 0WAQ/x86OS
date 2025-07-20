@@ -1,7 +1,5 @@
 /**
- * 
  * ELF相关头文件及配置
- * 
  */
 #ifndef ELF_H
 #define ELF_H

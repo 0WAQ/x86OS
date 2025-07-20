@@ -1,7 +1,5 @@
 /**
- * 
  * 系统启动信息
- * 
  */
 #ifndef BOOT_INFO_H
 #define BOOT_INFO_H

@@ -1,4 +1,5 @@
-#include "macros.h"
+#include "cmd.h"
+
 #include <stdio.h>
 
 extern cli_t cli;

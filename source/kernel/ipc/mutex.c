@@ -3,8 +3,10 @@
  * 互斥锁实现
  * 
  */
-#include "ipc/mutex.h"
+#include "core/task.h"
 #include "cpu/irq.h"
+#include "ipc/mutex.h"
+#include "tools/list.h"
 
 void mutex_init(mutex_t* mutex) {
     mutex->owner = NULL;
@@ -51,7 +53,7 @@ void mutex_unlock(mutex_t* mutex) {
             if(list_count(&mutex->wait_list)) {
                 // 取出一个任务
                 list_node_t* node = list_remove_first(&mutex->wait_list);
-                task_t* task = list_entry_of(node, task_t, wait_node);
+                task_t* task = entry_of(node, task_t, wait_node);
 
                 // 加到就绪队列中
                 set_task_ready(task);

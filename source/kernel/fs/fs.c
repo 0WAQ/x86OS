@@ -5,15 +5,12 @@
  */
 #include "fs/fs.h"
 #include "fs/file.h"
-#include "dev/dev.h"
-#include "dev/console.h"
 #include "dev/disk.h"
-#include "core/task.h"
+#include "ipc/mutex.h"
 #include "tools/klib.h"
 #include "tools/log.h"
 #include "tools/list.h"
-#include "common/cpu_instr.h"
-#include "os_cfg.h"
+#include "common/cfg.h"
 #include <sys/stat.h>
 #include <sys/file.h>
 
@@ -88,7 +85,7 @@ static fs_t* mount(fs_type_t type, char* mount_point, int dev_major, int dev_min
     list_node_t* curr = list_first(&mounted_list);
     while(curr != NULL) {
         // 若fs的挂载点与入参的挂载点一样就退出
-        fs_t* p = list_entry_of(curr, fs_t, node);
+        fs_t* p = entry_of(curr, fs_t, node);
         if(kernel_strncmp(p->mount_point, mount_point, FS_MOUNTP_SIZE) == 0) {
             log_print("fs already mounted.");
             goto mount_failed;
@@ -102,7 +99,7 @@ static fs_t* mount(fs_type_t type, char* mount_point, int dev_major, int dev_min
         log_print("no free fs, mount failed.");
         goto mount_failed;
     }
-    fs = list_entry_of(free_node, fs_t, node);
+    fs = entry_of(free_node, fs_t, node);
 
     // 3. 初始化fs
     kernel_memset(fs, 0, sizeof(fs_t));
@@ -158,8 +155,7 @@ int string_to_int(const char* path, int* num) {
 int path_begin_with(const char* path, const char* str) {
     const char* i = path, *j = str;
     while(*i && *j && (*i == *j)) {
-        *i++;
-        *j++;
+        ++i, ++j;
     }
     return *j == '\0';
 }

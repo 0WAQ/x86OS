@@ -19,7 +19,7 @@ int sys_open(const char* filename, int flags, ...) {
     fs_t* fs = NULL;
     list_node_t* node = list_first(&mounted_list);
     while(node) {
-        fs_t* curr = list_entry_of(node, fs_t, node);
+        fs_t* curr = entry_of(node, fs_t, node);
         if(path_begin_with(filename, curr->mount_point)) {
             fs = curr;
             break;

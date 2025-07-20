@@ -1,8 +1,3 @@
-/**
- * 
- * 键盘基本类型
- * 
- */
 #ifndef KBD_T_H
 #define KBD_T_H
 

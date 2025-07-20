@@ -2,14 +2,15 @@
 cmake_minimum_required(VERSION 3.10.0)
 
 # 保存一些通用的配置
-set(CMAKE_VERBOSE_MAKEFILE on)   # 开启输出编译详细过程的提示
+set(CMAKE_VERBOSE_MAKEFILE OFF)   # 开启输出编译详细过程的提示
 
 # gcc工具链前缀，根据实际情况做不同的设置
 # 目前mac和win上使用x86_64-elf-
 if (CMAKE_HOST_WIN32 OR CMAKE_HOST_APPLE)
     set(TOOL_PREFIX  "x86_64-elf-")
 else ()
-    set(TOOL_PREFIX  "x86_64-linux-gnu-")    # 待补充
+    set(TOOL_PATH "$ENV{HOME}/compiler/i686-elf-tools")
+    set(TOOL_PREFIX  "${TOOL_PATH}/bin/i686-elf-")    # 待补充
 endif ()
 
 set(CMAKE_SYSTEM_NAME Generic)
@@ -36,7 +37,7 @@ set(OBJDUMP_TOOL "${TOOL_PREFIX}objdump")
 set(READELF_TOOL "${TOOL_PREFIX}readelf")
 
 # 设置newlib根目录
-set(NEWLIB_ROOT "$ENV{HOME}/compiler/i686-elf-tools/newlib/i686-elf")
+set(NEWLIB_ROOT "${TOOL_PATH}/newlib/i686-elf")
 
 # 工程，启用C语言和汇编语言
 project(os LANGUAGES C)  

@@ -1,9 +1,3 @@
-/**
- * 
- * rbtree实现
- * 
- */
-
 #include "tools/rbtree.h"
 
 void rb_link_node(rb_node* node, rb_node* parent, rb_node** rb_link)
@@ -13,7 +7,7 @@ void rb_link_node(rb_node* node, rb_node* parent, rb_node** rb_link)
     node->rb_color = RB_RED;
 
     node->rb_parent = parent;
-    node->rb_left = node->rb_right = NULL;
+    node->rb_left = node->rb_right = ((void*)0);
 
     // 调整parent的子节点为node, rb_link在插入时决定是左还是右
     *rb_link = node;
@@ -723,7 +717,7 @@ rb_node* rb_first(rb_root* root)
 	rb_node* node = root->rb_node;
 
 	if(!node) {
-		return NULL;
+		return ((void*)0);
 	}
 
 	// 一直向左走

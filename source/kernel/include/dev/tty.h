@@ -1,13 +1,11 @@
 /**
- * 
- * tty 头文件
- * 
+ * tty
  */
 #ifndef TTY_H
 #define TTY_H
 
-#include "tty_t.h"
-#include "ipc/sem_t.h"
+#include "dev/tty_t.h"
+#include "dev/dev_t.h"
 
 /**
  * @brief 初始化tty的缓冲区

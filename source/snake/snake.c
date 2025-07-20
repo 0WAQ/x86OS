@@ -1,21 +1,17 @@
-/**
- * 
- * 贪吃蛇游戏
- *
- */
 #include "snake.h"
-#include "lib_syscall.h"
 
+#include "applib/lib_syscall.h"
 #include "dev/tty_t.h"
+#include "snake/snake_t.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 
 // 屏幕范围
-static int row_max = MAX_ROW;
-static int col_max = MAX_COL;
+static u32_t row_max = MAX_ROW;
+static u32_t col_max = MAX_COL;
 
-static int is_quit = 0;
+static bool is_quit = false;
 
 // 蛇
 static snake_node_t* food;
@@ -44,11 +40,8 @@ int main (int argc, char ** argv) {
 }
 
 static void show_welcome() {
-	
-	// 清空屏幕
 	CLEAR_MAP();
 
-	// 打印
     SHOW_STR(0, 0, "Welcome to snake game");
     SHOW_STR(1, 0, "Use a.w.s.d to move snake");
     SHOW_STR(2, 0, "Press any key to start game");
@@ -56,20 +49,13 @@ static void show_welcome() {
 	
 	// 无io缓冲
 	setvbuf(stdin, NULL, _IONBF, 0);
-    
 	getchar();
 }
 
 static void init_game() {
-	// 初始化地图
     init_map();
-
-	// 初始化蛇头
     init_snake();
-
-	// 创建食物
     create_food();
-
 	FLUSH();
 }
 
@@ -101,11 +87,11 @@ static void start_game() {
 			while(1) {
 				char ch = getchar();
 				if(ch == 'q' || ch == 'Q') {
-					is_quit = 1;
+					is_quit = true;
 					break;
 				}
 				else if(ch == '\n') {
-					is_quit = 0;
+					is_quit = false;
 					break;
 				}
 			}
@@ -242,9 +228,6 @@ static void add_head(int row, int col) {
 }
 
 static void remove_tail() {
-
-
-
 	// 先定位curr到最后一个结点
 	snake_node_t * pre = NULL;
 	snake_node_t * curr = snake.head;
@@ -266,7 +249,7 @@ static void free_food() {
 	food = NULL;
 }
 
-static int is_hit_self() {
+static bool is_hit_self() {
 	for(snake_node_t* node = snake.head->next; node != NULL; node = node->next) {
 		if ((node->row == snake.head->row) && (node->col == snake.head->col)) {
 			return 1;
@@ -275,7 +258,7 @@ static int is_hit_self() {
 	return 0;
 }
 
-static int is_hit_wall() {
+static bool is_hit_wall() {
 	snake_node_t* node = snake.head;
 	if(node->row <= 0 || node->col <= 0 || 
 	   node->row >= row_max - 1 || node->col >= col_max - 1)
@@ -285,7 +268,7 @@ static int is_hit_wall() {
 	return 0;
 }
 
-static int is_hit_food() {
+static bool is_hit_food() {
 	snake_node_t* node = snake.head;
 	if(node->row == food->row && node->col == food->col) {
 		return 1;

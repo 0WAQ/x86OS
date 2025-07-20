@@ -1,8 +1,3 @@
-/***
- * 
- * 位图基本类型
- * 
- */
 #ifndef BITMAP_T_H
 #define BITMAP_T_H
 

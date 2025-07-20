@@ -1,8 +1,3 @@
-/**
- * 
- * 时间基本类型 
- * 
- */
 #ifndef TIME_T_H
 #define TIME_T_H
 

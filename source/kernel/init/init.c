@@ -1,24 +1,16 @@
 /**
- * 
  * 内核初始化
- * 
  */
-#include "init.h"
-#include "common/cpu_instr.h"
-#include "cpu/cpu.h"
-#include "cpu/irq.h"
-#include "ipc/sem.h"
-#include "fs/fs.h"
-#include "dev/timer.h"
-#include "dev/console.h"
-#include "dev/kbd.h"
-#include "tools/log.h"
-#include "tools/klib.h"
-#include "tools/list.h"
-#include "tools/time.h"
+#include "init/init.h"
 #include "core/task.h"
 #include "core/memory.h"
-#include "os_cfg.h"
+#include "cpu/cpu.h"
+#include "cpu/irq.h"
+#include "dev/timer.h"
+#include "fs/fs.h"
+#include "tools/log.h"
+#include "tools/klib.h"
+#include "common/cfg.h"
 
 // 该函数返回后，会长跳转至gdt_reload，并跳转到kernel_main
 void kernel_init(boot_info_t* boot_info) {

@@ -1,8 +1,3 @@
-/**
- * 
- * 设备管理层基本类型
- * 
- */
 #ifndef DEV_T_H
 #define DEV_T_H
 

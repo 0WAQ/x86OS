@@ -6,9 +6,8 @@
 #include "dev/kbd.h"
 #include "dev/tty.h"
 #include "cpu/irq.h"
-#include "common/cpu_instr.h"
-#include "tools/klib.h"
-#include "tools/log.h"
+#include "cpu/cpu_t.h"
+#include "common/asm.h"
 
 /**
  * @brief 键盘按压状态

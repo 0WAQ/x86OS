@@ -1,7 +1,5 @@
 /**
- * 
  * 设备管理层头文件
- * 
  */
 #ifndef DEV_H
 #define DEV_H
@@ -37,5 +35,8 @@ void dev_close(int dev_id);
  * @brief
  */
 static int is_devid_bad(int dev_id);
+
+
+static void dummy_dev_h(device_t);  // TODO: 防止头文件警告
 
 #endif // DEV_H

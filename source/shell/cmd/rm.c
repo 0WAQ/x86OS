@@ -1,4 +1,5 @@
-#include "macros.h"
+#include "cmd.h"
+
 #include <stdio.h>
 
 int do_rm(int argc, char** argv) {

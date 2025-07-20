@@ -1,11 +1,4 @@
-/**
- * 
- * first_task相关c文件
- * 
- */
-
 #include "applib/lib_syscall.h"
-#include "dev/tty.h"
 
 int first_task_main() {
 

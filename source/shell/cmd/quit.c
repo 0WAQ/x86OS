@@ -1,4 +1,5 @@
-#include "macros.h"
+#include "cmd.h"
+
 #include <stdlib.h>
 
 int do_quit(int argc, char** argv) {

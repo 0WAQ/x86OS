@@ -1,8 +1,3 @@
-/**
- * 
- * 中断相关基本类型
- * 
- */
 #ifndef IRQ_T_H
 #define IRQ_T_H
 

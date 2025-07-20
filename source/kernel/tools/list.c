@@ -1,8 +1,3 @@
-/**
- * 
- * 链表的实现
- * 
- */
 #include "tools/list.h"
 
 void list_init(list_t* list) {
