@@ -1,8 +1,6 @@
-/**
- * 系统公用宏定义
- */
 #ifndef MACROS_H
 #define MACROS_H
+
 
 #define offset_of(container_type, member_name) \
         ((u32_t)&((container_type*)0)->member_name)

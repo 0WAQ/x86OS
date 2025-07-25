@@ -1,6 +1,3 @@
-/**
- * 系统内部的基本数据类型
- */
 #ifndef TYPES_H
 #define TYPES_H
 

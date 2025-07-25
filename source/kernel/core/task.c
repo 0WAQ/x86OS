@@ -437,7 +437,7 @@ u32_t load_elf_file(task_t* task, const char* filename, u32_t page_dir) {
 
     // 其它检查
     if(elf_hdr.e_type != ET_EXEC || 
-       elf_hdr.e_machine != ET_386 || 
+       elf_hdr.e_machine != EM_386 || 
        elf_hdr.e_entry == 0)
     {
         log_print("check elf type or entry failed.");

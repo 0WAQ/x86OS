@@ -1,30 +1,15 @@
 /**
- *
- * 系统引导部分，启动时由硬件加载运行，然后完成对二级引导程序loader的加载
- * 该部分程序存储于磁盘的第1个扇区，在计算机启动时将会由BIOS加载到0x7c00处
- * 并开始运行
- *
- * 将二级引导器从磁盘加载到内存0x8000处，并跳转至boot_entry
- * 
+ * boot:
+ * 	启动时由硬件加载运行, 用于加载并跳转至二级引导器(0x8000处), 
+ * 	应在磁盘的第一个扇区中, 内存首地址在 0x7c00 处, 由 BIOS 加载并跳转
  */
-	#include "boot.h"
 
-  	# 16位代码, 务必加上
-  	.code16
- 	.text
-	.global _start
-	.extern boot_entry
+# 16位代码段, 实模式
+.code16
+.text
 
-/**
- *
- * 在CMakeLists中设置:
- * 1. _start在最前面
- * 2. 将boot程序加载到0x7c00
- * 
- */
-_start:
-
-	# 重置数据段寄存器
+# 0x7c00
+_boot_start:
 	mov $0, %eax	# 此处会发生异常是因为在gdb中要求它运行到0x7c00处
 	mov %ax, %ds
 	mov %ax, %ss
@@ -32,72 +17,15 @@ _start:
 	mov %ax, %fs
 	mov %ax, %gs
 
-	# 设置栈顶在0x7c00, 参考链接 https://wiki.osdev.org/Memory_Map_(x86)
-	mov $_start, %esp
+	# 设置栈顶在0x7c00
+	# 参考链接: https://wiki.osdev.org/Memory_Map_(x86)
+	mov $_boot_start, %esp
 
-	# 显示boot加载完成提示
-	mov $0xe, %ah
-	mov $'.', %al
-	int $0x10
-	
-	mov $0xe, %ah
-	mov $'.', %al
-	int $0x10
+	mov $boot_msg, %si
+	calll show_boot_msg
 
-	mov $0xe, %ah
-	mov $'.', %al
-	int $0x10
-
-	mov $0xe, %ah
-	mov $'B', %al
-	int $0x10
-
-	mov $0xe, %ah
-	mov $'o', %al
-	int $0x10
-
-	mov $0xe, %ah
-	mov $'o', %al
-	int $0x10
-
-	mov $0xe, %ah
-	mov $'t', %al
-	int $0x10
-
-	mov $0xe, %ah
-	mov $'i', %al
-	int $0x10
-	
-	mov $0xe, %ah
-	mov $'n', %al
-	int $0x10
-
-	mov $0xe, %ah
-	mov $'g', %al
-	int $0x10
-
-	mov $0xe, %ah
-	mov $'.', %al
-	int $0x10
-
-	mov $0xe, %ah
-	mov $'.', %al
-	int $0x10
-
-	mov $0xe, %ah
-	mov $'.', %al
-	int $0x10
-
-	mov $0xe, %ah
-	mov $'\n', %al
-	int $0x10
-
-	mov $0xe, %ah
-	mov $'\r', %al
-	int $0x10
-
-# 加载loader, 只支持磁盘1
-# https://wiki.osdev.org/Disk_access_using_the_BIOS_(INT_13h)
+# 从磁盘中加载 loader, 只支持 disk1
+# 参考链接: https://wiki.osdev.org/Disk_access_using_the_BIOS_(INT_13h)
 read_loader:
 	mov $0x8000, %bx	# 将loader读取到0x8000处
 	mov $0x02, %cx		# ch: 磁道号, cl起始扇区号
@@ -107,12 +35,33 @@ read_loader:
 	int $0x13
 	jc read_loader		# CF=0, 操作成功, 否则一直跳转
 
-	# 跳转到C函数boot_entry
-	jmp boot_entry
+# 跳转到 loader的入口点
+jmp_loader:
+	mov $0x8000, %eax
+	jmp *%eax
 
-	# 原地跳转
-	jmp .
-	
-	# 引导结束段
-	.section boot_end, "ax"
-boot_sig: .byte 0x55, 0xaa
+show_boot_msg:
+	push %ax
+
+  show_boot_msg_loop:
+	mov $0xe, %ah
+	mov (%si), %al
+
+	test %al, %al
+	jz show_boot_msg_end
+
+	int $0x10
+
+	inc %si
+	jmp show_boot_msg_loop
+
+  show_boot_msg_end:
+	pop %ax
+	retl
+
+boot_msg:
+	.string "...Booting...\r\n\0"
+
+# boot 必须以 0xaa55 结尾
+.section boot_end, "ax"		# boot_end 被设置为: 0x7dfe
+	.byte 0x55, 0xaa

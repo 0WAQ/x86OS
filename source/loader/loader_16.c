@@ -6,15 +6,15 @@
 // 16位代码，必须加上放在开头，以便有些io指令生成为32位
 __asm__(".code16gcc");
 
-#include "loader.h"
-#include "loader_16.h"
 #include "common/asm.h"
+#include "loader/loader.h"
+#include "loader/loader_16.h"
 
 // 声明全局的启动信息参数
 boot_info_t boot_info;
 
 void loader_entry() {
-    show_msg("...Loading...\n\r");
+    show_msg("...Loading...\r\n");
 
     // 检测内存容量
     detect_memory();
@@ -32,17 +32,15 @@ void detect_memory() {
     show_msg("...Detecting Memory...");
     
     u32_t contID = 0;
-    SMAP_entry_t smap_entry;
-    int signature, bytes;
+    SMAP_entry_t SMAP_entry;
+    int signature = 0, bytes = 0;
 
-    boot_info.ram_region_count = 0;
+    int len = 0;
     for(int i = 0; i < BOOT_RAM_REGION_MAX; i++) {
-        SMAP_entry_t* entry = &smap_entry;
-        
         __asm__ __volatile__(
             "int $0x15" 
 			: "=a"(signature), "=c"(bytes), "=b"(contID)
-			: "a"(0xE820), "b"(contID), "c"(24), "d"(0x534D4150), "D"(entry)
+			: "a"(0xE820), "b"(contID), "c"(24), "d"(0x534D4150), "D"(&SMAP_entry)
         );
 
         if(signature != 0x534D4150) {
@@ -51,23 +49,25 @@ void detect_memory() {
         }
 
         // ACPI的位0的值为0时忽略
-        if(bytes > 20 && (entry->ACPI & 0x0001) == 0) {
+        if(bytes > 20 && (SMAP_entry.ACPI & 0x0001) == 0) {
             continue;
         }
 
         // 当type为1时，该内存区域可用，将其保存到boot_info的ram_region_cfg中
-        if(entry->type == 1) {
+        if(SMAP_entry.type == 1) {
             // 只读取低32位
-            boot_info.ram_region_cfg[boot_info.ram_region_count].start = entry->base_low;
-            boot_info.ram_region_cfg[boot_info.ram_region_count].size = entry->length_low;
-            boot_info.ram_region_count++;
+            boot_info.ram_region_cfg[len].start = SMAP_entry.base_low;
+            boot_info.ram_region_cfg[len].size = SMAP_entry.length_low;
+            ++len;
         }
 
         if(contID == 0) {
             break;
         }
     }
-    show_msg("Successful!\n\r");
+    boot_info.ram_region_count = len;
+
+    show_msg("Successful!\r\n");
 }
 
 // 临时的GDT表
@@ -102,7 +102,6 @@ void enter_protect_mode() {
 
 void show_msg(const char* msg) {
     char c;
-
     while((c = *msg++) != '\0') {
         __asm__ __volatile__(
             "mov $0xe, %%ah""\n\t"

@@ -1,6 +1,3 @@
-/**
- * 32位loader
- */
 #ifndef LOADER_32_H
 #define LOADER_32_H
 
