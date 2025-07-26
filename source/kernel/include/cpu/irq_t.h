@@ -31,7 +31,7 @@
 // 32 ~ 255, User Defined (Non-reserved) interrupts, Interrupt
 #define IRQ_0x80    0x80    // 系统调用
 
-// 
+// 其它中断
 #define IRQ0_TIMER              0x20
 #define IRQ1_KEYBOARD		    0x21        // 按键中断
 #define IRQ14_HARDDISK_PRIMARY  0x2E		// 主总线上的ATA磁盘中断
@@ -66,18 +66,19 @@
 #define ERR_EXT         (1 << 0)
 #define ERR_IDT         (1 << 1)
 
-// irq_enter_protection 与 irq_leave_protection 使用, 用于判断进入临界区前, 中断的状态
-typedef u32_t irq_state_t;
 
+/**
+ * @brief 异常处理时的函数栈
+ */
 typedef struct _exception_frame_t{
     u32_t gs, fs, es, ds;
     u32_t edi, esi, ebp, esp, ebx, edx, ecx, eax;
     u32_t num, errno, eip, cs, eflags;
     u32_t esp3, ss3;    // 中断触发时, cpu在内核栈中自动压入的原用户栈
-}exception_frame_t;
+} exception_frame_t;
 
 
-// 回调函数类型
+typedef u32_t irq_state_t;
 typedef void (*irq_handler_t)();
 
 #endif // IRQ_T_H

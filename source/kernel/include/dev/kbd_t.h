@@ -61,7 +61,7 @@
 typedef struct _key_map_t {
     u8_t normal;     // 普通功能
     u8_t func;       // 第二功能
-}key_map_t;
+} key_map_t;
 
 /**
  * @brief 状态指示灯
@@ -75,6 +75,6 @@ typedef struct _kbd_state_t {
     int ralt         : 1;   // 右alt
     int lctrl        : 1;   // 左ctrl
     int rctrl        : 1;   // 右ctrl
-}kbd_state_t;
+} kbd_state_t;
 
 #endif // KBD_T_H

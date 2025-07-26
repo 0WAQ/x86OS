@@ -1,7 +1,5 @@
 /**
- *
  * irq中各种异常的宏
- *
  */
 
     .text
@@ -23,13 +21,12 @@
         push %ds
         push %es
         push %fs
-        push %gs 
+        push %gs
 
         # 调用默认异常处理程序，C实现
         push %esp   # esp在执行此条语句之前指向gs，压栈后，这个值就是exception_frame_t结构体的起始地址
         call do_handler_\name
-
-        add $(1 * 4), %esp      # 丢掉esp
+        add $0x04, %esp
 
         # 恢复寄存器
         pop %gs
@@ -39,7 +36,7 @@
         popal
 
         # 跳过压入的异常号和错误码
-        add $(2 * 4), %esp  # cpu不会自动将errno弹出(即使errno是由cpu自动压入的)
+        add $0x08, %esp  # cpu不会自动将errno弹出(即使errno是由cpu自动压入的)
         iret
 .endm
 
@@ -67,11 +64,7 @@ exception_handler virtual_exception, 20, 0
 
 # 系统调用的中断处理函数
 exception_handler syscall, 0x80, 0
-
-# 定时器的中断处理函数
 exception_handler timer, 0x20, 0
-
-# 键盘的中断处理函数
 exception_handler kbd, 0x21, 0
 
 # 硬盘的中断处理函数

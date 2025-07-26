@@ -1,11 +1,8 @@
-/***
- * 
- * 内存管理
- * 
- */
 #ifndef MEMORY_H
 #define MEMORY_H
 
+#include "common/types.h"
+#include "core/task.h"
 #include "memory_t.h"
 #include "ipc/mutex.h"
 #include "tools/bitmap.h"
@@ -20,14 +17,17 @@
 void memroy_init(boot_info_t* boot_info);
 
 /**
- * @brief 根据内存映射表, 构造内核页表
+ * @brief 根据内存映射表, 建立内核页表
  */
 static void create_kernel_table();
 
 /**
- * @brief 只处理一个地址映射关系
+ * @brief 创建物理地址到虚拟地址的映射
  */
-static int memory_create_map(pde_t* page_dir, u32_t vaddr, u32_t paddr, u32_t page_nr, u32_t perm);
+static int memory_map_page(pde_t* page_dir, u32_t vaddr, u32_t paddr, u32_t perm);
+static int memory_map_pages(pde_t* page_dir, u32_t vaddr, u32_t paddr, u32_t page_nr, u32_t perm);
+static int memory_unmap_page(pde_t* page_dir, u32_t vaddr);
+static int memory_unmap_pages(pde_t* page_dir, u32_t vaddr, u32_t page_nr);
 
 /**
  * @brief 创建用户虚拟内存空间
@@ -45,13 +45,9 @@ int memory_alloc_page_for(u32_t vaddr, u32_t size, u32_t perm);
 int _memory_alloc_page_for(u32_t page_dir, u32_t vaddr, u32_t size, u32_t perm);
 
 /**
- * @brief 分配一页内存
+ * @brief 分配和释放一页内存
  */
 u32_t memory_alloc_page();
-
-/**
- * @brief 释放一页内存
- */
 void memory_free_page(u32_t addr);
 
 /**
@@ -119,7 +115,9 @@ static u32_t total_mem_size(boot_info_t* boot_info) {
 /**
  * @brief 返回当前使用的页目录表
  */
-static pde_t* curr_page_dir();
+static inline pde_t* curr_page_dir() {
+    return (pde_t*)(get_curr_task()->tss.cr3);
+}
 
 /**
  * @brief 为子进程拷贝父进程的代码和数据

@@ -15,7 +15,7 @@
 #define TASK_FLAGS_USER         (0 << 0)
 
 /**
- * 同Linux中的task_struct
+ * @brief 同Linux中的task_struct
  */
 typedef struct _task_t {
     // u32_t* stack;    // 保存esp, simple_switch使用
@@ -55,7 +55,7 @@ typedef struct _task_t {
 
     int status;             // 进程退出时的状态
 
-}task_t;
+} task_t;
 
 /**
  * 任务管理器
@@ -73,7 +73,7 @@ typedef struct _task_manager_t {
     int code_sel;       // 代码段选择子
     int data_sel;       // 数据段选择子
 
-}task_manager_t;
+} task_manager_t;
 
 /**
  * @brief 用于给执行execve的进程传递参数
@@ -82,6 +82,6 @@ typedef struct _task_args_t {
     u32_t ret_addr;
     u32_t argc;
     char** argv;
-}task_args_t;
+} task_args_t;
 
 #endif // TASK_T_H

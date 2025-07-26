@@ -1,4 +1,4 @@
-#include "applib/lib_syscall.h"
+#include "lib_syscall.h"
 #include "sys/syscall_t.h"
 
 #ifndef FIRST_TASK

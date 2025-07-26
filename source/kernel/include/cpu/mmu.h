@@ -1,18 +1,14 @@
-/***
- * mmu
- */
 #ifndef MMU_H
 #define MMU_H
 
 #include "mmu_t.h"
 #include "common/asm.h"
 
-
 /**
- * @brief 查找或创建vaddr对应的页表项
- * @param is_alloc 当找不到pte时, 表示是否创建一个pte
+ * @brief 查找 vaddr 对应的 pte
+ * @param is_alloc 当找不到 pde 时, 表示是否创建一个pde
  */
-pte_t* find_pte(pde_t* page_dir, u32_t vaddr, int is_alloc);
+pte_t* find_pte(pde_t* page_dir, u32_t vaddr, bool is_alloc);
 
 
 // 重新加载CR3寄存器

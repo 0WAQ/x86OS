@@ -1,8 +1,3 @@
-/**
- * 
- * 
- * 
- */
 #include <stdlib.h>
 
 #include "common/types.h"

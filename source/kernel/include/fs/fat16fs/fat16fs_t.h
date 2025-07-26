@@ -28,7 +28,6 @@ typedef u16_t cluster_t;
 /**
  * @brief 目录项结构
  */
-#pragma pack(1)
 typedef struct _diritem_t {
     u8_t  DIR_Name[11];          // 文件名
     u8_t  DIR_Attr;              // 属性
@@ -42,13 +41,11 @@ typedef struct _diritem_t {
     u16_t DIR_WrtDate;           // 修改时期
     u16_t DIR_FstClusLO;         // 簇号低16位
     u32_t DIR_FileSize;          // 文件字节大小
-}diritem_t;
-#pragma pack()
+} __attribute__((packed)) diritem_t;
 
 /**
  * @brief DBR类型
  */
-#pragma pack(1)
 typedef struct _dbr_t {
     u8_t  BS_jmpBoot[3];                 // 跳转代码
     u8_t  BS_OEMName[8];                 // OEM名称
@@ -71,8 +68,7 @@ typedef struct _dbr_t {
 	u32_t BS_VolID;                      // 卷标序号
 	u8_t  BS_VolLab[11];                 // 磁盘卷标
 	u8_t  BS_FileSysType[8];             // 文件类型名称
-} dbr_t;
-#pragma pack()
+} __attribute__((packed)) dbr_t;
 
 /**
  * @brief FAT结构
@@ -96,6 +92,6 @@ typedef struct _fat16_t {
 
     mutex_t mtx;
 
-}fat16_t;
+} fat16_t;
 
 #endif // FAT16FS_T_H

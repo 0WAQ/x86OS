@@ -48,6 +48,6 @@ typedef struct _syscall_frame_t {
     u32_t eip, cs;                       // 执行长跳转时cpu自动压入的
     u32_t id, arg0, arg1, arg2, arg3;    // 在sys_call中压入的参数
     u32_t esp, ss;                       // cpu在内核栈压入的用户态的栈位置
-}syscall_frame_t;
+} syscall_frame_t;
 
 #endif // SYSCALL_T_H

@@ -1,7 +1,5 @@
 /**
- * 
  * 中断处理
- * 
  */
 #include "cpu/cpu.h"
 #include "cpu/irq.h"
@@ -10,8 +8,11 @@
 #include "common/asm.h"
 #include "tools/log.h"
 
-// IDT
+///////////////////////////////////////////////////////////
+
 static gate_desc_t idt_table[IDT_TABLE_SIZE];
+
+///////////////////////////////////////////////////////////
 
 void irq_init() {
 

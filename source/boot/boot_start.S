@@ -8,8 +8,10 @@
 .code16
 .text
 
+.global _start
+
 # 0x7c00
-_boot_start:
+_start:
 	mov $0, %eax	# 此处会发生异常是因为在gdb中要求它运行到0x7c00处
 	mov %ax, %ds
 	mov %ax, %ss
@@ -19,7 +21,7 @@ _boot_start:
 
 	# 设置栈顶在0x7c00
 	# 参考链接: https://wiki.osdev.org/Memory_Map_(x86)
-	mov $_boot_start, %esp
+	mov $_start, %esp
 
 	mov $boot_msg, %si
 	calll show_boot_msg

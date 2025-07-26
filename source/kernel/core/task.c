@@ -81,7 +81,7 @@ void task_start(task_t* task) {
 
 void task_uninit(task_t* task) {
     if(task->tss_sel) {
-        gdt_free_desc(task->tss_sel);
+        gdt_free_desc_with_guard(task->tss_sel);
     }
 
     if(task->tss.esp0) {
@@ -100,7 +100,7 @@ static int tss_init(task_t* task, u32_t flag, u32_t entry, u32_t esp) {
 // 1.创建tss, 注册到gdt中
 
     // 分配一个gdt表项
-    int tss_sel = gdt_alloc_desc();
+    int tss_sel = gdt_alloc_desc_with_guard();
     if(tss_sel < 0) {
         goto tss_init_failed;
     }
@@ -159,12 +159,12 @@ static int tss_init(task_t* task, u32_t flag, u32_t entry, u32_t esp) {
     return 0;
 
 tss_init_failed:
-    gdt_free_desc(tss_sel);
+    gdt_free_desc_with_guard(tss_sel);
     if(kernel_stack) {
         memory_free_page(kernel_stack);
     }
     if(page_dir) {
-        gdt_free_desc(tss_sel);
+        gdt_free_desc_with_guard(tss_sel);
     }
     return -1;
 }
@@ -305,7 +305,7 @@ void set_task_wakeup(task_t* task) {
     list_remove(&task_manager.sleep_list, &task->run_node);
 }
 
-task_t* get_curr_task() {
+inline task_t* get_curr_task() {
     return task_manager.curr_task;
 }
 

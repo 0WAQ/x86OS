@@ -1,13 +1,7 @@
-/**
- *
- * first_task相关汇编文件
- *
- */
 	.text
 	.global first_task_entry
     .extern first_task_main
 
-# first_task入口函数
 first_task_entry:
 
     # 重新加载各数据段

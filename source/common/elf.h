@@ -41,7 +41,6 @@
 /**
  * @brief ELF头表(ELF Header Table)
  */
-#pragma pack(1)
 typedef struct {
     u8_t e_ident[EI_NIDENT];    // Magic Number
     u16_t e_type;           // 文件的类型
@@ -57,8 +56,7 @@ typedef struct {
     u16_t e_shentsize;      // Section Header 的入口大小
     u16_t e_shnum;          // Section Header Table 的数量
     u16_t e_shstrndx;       // xxx Section Header 中的字符串表索引
-} Elf32_Ehdr;
-#pragma pack()
+} __attribute__((packed)) Elf32_Ehdr;
 
 
 ////////////////////////////////////////////////////////////////////////
@@ -77,7 +75,6 @@ typedef struct {
 /**
  * @brief 程序头表(Program Header Table)
  */
-#pragma pack(1)
 typedef struct {
     u32_t p_type;       // 
     u32_t p_offset;     // 
@@ -87,7 +84,6 @@ typedef struct {
     u32_t p_memsz;      // 
     u32_t p_flags;      // 
     u32_t p_align;      // 
-} Elf32_Phdr;
-#pragma pack()
+} __attribute__((packed)) Elf32_Phdr;
 
 #endif // ELF_H

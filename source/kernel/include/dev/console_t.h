@@ -23,7 +23,7 @@ typedef union _disp_char_t {
         char foreground : 4;    // 前景色
         char background : 3;    // 背景色
     };
-}disp_char_t;
+} disp_char_t;
 
 /**
  * @brief 颜色
@@ -45,14 +45,14 @@ typedef enum {
     COLOR_LIGHT_MAGENTA     = 13,
     COLOR_YELLOW            = 14,
     COLOR_WHITE             = 15,
-}color_t;
+} color_t;
 
 /**
  * @brief 光标
  */
 typedef struct _cursor_t {
     u32_t row, col;
-}cursor_t;
+} cursor_t;
 
 /**
  * @brief 终端结构体
@@ -80,6 +80,6 @@ typedef struct _console_t {
 
     mutex_t mtx;
 
-}console_t;
+} console_t;
 
 #endif // CONSOLE_T_H

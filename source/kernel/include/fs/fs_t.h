@@ -26,7 +26,7 @@ struct dirent {
 typedef struct _DIR {
     int index;
     struct dirent dirent;
-}DIR;
+} DIR;
 
 struct _fs_t;
 struct stat;
@@ -48,7 +48,7 @@ typedef struct _fs_op_t {
     int  (*opendir)(struct _fs_t* fs, const char* name, DIR* dir);
     int  (*readdir)(struct _fs_t* fs, DIR* dir, struct dirent* dirent);
     int  (*closedir)(struct _fs_t* fs, DIR* dir);
-}fs_op_t;
+} fs_op_t;
 
 /**
  * @brief 文件系统类型
@@ -56,7 +56,7 @@ typedef struct _fs_op_t {
 typedef enum _fs_type_t {
     FS_DEVFS,
     FS_FAT16,
-}fs_type_t;
+} fs_type_t;
 
 /**
  * @brief 文件系统结构
@@ -74,6 +74,6 @@ typedef struct _fs_t {
         fat16_t fat16_data;
     };
 
-}fs_t;
+} fs_t;
 
 #endif // FS_T_H

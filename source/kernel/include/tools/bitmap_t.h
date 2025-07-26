@@ -6,6 +6,6 @@
 typedef struct _bitmap_t {
     u8_t* bits;          // 字节数组
     u32_t bit_count;     // 表示位图表示的总位数
-}bitmap_t;
+} bitmap_t;
 
 #endif // BITMAP_T_H

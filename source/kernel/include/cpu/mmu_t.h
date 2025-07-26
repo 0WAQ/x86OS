@@ -4,23 +4,19 @@
 #include "common/types.h"
 
 #define PDE_CNT     (1024)
-#define PTE_CNT     (1024)
-
 #define PDE_P       (1 << 0)
-#define PTE_P       (1 << 0)
-
 #define PDE_W       (1 << 1)
-#define PTE_W       (1 << 1)
-
 #define PDE_U       (1 << 2)
-#define PTE_U       (1 << 2)
 
-#pragma pack(1)
+#define PTE_CNT     (1024)
+#define PTE_P       (1 << 0)
+#define PTE_W       (1 << 1)
+#define PTE_U       (1 << 2)
 
 /**
  * @brief 页目录项
  */
-typedef union _pde_t{
+typedef union _pde_t {
     u32_t v;
     struct {
         u32_t present : 1;
@@ -34,12 +30,12 @@ typedef union _pde_t{
         u32_t : 4;
         u32_t phy_pt_addr : 20;
     };
-}pde_t;
+} __attribute__((packed)) pde_t;
 
 /**
  * @brief 页表项
  */
-typedef union _pte_t{
+typedef union _pte_t {
     u32_t v;
     struct {
         u32_t present : 1;
@@ -54,8 +50,6 @@ typedef union _pte_t{
         u32_t : 3;
         u32_t phy_page_addr : 20;
     };
-}pte_t;
-
-#pragma pack()
+} __attribute__((packed)) pte_t;
 
 #endif // MMU_T_H

@@ -1,7 +1,7 @@
 #ifndef RBTREE_T_H
 #define RBTREE_T_H
 
-/***
+/**
  * 
  * @brief 红黑树的性质
  * 
@@ -25,14 +25,14 @@ typedef struct _rb_node {
     int rb_color;
     struct _rb_node* rb_right;
     struct _rb_node* rb_left;
-}rb_node;
+} rb_node;
 
 /**
  * @brief 红黑树根节点
  */
 typedef struct _rb_root {
     struct _rb_node* rb_node;
-}rb_root;
+} rb_root;
 
 
 #define RB_ROOT             ((rb_root){NULL, })

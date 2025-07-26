@@ -108,7 +108,7 @@ void lgdt(u32_t start, u32_t size) {
         u16_t limit;
         u16_t start15_0;
         u16_t start31_16;
-    }gdt;
+    } gdt;
     
     gdt.start31_16 = start >> 16;
     gdt.start15_0 = start & 0xFFFF;
@@ -132,7 +132,7 @@ void lidt(u32_t start, u32_t size) {
         u16_t limit;
         u16_t start15_0;
         u16_t start31_16;
-    }idt;
+    } idt;
     
     idt.start31_16 = start >> 16;
     idt.start15_0 = start & 0xFFFF;
@@ -282,6 +282,18 @@ void write_eflags(u32_t eflags) {
         "popf"
         :
         :"a"(eflags)
+    );
+}
+
+/**
+ * @brief 刷新 tlb
+ */
+static inline
+void flush_tlb(u32_t vaddr) {
+    __asm__ __volatile__(
+        "invlpg %0"
+        :
+        : "m"(vaddr)
     );
 }
 

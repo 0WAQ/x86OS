@@ -1,6 +1,3 @@
-/***
- * 中断处理头文件
- */
 #ifndef IRQ_H
 #define IRQ_H
 
@@ -62,25 +59,25 @@ static void dump_core_regs(exception_frame_t* frame);
  */
 void exception_handler_unknown();
 void exception_handler_divider();
-void exception_handler_debug (void);
-void exception_handler_NMI (void);
-void exception_handler_breakpoint (void);
-void exception_handler_overflow (void);
-void exception_handler_bound_range (void);
-void exception_handler_invalid_opcode (void);
-void exception_handler_device_unavailable (void);
-void exception_handler_double_fault (void);
-void exception_handler_invalid_tss (void);
-void exception_handler_segment_not_present (void);
-void exception_handler_stack_segment_fault (void);
-void exception_handler_general_protection (void);
-void exception_handler_page_fault (void);
-void exception_handler_fpu_error (void);
-void exception_handler_alignment_check (void);
-void exception_handler_machine_check (void);
-void exception_handler_smd_exception (void);
-void exception_handler_virtual_exception (void);
-void exception_handler_ide_primary (void);
+void exception_handler_debug();
+void exception_handler_NMI();
+void exception_handler_breakpoint();
+void exception_handler_overflow();
+void exception_handler_bound_range();
+void exception_handler_invalid_opcode();
+void exception_handler_device_unavailable();
+void exception_handler_double_fault();
+void exception_handler_invalid_tss();
+void exception_handler_segment_not_present();
+void exception_handler_stack_segment_fault();
+void exception_handler_general_protection();
+void exception_handler_page_fault();
+void exception_handler_fpu_error();
+void exception_handler_alignment_check();
+void exception_handler_machine_check();
+void exception_handler_smd_exception();
+void exception_handler_virtual_exception();
+void exception_handler_ide_primary();
 
 /**
  * @brief 异常处理程序，C实现

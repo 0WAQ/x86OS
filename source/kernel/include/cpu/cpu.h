@@ -30,14 +30,16 @@ void set_gate_desc(gate_desc_t* desc, u16_t selector, u32_t offset, u16_t attr);
  * @brief 寻找空闲的表项
  */
 int gdt_alloc_desc();
+int gdt_alloc_desc_with_guard();
 
 /**
  * @brief 释放表项
  */
 void gdt_free_desc(int tss_sel);
+void gdt_free_desc_with_guard(int tss_sel);
 
 /**
- * @brief
+ * @brief 切换任务的 tss 结构
  */
 void switch_to_tss(int tss_sel);
 

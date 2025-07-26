@@ -1,6 +1,3 @@
-/**
- * FAT16文件系统
- */
 #ifndef FAT16FS_H
 #define FAT16FS_H
 

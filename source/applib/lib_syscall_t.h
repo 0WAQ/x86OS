@@ -10,6 +10,6 @@ typedef struct _syscall_args_t {
     int arg2;
     int arg3;
     int arg4;
-}syscall_args_t;
+} syscall_args_t;
 
 #endif // LIB_SYSCALL_T_H

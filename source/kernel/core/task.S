@@ -1,8 +1,3 @@
-/**
- *
- * task.c中函数的汇编实现
- *
- */
     .text
     .global simple_switch
 

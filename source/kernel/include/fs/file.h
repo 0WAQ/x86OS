@@ -1,6 +1,3 @@
-/**
- * 文件
- */
 #ifndef FILE_H
 #define FILE_H
 

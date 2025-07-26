@@ -22,7 +22,7 @@ typedef struct _device_t {
     int minor;                  // 次设备号
     void* data;
     int open_cnt;               // 打开的引用计数
-}device_t;
+} device_t;
 
 /**
  * @brief 描述某种类型的设备
@@ -37,6 +37,6 @@ typedef struct _dev_desc_t {
     int  (*control)(device_t*, int, int, int);
     void (*close)(device_t*);
 
-}dev_desc_t;
+} dev_desc_t;
 
 #endif // DEV_T_H

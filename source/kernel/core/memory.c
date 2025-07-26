@@ -35,76 +35,116 @@ void memroy_init(boot_info_t* boot_info) {
     log_print("...Memory Init...");
     show_mem_info(boot_info);
 
-    // 计算1MB以上的空闲内存容量, 并向下对齐到页大小的整数倍
-    u32_t mem_up1MB_free = total_mem_size(boot_info) - MEM_EXT_START;
-    mem_up1MB_free = down2(mem_up1MB_free, MEM_PAGE_SIZE);
-    log_print("Free Memory: start = 0x%x, size = 0x%x", MEM_EXT_START, mem_up1MB_free);
+    // 计算 1MB 以上的空闲内存容量, 并向下对齐到页大小的整数倍
+    u32_t tot_mem_up1MB = down2((total_mem_size(boot_info) - MEM_EXT_START), MEM_PAGE_SIZE);
+    log_print("Free Memory: start = 0x%x, size = 0x%x", MEM_EXT_START, tot_mem_up1MB);
 
-    u8_t* mem_free = (u8_t*)&mem_free_start;
-
-    // 32位系统最多4GB内存
-    // 最多需要 4*1024*1024*1024 / 4096 / 8 = 128KB大小的位图, 这里一次性分配
-    // 将其放在mem_free_start处(在1MB下)
-
+    // 32 位系统最多 4GB 内存
+    // 需要 4*1024*1024*1024 / 4096 / 8 = 128KB 大小的位图, 这里一次性分配
+    // 将其放在 mem_free_start 处(目前在 1MB 下)
+    u8_t* bitmap_start = (u8_t*)&mem_free_start;
 
     // 初始化物理内存分配器, 让其管理从1MB开始的所有物理内存, 按页管理, 一页4096字节
-    addr_alloc_init(&paddr_alloc, mem_free, MEM_EXT_START, mem_up1MB_free, MEM_PAGE_SIZE);
-    mem_free += bitmap_byte_count(paddr_alloc.size / MEM_PAGE_SIZE);
+    addr_alloc_init(&paddr_alloc, bitmap_start, MEM_EXT_START, tot_mem_up1MB, MEM_PAGE_SIZE);
+    bitmap_start += bitmap_byte_count(paddr_alloc.size / MEM_PAGE_SIZE);
 
-    // 放完之后, mem_free一定小于0x80000(显卡控制)
-    ASSERT(mem_free < (u8_t*)MEM_EBDA_START);
+    // 确保不覆盖显卡区域 (0x80000)
+    ASSERT(bitmap_start < (u8_t*)MEM_EBDA_START);
 
-    // 根据地址映射表, 创建内核页目录表
+    // 根据 kernel_map, 建立内核页目录表
     create_kernel_table();
 
-    // 加载cr3寄存器
+    // 加载 cr3 寄存器, 启用分页机制
     mmu_set_page_dir((u32_t)kernel_page_dir);
 }
 
 static void create_kernel_table() {
-
-    // 清空页目录表
     kernel_memset(kernel_page_dir, 0, sizeof(kernel_page_dir));
 
     // 遍历地址映射表, 内核有五个地址映射关系
     int nr = sizeof(kernel_map) / sizeof(memory_map_t);
     for(int i = 0; i < nr; ++i) {
-        memory_map_t* map = kernel_map + i;
+        memory_map_t* curr_map = kernel_map + i;
 
-        u32_t vstart = down2((u32_t)map->vstart, MEM_PAGE_SIZE);
-        u32_t vend = up2((u32_t)map->vend, MEM_PAGE_SIZE);
+        // 对齐地址页
+        u32_t vstart = down2((u32_t)curr_map->vstart, MEM_PAGE_SIZE);
+        u32_t vend = up2((u32_t)curr_map->vend, MEM_PAGE_SIZE);
         u32_t page_nr = (vend - vstart) / MEM_PAGE_SIZE;
     
-        // 创建内核页表, 处理一个地址映射关系
-        memory_create_map(kernel_page_dir, vstart, (u32_t)map->pstart, page_nr, map->perm);
+        // 创建映射
+        int ret = memory_map_pages(kernel_page_dir, vstart,
+                (u32_t)curr_map->pstart, page_nr, curr_map->perm);
+        ASSERT(ret >= 0);
     }
 }
 
-static int memory_create_map(pde_t* page_dir, u32_t vaddr, u32_t paddr, u32_t page_nr, u32_t perm)
-{
-    // 遍历一个映射关系拥有的所有页, 在页目录表中建立映射
-    for(int i = 0; i < page_nr; i++) {
-
-        // 查找或创建一个页表项(页)
-        pte_t* pte = find_pte(page_dir, vaddr, 1);
-        if(pte == NULL) {
-            return -1;
-        }
-
-        ASSERT(pte->present == 0);
-        pte->v = paddr | perm | PTE_P;
-    
-        vaddr += MEM_PAGE_SIZE;
-        paddr += MEM_PAGE_SIZE;
+static int memory_map_page(pde_t* page_dir, u32_t vaddr, u32_t paddr, u32_t perm) {
+    pte_t* pte = find_pte(page_dir, vaddr, true);
+    if(pte == NULL) {
+        return -1;
     }
-
+    ASSERT(pte->present == 0);
+    pte->v = (paddr | perm | PTE_P);
     return 0;
 }
 
+static int memory_map_pages(pde_t* page_dir, u32_t vaddr, u32_t paddr, u32_t page_nr, u32_t perm) {
+    // 遍历一个映射关系拥有的所有页, 在页目录表中建立映射
+    for(u32_t i = 0; i < page_nr; ++i) {
+        if (memory_map_page(page_dir, vaddr, paddr, perm) < 0) {
+            return -1;
+        }
+        vaddr += MEM_PAGE_SIZE;
+        paddr += MEM_PAGE_SIZE;
+    }
+    return 0;
+}
+
+static int memory_unmap_page(pde_t* page_dir, u32_t vaddr) {
+    pte_t* pte = find_pte(page_dir, vaddr, false);
+    if (pte == NULL || pte->present == 0) {
+        return -1;
+    }
+
+    u32_t paddr = pte_addr(pte);
+    pte->v = 0;
+
+    flush_tlb(vaddr);
+    return 0;
+}
+
+static int memory_unmap_pages(pde_t* page_dir, u32_t vaddr, u32_t page_nr) {
+    vaddr = down2(vaddr, MEM_PAGE_SIZE);
+
+    int count = 0;
+    for (u32_t i = 0; i < page_nr; ++i) {
+        if (memory_unmap_page(page_dir, vaddr) >= 0) {
+            ++count;
+        }
+        vaddr += MEM_PAGE_SIZE;
+    }
+    return count;
+}
+
+static int memory_unmap_range(pde_t* page_dir, u32_t vstart, u32_t size) {
+    u32_t vend = vstart + size;
+
+    u32_t addr = down2(vstart, MEM_PAGE_SIZE);
+    u32_t end = up2(vend, MEM_PAGE_SIZE);
+
+    int count = 0;
+    while (addr < end) {
+        if (memory_unmap_page(page_dir, addr) >= 0) {
+            ++count;
+        }
+        addr += MEM_PAGE_SIZE;
+    }
+    return count;
+}
+
 u32_t memory_create_uvm() {
-    
     // 分配一页物理内存, 用于放置用户的页目录表
-    pde_t* page_dir = (pde_t*)addr_alloc_page(&paddr_alloc, 1);
+    pde_t* page_dir = (pde_t*)memory_alloc_page();
     if(page_dir == 0) {
         return 0;
     }
@@ -124,7 +164,6 @@ u32_t memory_create_uvm() {
 }
 
 int memory_alloc_page_for(u32_t vaddr, u32_t size, u32_t perm) {
-
     // 调用子函数, 为当前进程的页目录表分配表项(在tss_init中分配了内核的页表)
     return _memory_alloc_page_for(get_curr_task()->tss.cr3, vaddr, size, perm);
 }
@@ -147,9 +186,9 @@ int _memory_alloc_page_for(u32_t page_dir, u32_t vaddr, u32_t size, u32_t perm) 
         }
 
         // 建立映射关系
-        int errno = memory_create_map((pde_t*)page_dir, curr_vaddr, paddr, 1, perm);
+        int errno = memory_map_page((pde_t*)page_dir, curr_vaddr, paddr, perm);
         if(errno < 0) {
-            log_print("memory_create_map failed. errno: %d", errno);
+            log_print("memory_map_page failed. errno: %d", errno);
             
             // 将前边分配的页全部释放
             addr_free_page(&paddr_alloc, vaddr, i + 1);
@@ -167,14 +206,11 @@ int _memory_alloc_page_for(u32_t page_dir, u32_t vaddr, u32_t size, u32_t perm) 
 }
 
 u32_t memory_alloc_page() {
-
-    // 分配一页物理内存
     u32_t paddr = addr_alloc_page(&paddr_alloc, 1);
     return paddr;
 }
 
 void memory_free_page(u32_t addr) {
-
     // 若地址小于0x80000000, 说明是由memory_alloc_page分配的
     if(addr < MEMORY_TASK_BASE) {
         addr_free_page(&paddr_alloc, addr, 1);
@@ -183,7 +219,7 @@ void memory_free_page(u32_t addr) {
     // 否则就是由memory_alloc_page_for分配的
     else {
         // 获取addr对应的页表
-        pte_t* pte = find_pte(curr_page_dir(), addr, 0);
+        pte_t* pte = find_pte(curr_page_dir(), addr, false);
         ASSERT(pte != NULL && pte->present);
 
         // 将其释放掉
@@ -202,15 +238,9 @@ static void show_mem_info(boot_info_t* boot_info) {
             boot_info->ram_region_cfg[i].start, 
             boot_info->ram_region_cfg[i].size);
     }
-    log_print("");
-}
-
-pde_t* curr_page_dir() {
-    return (pde_t*)(get_curr_task()->tss.cr3);
 }
 
 u32_t memory_copy_uvm(u32_t from, u32_t to) {
-
     // 复制用户空间的页表
     u32_t user_pde_start = pde_index(MEMORY_TASK_BASE);
     pde_t* pde = (pde_t*)from + user_pde_start; // 父进程用户空间的起始页目录项
@@ -231,14 +261,14 @@ u32_t memory_copy_uvm(u32_t from, u32_t to) {
             }
 
             // 分配一个物理页作为页表项
-            u32_t page = addr_alloc_page(&paddr_alloc, 1);
+            u32_t page = memory_alloc_page();
             if(page == 0) {
                 goto copy_uvm_failed;
             }
 
             // 建立映射关系
             u32_t vaddr = (i << 22) | (j << 12);
-            int ret = memory_create_map((pde_t*)to, vaddr, page, 1, get_pte_perm(pte));
+            int ret = memory_map_page((pde_t*)to, vaddr, page, get_pte_perm(pte));
             if(ret < 0) {
                 goto copy_uvm_failed;
             }
@@ -251,11 +281,9 @@ u32_t memory_copy_uvm(u32_t from, u32_t to) {
     return to;
 
 copy_uvm_failed:
-
     if(to) {
         memory_destory_uvm(to);
     }
-
     return 0;
 }
 
@@ -300,7 +328,6 @@ u32_t memory_share_uvm(u32_t from, u32_t to) {
 }
 
 void do_wp_page(u32_t addr) {
-
     task_t* task = get_curr_task();
 
     // 页目录表与目录表项
@@ -358,13 +385,11 @@ void memory_destory_uvm(u32_t page_dir) {
 }
 
 u32_t memory_vaddr_to_paddr(u32_t page_dir, u32_t vaddr) {
-    
     // 
-    pte_t* pte = find_pte((pde_t*)page_dir, vaddr, 0);
+    pte_t* pte = find_pte((pde_t*)page_dir, vaddr, false);
     if(pte == NULL) {
         return 0;
     }
-
     return pte_addr(pte) + (vaddr & (MEM_PAGE_SIZE - 1));
 }
 
@@ -387,6 +412,5 @@ int memory_copy_uvm_data(u32_t to, u32_t page_dir, u32_t from, u32_t size) {
         to += cur_size;
         from += cur_size;
     }
-
     return 0;
 }

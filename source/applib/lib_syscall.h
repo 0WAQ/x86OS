@@ -1,4 +1,4 @@
-/***
+/**
  * 系统调用对外接口
  */
 #ifndef LIB_SYSCALL_H

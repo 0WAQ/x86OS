@@ -26,7 +26,7 @@ typedef struct _tty_fifo_t {
     int size;           // 缓冲区的大小
     int read, write;    // 当前读写位置
     int cnt;            // 缓冲区有效载荷
-}tty_fifo_t;
+} tty_fifo_t;
 
 /**
  * @brief tty结构
@@ -42,6 +42,6 @@ typedef struct _tty_t {
     int iflags;                 // 输入标志位
 
     int console_index;          // 控制台索引号
-}tty_t;
+} tty_t;
 
 #endif // TTY_T_H

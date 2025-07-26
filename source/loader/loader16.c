@@ -1,35 +1,23 @@
-/**
- * 16位引导代码
- * 二级引导，负责进行硬件检测，进入保护模式，然后加载内核，并跳转至内核运行
- */
-
-// 16位代码，必须加上放在开头，以便有些io指令生成为32位
 __asm__(".code16gcc");
 
 #include "common/asm.h"
 #include "loader/loader.h"
-#include "loader/loader_16.h"
 
-// 声明全局的启动信息参数
 boot_info_t boot_info;
 
-void loader_entry() {
-    show_msg("...Loading...\r\n");
+extern u32_t loader32_protect_mode_entry();
 
-    // 检测内存容量
-    detect_memory();
-
-    // 进入保护模式
-    enter_protect_mode();
-
-    for(;;) {}
+void loader16_entry() {
+    loader16_show_msg("...Loading...\r\n");
+    loader16_detect_memory();
+    loader16_enter_protect_mode();
 }
 
 // 参考：https://wiki.osdev.org/Memory_Map_(x86)
 // 1MB以下比较标准, 在1M以上会有差别:
 // 检测：https://wiki.osdev.org/Detecting_Memory_(x86)#BIOS_Function:_INT_0x15.2C_AH_.3D_0xC7
-void detect_memory() {
-    show_msg("...Detecting Memory...");
+void loader16_detect_memory() {
+    loader16_show_msg("...Detecting Memory...");
     
     u32_t contID = 0;
     SMAP_entry_t SMAP_entry;
@@ -44,7 +32,7 @@ void detect_memory() {
         );
 
         if(signature != 0x534D4150) {
-            show_msg("Failed!\n\r");
+            loader16_show_msg("Failed!\n\r");
             return;
         }
 
@@ -67,19 +55,11 @@ void detect_memory() {
     }
     boot_info.ram_region_count = len;
 
-    show_msg("Successful!\r\n");
+    loader16_show_msg("Successful!\r\n");
 }
 
-// 临时的GDT表
-static
-u16_t gdt_table[][4] = {
-    {0, 0, 0, 0},
-    {0xFFFF, 0x0000, 0x9A00, 0x00CF},
-    {0xFFFF, 0x0000, 0x9200, 0x00CF},
-};
-
-void enter_protect_mode() {
-    show_msg("...Entering Protect Mode...\n\r");
+void loader16_enter_protect_mode() {
+    loader16_show_msg("...Entering Protect Mode...\n\r");
 
     // 关中断
     cli();
@@ -89,6 +69,13 @@ void enter_protect_mode() {
     u8_t data = inb(0x92);
     outb(0x92, data | 0x2);
 
+    // 临时的GDT表
+    u16_t gdt_table[][4] = {
+        {0, 0, 0, 0},
+        {0xFFFF, 0x0000, 0x9A00, 0x00CF},
+        {0xFFFF, 0x0000, 0x9200, 0x00CF},
+    };
+
     // 加载GDT；由于中断已经关闭，无需加载IDT
     lgdt((u32_t)gdt_table, sizeof(gdt_table));
 
@@ -97,10 +84,10 @@ void enter_protect_mode() {
     write_cr0(cr0 | (1 << 0));
 
     // 远跳转
-    far_jump(8, (u32_t)protect_mode_entry);
+    far_jump(8, (u32_t)loader32_protect_mode_entry);
 }
 
-void show_msg(const char* msg) {
+void loader16_show_msg(const char* msg) {
     char c;
     while((c = *msg++) != '\0') {
         __asm__ __volatile__(

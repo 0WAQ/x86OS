@@ -22,8 +22,8 @@ typedef struct _addr_alloc_t {
     u32_t start;        // 内存块的起始地址
     u32_t size;         // 内存块的大小
     u32_t page_size;    // 页大小, 页数 = size / page_size
-    mutex_t mutex;      // 互斥锁    
-}addr_alloc_t;
+    mutex_t mutex;      // 互斥锁
+} addr_alloc_t;
 
 /**
  * @brief 内存映射结构
@@ -34,6 +34,6 @@ typedef struct _memory_map_t{
     void* vend;         // 线性地址的结束地址
     void* pstart;       // 物理地址的起始地址
     u32_t perm;
-}memory_map_t;
+} memory_map_t;
 
 #endif // MEMORY_T_H

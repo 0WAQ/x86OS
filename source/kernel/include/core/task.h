@@ -1,6 +1,3 @@
-/**
- * 任务管理
- */
 #ifndef TASK_H
 #define TASK_H
 

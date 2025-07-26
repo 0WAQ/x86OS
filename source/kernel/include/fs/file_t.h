@@ -14,7 +14,7 @@ typedef enum _file_type_t {
     FILE_TTY,
     FILE_DIR,
     FILE_NORMAL
-}file_type_t;
+} file_type_t;
 
 struct _fs_t;
 
@@ -34,6 +34,6 @@ typedef struct _file_t {
     // TODO: time
     struct _fs_t* fs;               // 
     int p_index;
-}file_t;
+} file_t;
 
 #endif // FILE_T_H

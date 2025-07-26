@@ -7,6 +7,6 @@
 typedef struct _sem_t {
     u32_t count;        // 计数
     list_t wait_list;   // 等待队列
-}sem_t;
+} sem_t;
 
 #endif // SEM_T_H

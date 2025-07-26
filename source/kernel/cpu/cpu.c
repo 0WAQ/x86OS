@@ -1,23 +1,19 @@
-/**
- * CPU设置
- */
 #include "cpu/cpu.h"
 #include "ipc/mutex.h"
 #include "common/asm.h"
 #include "common/cfg.h"
 
+////////////////////////////////////////////////////////
+
 // 全局段描述符表
 static segment_desc_t gdt_table[GDT_TABLE_SIZE];
+static mutex_t gdt_table_mtx;
 
-// 互斥锁
-static mutex_t mutex;
+////////////////////////////////////////////////////////
 
 void cpu_init() {
-    // 初始化锁
-    mutex_init(&mutex);
-
-    // 初始化gdt, 让内核运行在平坦模型上
-    gdt_init();
+    gdt_init(); // 内核运行在平坦模型上
+    mutex_init(&gdt_table_mtx);
 }
 
 static void gdt_init() {
@@ -66,39 +62,35 @@ void set_gate_desc(gate_desc_t* desc, u16_t selector, u32_t offset, u16_t attr) 
 }
 
 int gdt_alloc_desc() {
-
-    /////////////////////////////////////////// 上锁
-    mutex_lock(&mutex);
-
+    int sel = -1;
     for(int i = 1; i < GDT_TABLE_SIZE; ++i) {
         segment_desc_t* desc = gdt_table + i;
         if(desc->attr == 0) {
-            mutex_unlock(&mutex);       ///////////////////////// 解锁
-            return i * sizeof(segment_desc_t);
+            sel = i * sizeof(segment_desc_t);
+            break;
         }
     }
+    return sel;
+}
 
-
-    mutex_unlock(&mutex);
-    /////////////////////////////////////////// 解锁
-
-    return -1;
+int gdt_alloc_desc_with_guard() {
+    mutex_lock(&gdt_table_mtx);
+    int sel = gdt_alloc_desc();
+    mutex_unlock(&gdt_table_mtx);
+    return sel;
 }
 
 void gdt_free_desc(int tss_sel) {
-    
-    /////////////////////////////////////////// 上锁
-    mutex_lock(&mutex); 
-
     gdt_table[tss_sel / sizeof(segment_desc_t)].attr = 0;
+}
 
-    mutex_unlock(&mutex);
-    /////////////////////////////////////////// 解锁
-
+void gdt_free_desc_with_guard(int tss_sel) {
+    mutex_lock(&gdt_table_mtx);
+    gdt_free_desc(tss_sel);
+    mutex_unlock(&gdt_table_mtx);
 }
 
 void switch_to_tss(int tss_sel) {
-
     // cpu发现跳转的目标是tss段，所以会将当前运行状态保存到当前tss段中(当前tss的值在tr中)
     // 并将目标tss段切换出来，然后接着运行(读取切换后的tss中的cs:ip)
     far_jump(tss_sel, 0);
