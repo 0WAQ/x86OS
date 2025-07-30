@@ -2,8 +2,8 @@
 #define MEMORY_H
 
 #include "common/types.h"
-#include "core/task.h"
-#include "memory_t.h"
+#include "core/task/task.h"
+#include "core/memory/memory_t.h"
 #include "ipc/mutex.h"
 #include "tools/bitmap.h"
 #include "cpu/mmu_t.h"

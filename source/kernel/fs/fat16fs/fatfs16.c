@@ -5,7 +5,7 @@
  */
 #include "fs/fat16fs/fat16fs.h"
 #include "dev/dev.h"
-#include "core/memory.h"
+#include "core/memory/memory.h"
 #include "tools/klib.h"
 #include "tools/log.h"
 #include <sys/fcntl.h>

@@ -1,8 +1,8 @@
 /**
  * 内存管理模块
  */
-#include "core/memory.h"
-#include "core/task.h"
+#include "core/memory/memory.h"
+#include "core/task/task.h"
 #include "cpu/mmu.h"
 #include "dev/console_t.h"
 #include "tools/log.h"

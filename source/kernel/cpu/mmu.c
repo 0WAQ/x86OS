@@ -1,5 +1,5 @@
 #include "cpu/mmu.h"
-#include "core/memory.h"
+#include "core/memory/memory.h"
 #include "tools/klib.h"
 
 // 全局物理内存地址分配结构, 在 memory.c 中定义 

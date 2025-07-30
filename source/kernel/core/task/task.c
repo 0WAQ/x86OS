@@ -1,8 +1,8 @@
 /**
  * 任务管理模块
  */
-#include "core/task.h"
-#include "core/memory.h"
+#include "core/task/task.h"
+#include "core/memory/memory.h"
 #include "sys/syscall.h"
 #include "cpu/cpu.h"
 #include "cpu/irq.h"

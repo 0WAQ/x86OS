@@ -3,7 +3,7 @@
  * 互斥锁实现
  * 
  */
-#include "core/task.h"
+#include "core/task/task.h"
 #include "cpu/irq.h"
 #include "ipc/mutex.h"
 #include "tools/list.h"

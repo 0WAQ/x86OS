@@ -6,7 +6,7 @@
  * 
  */
 #include "cpu/irq.h"
-#include "core/task.h"
+#include "core/task/task.h"
 #include "dev/dev_t.h"
 #include "dev/disk.h"
 #include "ipc/sem.h"

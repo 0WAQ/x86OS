@@ -6,8 +6,8 @@
 
 #include "sys/syscall_t.h"
 
-#include "core/task.h"
-#include "core/memory.h"
+#include "core/task/task.h"
+#include "core/memory/memory.h"
 #include "cpu/cpu.h"
 #include "cpu/irq.h"
 #include "cpu/mmu.h"
