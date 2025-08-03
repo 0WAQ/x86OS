@@ -1,8 +1,3 @@
-/**
- * 
- * 文件系统C文件
- * 
- */
 #include "fs/fs.h"
 #include "fs/file.h"
 #include "dev/disk.h"

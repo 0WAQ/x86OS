@@ -6,7 +6,7 @@ int sys_wait(int* status) {
     // 循环
     while(1) {
 
-        // 一直寻找处于zombie态的子进程, 若找不到则sleep
+        // 一直寻找处于 zombie 态的子进程, 若找不到则 sleep
         mutex_lock(&task_table_mutex);
         for(int i = 0; i < TASK_NR; i++) {
             task_t* p = task_table + i;
@@ -14,13 +14,13 @@ int sys_wait(int* status) {
                 continue;
             }
 
-            // 若子进程是zombie态
+            // 若子进程是 zombie 态
             if(p->state == TASK_ZOMBIE) {
                 int pid = p->pid;
                 *status = p->status;
 
-                memory_destory_uvm(p->tss.cr3);
-                memory_free_page(p->tss.esp0 - MEM_PAGE_SIZE);
+                vmem_destory_uvms(p->tss.cr3);
+                vmem_free_page(p->tss.esp0 - MEM_PAGE_SIZE);
                 kernel_memset(p, 0, sizeof(task_t));
             
                 mutex_unlock(&task_table_mutex);

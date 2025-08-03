@@ -1,3 +1,5 @@
+#include "common/types.h"
+#include "core/memory/vmem.h"
 #include "sys/syscall.h"
 
 /**
@@ -40,7 +42,7 @@ char* sys_sbrk(int incr) {
     // 按页分配
     if(incr != 0) {
         u32_t curr_size = alloc_end - alloc_start;
-        int ret = memory_alloc_page_for(alloc_start, curr_size, PTE_P | PTE_U | PTE_W);
+        int ret = vmem_alloc_page((u32_t)get_curr_page_dir(), alloc_start, curr_size, PTE_P | PTE_U | PTE_W);
         if(ret < 0) {
             log_print("sbrk: alloc mem failed.");
             goto sys_sbrk_failed;

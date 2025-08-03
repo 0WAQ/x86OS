@@ -7,7 +7,8 @@
 #include "sys/syscall_t.h"
 
 #include "core/task/task.h"
-#include "core/memory/memory.h"
+#include "core/memory/pmem.h"
+#include "core/memory/vmem.h"
 #include "cpu/cpu.h"
 #include "cpu/irq.h"
 #include "cpu/mmu.h"
@@ -81,7 +82,9 @@ int sys_gettimeofday(struct timeval* tv, struct timezone* tz);
 #endif
 #ifdef TASK_H
 #endif
-#ifdef MEMORY_H
+#ifdef PMEM_H
+#endif
+#ifdef VMEM_H
 #endif
 #ifdef CPU_H
 #endif

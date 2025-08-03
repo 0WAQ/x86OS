@@ -92,7 +92,7 @@ u32_t loader32_reload_elf_file(u8_t* buf) {
 }
 
 void loader32_enable_page_mode() {
-    // 页目录表
+    // 页目录表, 先启用大页
     static u32_t page_dir[1024] __attribute__((aligned(4096))) = {
         [0] = PDE_P | PDE_W | PDE_PS | 0
     };

@@ -27,6 +27,6 @@ typedef struct {
 #define CR0_PG          (1 << 31)
 #define PDE_P           (1 << 0)
 #define PDE_W           (1 << 1)
-#define PDE_PS          (1 << 7)
+#define PDE_PS          (1 << 7)    // 启用大页 (4MB) 支持
 
 #endif  // LOADER_T_H

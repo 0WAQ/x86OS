@@ -1,9 +1,6 @@
 #include "cpu/mmu.h"
-#include "core/memory/memory.h"
+#include "core/memory/pmem.h"
 #include "tools/klib.h"
-
-// 全局物理内存地址分配结构, 在 memory.c 中定义 
-extern addr_alloc_t paddr_alloc;
 
 pte_t* find_pte(pde_t* page_dir, u32_t vaddr, bool is_alloc) {
     pde_t* pde = page_dir + pde_index(vaddr);
@@ -12,9 +9,9 @@ pte_t* find_pte(pde_t* page_dir, u32_t vaddr, bool is_alloc) {
     }
     else if (is_alloc) {
         // 分配一个物理页作为 pt
-        u32_t pt_paddr = memory_alloc_page();
+        u32_t pt_paddr = pmem_alloc_page();
         if (pt_paddr == 0) {
-            return 0;
+            return NULL;
         }
         kernel_memset((void*)pt_paddr, 0, MEM_PAGE_SIZE);
 

@@ -1,9 +1,9 @@
 /**
  * 内核初始化
  */
-#include "init/init.h"
+#include "init/kernel_init.h"
 #include "core/task/task.h"
-#include "core/memory/memory.h"
+#include "core/memory/pmem.h"
 #include "cpu/cpu.h"
 #include "cpu/irq.h"
 #include "dev/timer.h"

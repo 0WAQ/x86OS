@@ -11,7 +11,7 @@ int sys_execve(char* path, char** argv, char** env) {
 
     // 创建新的页目录表, 防止在中途出现错误
     u32_t old_page_dir = task->tss.cr3;
-    u32_t new_page_dir = memory_create_uvm();
+    u32_t new_page_dir = vmem_create_uvms();
 
     // 解析elf文件到内存中
     u32_t entry = load_elf_file(task, path, new_page_dir);   // TODO: 第二个参数
@@ -23,7 +23,7 @@ int sys_execve(char* path, char** argv, char** env) {
 
     // 准备用户栈, 为环境变量与参数预留足够的空间
     u32_t stack_top = MEM_TASK_STACK_TOP - MEM_TASK_ARG_SIZE;
-    int ret = _memory_alloc_page_for(new_page_dir, 
+    int ret = vmem_alloc_page(new_page_dir, 
                                      MEM_TASK_STACK_TOP - MEM_TASK_STACK_SIZE, 
                                      MEM_TASK_STACK_SIZE, PTE_P | PTE_U | PTE_W);
     if(ret < 0) {
@@ -55,7 +55,7 @@ int sys_execve(char* path, char** argv, char** env) {
     mmu_set_page_dir(new_page_dir);
 
     // 销毁原页表
-    memory_destory_uvm(old_page_dir);
+    vmem_destory_uvms(old_page_dir);
 
     return 0;
 
@@ -65,7 +65,7 @@ sys_execve_failed:
     if(new_page_dir) {
         task->tss.cr3 = old_page_dir;
         mmu_set_page_dir(old_page_dir);
-        memory_destory_uvm(new_page_dir);
+        vmem_destory_uvms(new_page_dir);
     }
     return -1;
 }

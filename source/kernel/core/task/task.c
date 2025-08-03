@@ -2,7 +2,9 @@
  * 任务管理模块
  */
 #include "core/task/task.h"
-#include "core/memory/memory.h"
+#include "common/types.h"
+#include "core/memory/pmem.h"
+#include "core/memory/vmem.h"
 #include "sys/syscall.h"
 #include "cpu/cpu.h"
 #include "cpu/irq.h"
@@ -85,11 +87,11 @@ void task_uninit(task_t* task) {
     }
 
     if(task->tss.esp0) {
-        memory_free_page(task->tss.esp - MEM_PAGE_SIZE);
+        vmem_free_page(task->tss.esp - MEM_PAGE_SIZE);
     }
 
     if(task->tss.cr3) {
-        memory_destory_uvm(task->tss.cr3);
+        vmem_destory_uvms(task->tss.cr3);
     }
 
     kernel_memset(task, 0, sizeof(task_t));
@@ -135,7 +137,7 @@ static int tss_init(task_t* task, u32_t flag, u32_t entry, u32_t esp) {
     task->tss.ss0 = KERNEL_SELECTOR_DS;     // 任务的内核栈段
 
     // 分配一页内存作为内核栈
-    u32_t kernel_stack = memory_alloc_page();
+    u32_t kernel_stack = pmem_alloc_page();
     if(kernel_stack == 0) {
         goto tss_init_failed;
     }
@@ -150,7 +152,7 @@ static int tss_init(task_t* task, u32_t flag, u32_t entry, u32_t esp) {
     task->tss.iomap = 0;
 
     // 创建用户自己的页目录表
-    u32_t page_dir = memory_create_uvm();
+    u32_t page_dir = vmem_create_uvms();
     if(page_dir == 0) {
         goto tss_init_failed;
     }
@@ -161,7 +163,7 @@ static int tss_init(task_t* task, u32_t flag, u32_t entry, u32_t esp) {
 tss_init_failed:
     gdt_free_desc_with_guard(tss_sel);
     if(kernel_stack) {
-        memory_free_page(kernel_stack);
+        vmem_free_page(kernel_stack);
     }
     if(page_dir) {
         gdt_free_desc_with_guard(tss_sel);
@@ -244,7 +246,7 @@ void first_task_init() {
     mmu_set_page_dir(task_manager.first_task->tss.cr3);
     
     // 为first_task分配物理页, 从first_task_entry(0x80000000)处分配
-    memory_alloc_page_for((u32_t)first_task_entry, alloc_size, PTE_P | PTE_W | PTE_U);
+    vmem_alloc_page((u32_t)get_curr_page_dir(), (u32_t)first_task_entry, alloc_size, PTE_P | PTE_W | PTE_U);
 
     // 将first_task从内核移指用户
     kernel_memcpy((void*)first_task_entry, (void*)&s_first_task, copy_size);
@@ -500,7 +502,7 @@ int load_phdr(int fd, Elf32_Phdr* phdr, u32_t page_dir) {
     ASSERT((phdr->p_vaddr & (MEM_PAGE_SIZE - 1)) == 0);
 
     // 分配空间
-    int ret = _memory_alloc_page_for(page_dir, phdr->p_vaddr, phdr->p_memsz, PTE_P | PTE_U | PTE_W);
+    int ret = vmem_alloc_page(page_dir, phdr->p_vaddr, phdr->p_memsz, PTE_P | PTE_U | PTE_W);
     if(ret < 0) {
         log_print("mo memory");
         goto load_phdr_failed;
@@ -518,7 +520,7 @@ int load_phdr(int fd, Elf32_Phdr* phdr, u32_t page_dir) {
 
         // 每次只拷贝最多一页内存
         u32_t cur_size = (size > MEM_PAGE_SIZE) ? MEM_PAGE_SIZE : size;
-        u32_t paddr = memory_vaddr_to_paddr(page_dir, vaddr);
+        u32_t paddr = vmem_vaddr_to_paddr(page_dir, vaddr);
         if(sys_read(fd, (char*)paddr, cur_size) < cur_size) {
             log_print("copy file failed.");
             goto load_phdr_failed;
@@ -544,7 +546,7 @@ int copy_args(char* to, u32_t page_dir, int argc, char** argv) {
     char* dest_arg = to + sizeof(task_args_t) + (argc + 1) * sizeof(char*);
     
     // argv表
-    char** dest_arg_tb = (char**)memory_vaddr_to_paddr(page_dir, (u32_t)(to + sizeof(task_args_t)));
+    char** dest_arg_tb = (char**)vmem_vaddr_to_paddr(page_dir, (u32_t)(to + sizeof(task_args_t)));
     ASSERT(dest_arg_tb != 0);
 
     for(int i = 0; i < argc; i++) {
@@ -552,7 +554,7 @@ int copy_args(char* to, u32_t page_dir, int argc, char** argv) {
 
         // 不能用strcpy, 因为to和argv不在一个页表里
         int len = kernel_strlen(from) + 1;      // 包含结束符
-        int ret = memory_copy_uvm_data((u32_t)dest_arg, page_dir, (u32_t)from, len);
+        int ret = vmem_copy_corss_uvms((u32_t)dest_arg, page_dir, (u32_t)from, len);
         ASSERT(ret >= 0);
         
         dest_arg_tb[i] = dest_arg;
@@ -564,7 +566,7 @@ int copy_args(char* to, u32_t page_dir, int argc, char** argv) {
     }
 
     // 写入task_args
-    return memory_copy_uvm_data((u32_t)to, page_dir, (u32_t)&task_args, sizeof(task_args_t));
+    return vmem_copy_corss_uvms((u32_t)to, page_dir, (u32_t)&task_args, sizeof(task_args_t));
 }
 
 file_t* get_task_file(int fd) {

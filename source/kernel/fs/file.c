@@ -1,8 +1,3 @@
-/**
- * 
- * 文件相关c文件 
- * 
- */
 #include "fs/file.h"
 #include "ipc/mutex.h"
 #include "tools/klib.h"

@@ -1,11 +1,8 @@
-/**
- * 
- * FAT16文件系统源文件
- * 
- */
 #include "fs/fat16fs/fat16fs.h"
 #include "dev/dev.h"
-#include "core/memory/memory.h"
+#include "core/memory/pmem.h"
+#include "core/memory/vmem.h"
+#include "ipc/mutex.h"
 #include "tools/klib.h"
 #include "tools/log.h"
 #include <sys/fcntl.h>
@@ -39,7 +36,7 @@ static int fat16fs_mount(struct _fs_t* fs, int major, int minor) {
     }
 
     // 分配dbr缓冲区
-    dbr_t* dbr = (dbr_t*)memory_alloc_page();
+    dbr_t* dbr = (dbr_t*)pmem_alloc_page();
     if(dbr == NULL) {
         log_print("mount failed, can't alloc buf");
         goto fat16fs_mount_failed;
@@ -94,7 +91,7 @@ static int fat16fs_mount(struct _fs_t* fs, int major, int minor) {
 
 fat16fs_mount_failed:
     if(dbr != NULL) {
-        memory_free_page((u32_t)dbr);
+        vmem_free_page((u32_t)dbr);
     }
     dev_close(dev_id);
     return -1;
@@ -104,7 +101,7 @@ static void fat16fs_umount(struct _fs_t* fs) {
     fat16_t* fat = (fat16_t*)fs->data;
 
     dev_close(fs->dev_id);
-    memory_free_page((u32_t)fat->fat_buffer);
+    vmem_free_page((u32_t)fat->fat_buffer);
 }
 
 static int fat16fs_unlink(struct _fs_t* fs, const char* filename) {
