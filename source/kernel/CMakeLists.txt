@@ -5,7 +5,7 @@ set(CMAKE_C_LINK_EXECUTABLE "${LINKER_TOOL} <OBJECTS> ${CMAKE_EXE_LINKER_FLAGS} 
 
 file(GLOB_RECURSE C_LIST "*.S" "*.c" "*.h")
 
-add_executable(${PROJECT_NAME} kernel_start.S ${C_LIST} ../applib/lib_syscall.c)
+add_executable(${PROJECT_NAME} src/kernel_start.S ${C_LIST} ../applib/lib_syscall.c)
 target_compile_definitions(${PROJECT_NAME} PRIVATE FIRST_TASK)
 
 # 不带调试信息的elf生成，何种更小，写入到image目录下

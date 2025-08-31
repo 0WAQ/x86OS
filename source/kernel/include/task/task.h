@@ -1,7 +1,7 @@
 #ifndef TASK_H
 #define TASK_H
 
-#include "core/task/task_t.h"
+#include "task/task_t.h"
 #include "common/elf.h"
 
 /**

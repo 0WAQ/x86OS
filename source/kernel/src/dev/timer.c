@@ -7,7 +7,7 @@
 #include "cpu/irq.h"
 #include "common/asm.h"
 #include "common/cfg.h"
-#include "core/task/task.h"
+#include "task/task.h"
 
 /**
  * @brief timer的设备层回调函数

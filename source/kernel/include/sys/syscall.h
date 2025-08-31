@@ -6,9 +6,9 @@
 
 #include "sys/syscall_t.h"
 
-#include "core/task/task.h"
-#include "core/memory/pmem.h"
-#include "core/memory/vmem.h"
+#include "task/task.h"
+#include "memory/pmem.h"
+#include "memory/vmem.h"
 #include "cpu/cpu.h"
 #include "cpu/irq.h"
 #include "cpu/mmu.h"

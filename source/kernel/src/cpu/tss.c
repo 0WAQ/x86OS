@@ -1,8 +1,8 @@
 #include "cpu/tss.h"
-#include "core/task/task_t.h"
+#include "task/task_t.h"
 #include "cpu/cpu.h"
-#include "core/memory/pmem.h"
-#include "core/memory/vmem.h"
+#include "memory/pmem.h"
+#include "memory/vmem.h"
 #include "common/cfg.h"
 #include "tools/klib.h"
 

@@ -1,5 +1,5 @@
 #include "ipc/sem.h"
-#include "core/task/task.h"
+#include "task/task.h"
 #include "cpu/irq.h"
 #include "tools/list.h"
 

@@ -1,7 +1,7 @@
 /**
  * 互斥锁
  */
-#include "core/task/task.h"
+#include "task/task.h"
 #include "cpu/irq.h"
 #include "ipc/mutex.h"
 #include "tools/list.h"

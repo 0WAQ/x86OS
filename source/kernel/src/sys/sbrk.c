@@ -1,5 +1,5 @@
 #include "common/types.h"
-#include "core/memory/vmem.h"
+#include "memory/vmem.h"
 #include "sys/syscall.h"
 
 /**

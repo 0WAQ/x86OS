@@ -1,5 +1,5 @@
 #include "cpu/mmu.h"
-#include "core/memory/pmem.h"
+#include "memory/pmem.h"
 #include "tools/klib.h"
 
 pte_t* find_pte(pde_t* page_dir, u32_t vaddr, bool is_alloc) {

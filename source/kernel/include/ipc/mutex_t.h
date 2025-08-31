@@ -3,7 +3,7 @@
 
 #include "common/types.h"
 #include "tools/list_t.h"
-#include "core/task/task_t.h"
+#include "task/task_t.h"
 
 typedef struct _mutex_t {
     task_t* owner;      // 锁的拥有者

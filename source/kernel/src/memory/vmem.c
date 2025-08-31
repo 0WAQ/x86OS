@@ -2,9 +2,9 @@
  * 虚拟内存管理
  */
 #include "common/types.h"
-#include "core/memory/pmem.h"
-#include "core/memory/vmem.h"
-#include "core/task/task.h"
+#include "memory/pmem.h"
+#include "memory/vmem.h"
+#include "task/task.h"
 #include "cpu/mmu.h"
 #include "tools/log.h"
 #include "tools/klib.h"

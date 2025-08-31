@@ -2,7 +2,7 @@
 #define VMEM_H
 
 #include "common/types.h"
-#include "core/task/task.h"
+#include "task/task.h"
 #include "cpu/mmu_t.h"
 
 /**

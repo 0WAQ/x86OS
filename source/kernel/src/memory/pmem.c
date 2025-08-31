@@ -2,8 +2,8 @@
  * 物理内存管理
  */
 #include "common/types.h"
-#include "core/memory/pmem.h"
-#include "core/memory/vmem.h"
+#include "memory/pmem.h"
+#include "memory/vmem.h"
 #include "cpu/mmu.h"
 #include "dev/console_t.h"
 #include "ipc/mutex.h"

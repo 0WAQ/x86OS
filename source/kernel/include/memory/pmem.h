@@ -2,7 +2,7 @@
 #define PMEM_H
 
 #include "common/types.h"
-#include "core/memory/memory_t.h"
+#include "memory/memory_t.h"
 #include "common/boot_info.h"
 
 
