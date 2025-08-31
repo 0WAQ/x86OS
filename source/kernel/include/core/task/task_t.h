@@ -3,7 +3,7 @@
 
 #include "common/types.h"
 #include "tools/list_t.h"
-#include "cpu/cpu_t.h"
+#include "cpu/tss_t.h"
 #include "fs/file_t.h"
 
 #define TASK_NAME_SIZE              (32)

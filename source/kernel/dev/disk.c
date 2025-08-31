@@ -3,6 +3,7 @@
  * 磁盘依次从sda,sdb,sdc开始编号，分区则从0开始递增
  * 其中0对应的分区信息为整个磁盘的信息
  */
+#include "cpu/cpu_t.h"
 #include "cpu/irq.h"
 #include "core/task/task.h"
 #include "dev/dev_t.h"

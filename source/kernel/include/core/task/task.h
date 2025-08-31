@@ -1,7 +1,7 @@
 #ifndef TASK_H
 #define TASK_H
 
-#include "task_t.h"
+#include "core/task/task_t.h"
 #include "common/elf.h"
 
 /**
@@ -19,12 +19,6 @@ void task_start(task_t* task);
  * @brief 反初始化任务
  */
 void task_uninit(task_t* task);
-
-/**
- * @brief 初始化任务状态段
- * @param esp 任务的用户栈
- */
-static int tss_init(task_t* task, u32_t flag, u32_t entry, u32_t esp);
 
 /**
  * @brief 切换任务
