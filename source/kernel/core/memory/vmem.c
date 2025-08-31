@@ -47,7 +47,7 @@ int vmem_unmap_page(pde_t* page_dir, u32_t vaddr) {
 }
 
 int vmem_unmap_pages(pde_t* page_dir, u32_t vaddr, u32_t page_nr) {
-    vaddr = down2(vaddr, MEM_PAGE_SIZE);
+    vaddr = kdown2(vaddr, MEM_PAGE_SIZE);
 
     int count = 0;
     for (u32_t i = 0; i < page_nr; ++i) {
@@ -62,8 +62,8 @@ int vmem_unmap_pages(pde_t* page_dir, u32_t vaddr, u32_t page_nr) {
 int vmem_unmap_range(pde_t* page_dir, u32_t vstart, u32_t size) {
     u32_t vend = vstart + size;
 
-    u32_t addr = down2(vstart, MEM_PAGE_SIZE);
-    u32_t end = up2(vend, MEM_PAGE_SIZE);
+    u32_t addr = kdown2(vstart, MEM_PAGE_SIZE);
+    u32_t end = kup2(vend, MEM_PAGE_SIZE);
 
     int count = 0;
     while (addr < end) {
@@ -79,8 +79,8 @@ int vmem_alloc_page(u32_t page_dir, u32_t vaddr, u32_t size, u32_t perm) {
     u32_t curr_vaddr = vaddr;
 
     // 需要分配的页数
-    u32_t page_count = up2(size, MEM_PAGE_SIZE) / MEM_PAGE_SIZE;
-    vaddr = down2(vaddr, MEM_PAGE_SIZE);
+    u32_t page_count = kup2(size, MEM_PAGE_SIZE) / MEM_PAGE_SIZE;
+    vaddr = kdown2(vaddr, MEM_PAGE_SIZE);
 
     // 逐一分配页, 而不是一次分配, 因为需要对每一页建立映射
     for(u32_t i = 0; i < page_count; ++i) {
@@ -133,7 +133,7 @@ u32_t vmem_create_uvms() {
         return 0;
     }
 
-    kernel_memset((void*)page_dir, 0, MEM_PAGE_SIZE);
+    kmemset((void*)page_dir, 0, MEM_PAGE_SIZE);
 
     // 用户空间的虚拟地址最小为0x80000000
     // 页目录表中, 用户地址空间对应的索引位置, 即512及以后的页目录项都是用户的
@@ -208,7 +208,7 @@ u32_t vmem_copy_uvms(u32_t from, u32_t to) {
             }
 
             // 复制内容
-            kernel_memcpy((void*)page, (void*)vaddr, MEM_PAGE_SIZE);
+            kmemcpy((void*)page, (void*)vaddr, MEM_PAGE_SIZE);
         }
     }
 
@@ -234,7 +234,7 @@ int vmem_copy_corss_uvms(u32_t to, u32_t page_dir, u32_t from, u32_t size) {
             cur_size = size;
         }
 
-        kernel_memcpy((void*)to_paddr, (void*)from, cur_size);
+        kmemcpy((void*)to_paddr, (void*)from, cur_size);
     
         size -= cur_size;
         to += cur_size;
@@ -308,7 +308,7 @@ void vmem_do_wp_page(u32_t addr) {
     // TODO:
 
     // 拷贝
-    kernel_memcpy((void*)new_page, (void*)old_page, MEM_PAGE_SIZE);
+    kmemcpy((void*)new_page, (void*)old_page, MEM_PAGE_SIZE);
 
     // 将页表映射到新的物理页面
     pte->v = new_page | PTE_P | PTE_W | PTE_U;

@@ -1,9 +1,7 @@
 /**
- * 
- * 磁盘驱动c文件
+ * 磁盘驱动
  * 磁盘依次从sda,sdb,sdc开始编号，分区则从0开始递增
  * 其中0对应的分区信息为整个磁盘的信息
- * 
  */
 #include "cpu/irq.h"
 #include "core/task/task.h"
@@ -36,7 +34,7 @@ static int task_no_op;
 void disk_init() {
     log_print("Check disk...");
     
-    kernel_memset(disk_table, 0, sizeof(disk_table));
+    kmemset(disk_table, 0, sizeof(disk_table));
     
     mutex_init(&mtx);
     sem_init(&sem, 0);
@@ -46,7 +44,7 @@ void disk_init() {
         disk_t* disk = disk_table + i;
 
         // sda, sdb, sdc, sdd
-        kernel_sprintf(disk->name, "sd%c", i + 'a');
+        ksprintf(disk->name, "sd%c", i + 'a');
         disk->drive = (i == 0 ? DISK_MASTER : DISK_SLAVE);
         disk->port_base = DISK_IOBASE_PRIMARY;
 
@@ -87,7 +85,7 @@ static int identify_disk(disk_t* disk) {
     // 分区0保存了整个磁盘的信息
     partinfo_t* part = disk->partinfo + 0;
     part->disk = disk;
-    kernel_sprintf(part->name, "%s%d", disk->name, 0);  // sdx0
+    ksprintf(part->name, "%s%d", disk->name, 0);  // sdx0
     part->start_sector = 0;
     part->total_sector = disk->sector_count;
     part->type = FS_INVALID;
@@ -137,7 +135,7 @@ static int detect_part_info(disk_t* disk) {
         }
         else {
             // 在主分区中找到，复制信息
-            kernel_sprintf(part_info->name, "%s%d", disk->name, i + 1);  // sdx0
+            ksprintf(part_info->name, "%s%d", disk->name, i + 1);  // sdx0
             part_info->start_sector = item->relative_sectors;
             part_info->total_sector = disk->sector_count;
             part_info->disk = disk;

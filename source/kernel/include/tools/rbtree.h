@@ -10,8 +10,8 @@
  */
 void rb_link_node(rb_node* node, rb_node* parent, rb_node** rb_link);
 
-void __rb_rotate_left(rb_node* node, rb_root* root);
-void __rb_rotate_right(rb_node* node, rb_root* root);
+static void __rb_rotate_left(rb_node* node, rb_root* root);
+static void __rb_rotate_right(rb_node* node, rb_root* root);
 
 /**
  * @brief 修复插入节点后红黑树的不平衡问题
@@ -22,7 +22,7 @@ void rb_insert_color(rb_node* node, rb_root* root);
 
 void rb_erase_next(rb_node* node, rb_root* root);
 void rb_erase_prev(rb_node* node, rb_root* root);
-void __rb_erase_color(rb_node* node, rb_node* parent, rb_root* root);
+static void __rb_erase_color(rb_node* node, rb_node* parent, rb_root* root);
 
 rb_node* rb_next(rb_node* node);
 rb_node* rb_prev(rb_node* node);

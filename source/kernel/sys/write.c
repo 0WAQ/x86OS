@@ -5,7 +5,7 @@ int sys_write(int fd, char* buf, int len) {
         return 0;
     }
 
-    file_t* p = get_task_file(fd);
+    file_t* p = task_get_file(fd);
     if(p == NULL) {
         log_print("file not opened.");
         return -1;

@@ -2,22 +2,18 @@
 #include "tools/log.h"
 #include "common/asm.h"
 
-void kernel_sprintf(char* buf, const char* fmt, ...) {
+void ksprintf(char* buf, const char* fmt, ...) {
     va_list args;
 
     va_start(args, fmt);
-    kernel_vsprintf(buf, fmt, args);
+    kvsprintf(buf, fmt, args);
     va_end(args);    
 }
 
-void kernel_vsprintf(char* buf, const char* fmt, va_list args) {
-    
-    // 定义两种状态
+void kvsprintf(char* buf, const char* fmt, va_list args) {
     enum {READ_FMT, READ_ARGS} state = READ_FMT;
-    
     char* cur = buf;
     char ch;
-
     while((ch = *fmt++) != '\0') {
         switch (state)
         {
@@ -42,7 +38,7 @@ void kernel_vsprintf(char* buf, const char* fmt, va_list args) {
                 const char* str = va_arg(args, char*);
                 
                 // 将这个字符串放入buf
-                int len = kernel_strlen(str);
+                int len = kstrlen(str);
                 while(len--) {
                     *cur++ = *str++;
                 }
@@ -51,15 +47,15 @@ void kernel_vsprintf(char* buf, const char* fmt, va_list args) {
             case 'd':   // 整型
             {
                 int num = va_arg(args, int);
-                kernel_itoa(cur, num, 10);
-                cur += kernel_strlen(cur);
+                kitoa(cur, num, 10);
+                cur += kstrlen(cur);
                 break;
             }
             case 'x':   // 十六进制数
             {
                 int num = va_arg(args, int);
-                kernel_itoa(cur, num, 16);
-                cur += kernel_strlen(cur);
+                kitoa(cur, num, 16);
+                cur += kstrlen(cur);
                 break;
             }
             case 'c':   // 字符
@@ -76,9 +72,9 @@ void kernel_vsprintf(char* buf, const char* fmt, va_list args) {
     }
 }
 
-void kernel_itoa(char* dest, int num, u32_t base) {
-    char* p = dest;
-    char* start = dest;
+void kitoa(char* dst, int num, u32_t base) {
+    char* p = dst;
+    char* start = dst;
     
     // 不支持其它进制
     if(base != 2 && base != 8 && base != 10 && base != 16) {
@@ -112,30 +108,28 @@ void kernel_itoa(char* dest, int num, u32_t base) {
     }
 }
 
-void kernel_strcpy(char* dest, const char* src) {
-    if(!dest || !src) {
+void kstrcpy(char* dst, const char* src) {
+    if(!dst || !src) {
         return;
     }
-
-    while(*dest && *src) {
-        *dest++ = *src++;
+    while(*dst && *src) {
+        *dst++ = *src++;
     }
-
-    *dest = '\0';
+    *dst = '\0';
 }
 
-void kernel_strncpy(char* dest, const char* src, int size) {
-    if(!dest || !src || !size) {
+void kstrncpy(char* dst, const char* src, int len) {
+    if(!dst || !src || !len) {
         return;
     }
 
-    char* d = dest;
+    char* d = dst;
     const char* s = src;
-    while(size-- > 0 && *s) {
+    while(len-- > 0 && *s) {
         *d++ = *s++;
     }
 
-    if(size == 0) {
+    if(len == 0) {
         *(d - 1) = '\0';
     }
     else {
@@ -143,7 +137,7 @@ void kernel_strncpy(char* dest, const char* src, int size) {
     }
 }
 
-int kernel_strcmp(const char* s1, const char* s2) {
+int kstrcmp(const char* s1, const char* s2) {
     ASSERT(s1 != NULL && s2 != NULL);
 
     while(*s1 && *s2 && (*s1 == *s2)) {
@@ -153,14 +147,14 @@ int kernel_strcmp(const char* s1, const char* s2) {
     return (unsigned char)*s1 - (unsigned char)*s2;
 }
 
-int kernel_strncmp(const char* s1, const char* s2, int size) {
+int kstrncmp(const char* s1, const char* s2, int len) {
     ASSERT(s1 != NULL && s2 != NULL);
 
-    if (size <= 0) {
+    if (len <= 0) {
         return 0;
     }
 
-    while (size--) {
+    while (len--) {
         if (*s1 == '\0' || *s2 == '\0' || *s1 != *s2) {
             return (unsigned char)*s1 - (unsigned char)*s2;
         }
@@ -171,7 +165,7 @@ int kernel_strncmp(const char* s1, const char* s2, int size) {
     return 0;
 }
 
-int kernel_strlen(const char* str) {
+int kstrlen(const char* str) {
     if(!str) {
         return 0;
     }
@@ -184,37 +178,37 @@ int kernel_strlen(const char* str) {
     return len;
 }
 
-void kernel_memcpy(void* dest, void* src, int size) {
-    if(!dest || !src || !size) {
+void kmemcpy(void* dst, const void* src, int len) {
+    if(!dst || !src) {
         return;
     }
 
     u8_t* s = (u8_t*)src;
-    u8_t* d = (u8_t*)dest;
-    while(size--) {
+    u8_t* d = (u8_t*)dst;
+    while(len--) {
         *d++ = *s++;
     }
 }
 
-void kernel_memset(void* dest, u8_t v, int size) {
-    if(!dest || !size) {
+void kmemset(void* dst, u8_t v, int len) {
+    if(!dst || !len) {
         return;
     }
 
-    u8_t* d = (u8_t*)dest;
-    while(size--) {
+    u8_t* d = (u8_t*)dst;
+    while(len--) {
         *d++ = v;
     }
 }
 
-int kernel_memcmp(void* d1, void* d2, int size) {
-    if(!d1 || !d2 || !size) {
+int kmemcmp(void* d1, void* d2, int len) {
+    if(!d1 || !d2 || !len) {
         return 1;
     }
 
     u8_t* p1 = (u8_t*)d1;
     u8_t* p2 = (u8_t*)d2;
-    while(size--) {
+    while(len--) {
         if(*p1++ != *p2++) {
             return 1;
         }
@@ -229,8 +223,8 @@ void panic(const char* file, int line, const char* func, const char* msg) {
 }
 
 
-int strings_count(char** addr) {
-    int cnt = 0;
+u32_t strings_count(char** addr) {
+    u32_t cnt = 0;
     if(addr) {
         while(*addr++) {
             ++cnt;
@@ -240,16 +234,13 @@ int strings_count(char** addr) {
 }
 
 
-char* get_filename_from_path(const char* path) {
-    char* s = (char*)path;
-    
+const char* get_filename_from_path(const char* path) {
+    const char* s = path;
     while(*s != '\0') {
         ++s;
     }
-
     while((*s != '/') && (s >= path)) {
         --s;
     }
-
     return s + 1;
 }

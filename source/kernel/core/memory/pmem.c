@@ -52,50 +52,6 @@ static memory_map_t kernel_map[] = {
     }
 };
 
-// TODO: To be deleted 
-#define KERNEL_VIRT_BASE 0xC0000000
-static memory_map_t kernel_map1[] = {
-    // 内核栈区（虚拟地址从 KERNEL_VIRT_BASE 开始）
-    { 
-        (void*)KERNEL_VIRT_BASE, 
-        (void*)((u32_t)KERNEL_VIRT_BASE + (u32_t)s_text),
-        0, // 物理地址从 0 开始
-        PTE_W 
-    },
-
-    // 内核代码区（虚拟地址 = KERNEL_VIRT_BASE + 物理地址）
-    { 
-        (void*)((u32_t)KERNEL_VIRT_BASE + (u32_t)s_text),
-        (void*)((u32_t)KERNEL_VIRT_BASE + (u32_t)e_text),
-        s_text, // 物理地址保持原值
-        0 
-    },
-
-    // 内核数据区（虚拟地址 = KERNEL_VIRT_BASE + 物理地址）
-    {
-        (void*)((u32_t)KERNEL_VIRT_BASE + (u32_t)s_data),
-        (void*)((u32_t)KERNEL_VIRT_BASE + (u32_t)(MEM_EBDA_START - 1)),
-        s_data, // 物理地址保持原值
-        PTE_W
-    },
-
-    // 显存（虚拟地址 = KERNEL_VIRT_BASE + 物理地址）
-    {
-        (void*)((u32_t)KERNEL_VIRT_BASE + CONSOLE_DISP_ADDR_START),
-        (void*)((u32_t)KERNEL_VIRT_BASE + CONSOLE_DISP_ADDR_END),
-        (void*)CONSOLE_DISP_ADDR_START, // 物理地址保持原值
-        PTE_W
-    },
-
-    // 1MB 后的物理内存（虚拟地址 = KERNEL_VIRT_BASE + 物理地址）
-    {
-        (void*)((void*)KERNEL_VIRT_BASE + MEM_EXT_START),
-        (void*)((void*)KERNEL_VIRT_BASE + MEM_EXT_END),
-        (void*)MEM_EXT_START, // 物理地址保持原值
-        PTE_W
-    }
-};
-
 // 内核页目录表
 pde_t kernel_page_dir[PDE_CNT] __attribute__((aligned(MEM_PAGE_SIZE)));
 
@@ -106,7 +62,7 @@ void memroy_init(boot_info_t* boot_info) {
     show_pmem_info(boot_info);
 
     // 计算 1MB 以上的空闲内存容量, 并向下对齐到页大小的整数倍
-    u32_t tot_mem_up1MB = down2((total_pmem_size(boot_info) - MEM_EXT_START), MEM_PAGE_SIZE);
+    u32_t tot_mem_up1MB = kdown2((total_pmem_size(boot_info) - MEM_EXT_START), MEM_PAGE_SIZE);
     log_print("Free Memory: start = 0x%x, size = 0x%x", MEM_EXT_START, tot_mem_up1MB);
 
     // 32 位系统最多 4GB 内存
@@ -149,15 +105,15 @@ void pmem_free_pages(u32_t addr, u32_t nr) {
 ///////////////////////////////////////////////////////////////////////////////////////
 
 static void create_kernel_table() {
-    kernel_memset(kernel_page_dir, 0, sizeof(kernel_page_dir));
+    kmemset(kernel_page_dir, 0, sizeof(kernel_page_dir));
 
     // 遍历地址映射表, 内核有五个地址映射关系
     int nr = sizeof(kernel_map) / sizeof(memory_map_t);
     for(int i = 0; i < nr; ++i) {
         memory_map_t* curr_map = kernel_map + i;
 
-        u32_t vstart = down2((u32_t)curr_map->vstart, MEM_PAGE_SIZE);
-        u32_t vend = up2((u32_t)curr_map->vend, MEM_PAGE_SIZE);
+        u32_t vstart = kdown2((u32_t)curr_map->vstart, MEM_PAGE_SIZE);
+        u32_t vend = kup2((u32_t)curr_map->vend, MEM_PAGE_SIZE);
         u32_t page_nr = (vend - vstart) / MEM_PAGE_SIZE;
     
         // 创建映射

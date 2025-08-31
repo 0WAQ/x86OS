@@ -7,7 +7,7 @@ int sys_execve(char* path, char** argv, char** env) {
     task_t* task = get_curr_task();
 
     // 修改任务名
-    kernel_memcpy(task->name, get_filename_from_path(path), TASK_NAME_SIZE);
+    kmemcpy(task->name, get_filename_from_path(path), TASK_NAME_SIZE);
 
     // 创建新的页目录表, 防止在中途出现错误
     u32_t old_page_dir = task->tss.cr3;
@@ -31,8 +31,8 @@ int sys_execve(char* path, char** argv, char** env) {
     }
 
     // 复制参数到用户栈中
-    int argc = strings_count(argv); 
-    ret = copy_args((char*)stack_top, new_page_dir, argc, argv);
+    u32_t argc = strings_count(argv); 
+    ret = task_copy_args((char*)stack_top, new_page_dir, argc, argv);
     if(ret < 0) {
         goto sys_execve_failed;
     }

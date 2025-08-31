@@ -50,7 +50,7 @@ int get_tm(struct tm* tm) {
 }
 
 // TODO: debug
-time_t kernel_mktime(struct tm * tm) {
+time_t kmktime(struct tm * tm) {
 	long res;
 	int year;
 

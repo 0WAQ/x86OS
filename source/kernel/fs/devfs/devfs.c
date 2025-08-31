@@ -61,12 +61,12 @@ static int devfs_open(fs_t* fs, const char* filepath, file_t* file) {
     // 从devfs_type_table中查找相同的文件路径
     for(int i = 0; i < sizeof(dev_type_table)/sizeof(devfs_type_t); i++) {
         devfs_type_t* type = dev_type_table + i;
-        int type_name_len = kernel_strlen(type->name);
+        int type_name_len = kstrlen(type->name);
         
         // 若相同
-        if(kernel_strncmp(filepath, type->name, type_name_len) == 0) {
+        if(kstrncmp(filepath, type->name, type_name_len) == 0) {
             int minor;
-            if((kernel_strlen(filepath) > type_name_len) && 
+            if((kstrlen(filepath) > type_name_len) && 
                (string_to_int(filepath + type_name_len, &minor) < 0)) {
                 
                 log_print("Get device num failed. %s", filepath);
@@ -114,7 +114,7 @@ static int devfs_stat(file_t* file, struct stat* st) {
         return -1;
     }
 
-    kernel_memset(st, 0, sizeof(struct stat));
+    kmemset(st, 0, sizeof(struct stat));
 
     st->st_mode = 0;
     switch (file->type) {
@@ -154,7 +154,7 @@ static int devfs_readdir(struct _fs_t* fs, DIR* dir, struct dirent* dirent) {
     if(dir->index++ < 10) {
         dirent->type = FILE_NORMAL;
         dirent->size = 1000;
-        kernel_memcpy(dirent->name, "devfs", sizeof(dirent->name));
+        kmemcpy(dirent->name, "devfs", sizeof(dirent->name));
         return 0;
     }
     return -1;

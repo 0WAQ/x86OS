@@ -1,7 +1,5 @@
-/***
- * 
- * 终端显示c文件
- * 
+/**
+ * 终端显示
  */
 #include "dev/console.h"
 #include "dev/tty.h"
@@ -146,7 +144,7 @@ static void write_esc(console_t* c, char ch) {
     
     case '[':
         // 清空esc参数缓冲区
-        kernel_memset((void*)c->esc_param_buf, 0, sizeof(c->esc_param_buf));
+        kmemset((void*)c->esc_param_buf, 0, sizeof(c->esc_param_buf));
         c->esc_param_index = 0;
 
         c->write_state = CONSOLE_WRITE_SQUARE;
@@ -285,7 +283,7 @@ static void scroll_up(console_t* console, u32_t lines) {
     disp_char_t* dest = console->disp_base;
     disp_char_t* src = console->disp_base + console->cols * lines;
     u32_t size = (console->rows - lines) * console->cols * sizeof(disp_char_t);
-    kernel_memcpy(dest, src, size);
+    kmemcpy(dest, src, size);
 
     // 清空后几行
     erase_row(console, console->rows - lines, lines);

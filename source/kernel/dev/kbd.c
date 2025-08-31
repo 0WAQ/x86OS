@@ -1,7 +1,5 @@
 /**
- * 
- * 键盘c文件
- * 
+ * 键盘
  */
 #include "dev/kbd.h"
 #include "dev/tty.h"

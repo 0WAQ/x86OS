@@ -11,8 +11,8 @@ int sys_yield() {
         task_t* curr_task = get_curr_task();
         
         // 若就绪队列中还有其它任务,则将当前任务移入队列尾部
-        set_task_block(curr_task);  // 先删除
-        set_task_ready(curr_task);  // 再尾插
+        task_set_block(curr_task);  // 先删除
+        task_set_ready(curr_task);  // 再尾插
     
         // 任务切换
         task_dispatch();

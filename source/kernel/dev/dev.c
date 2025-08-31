@@ -1,7 +1,5 @@
 /**
- * 
- * 设备管理层源文件
- * 
+ * 设备管理层
  */
 #include "dev/dev.h"
 #include "cpu/irq.h"
@@ -66,7 +64,7 @@ int dev_open(int major, int minor, void* data) {
         if(desc->open != NULL) {
             ret = desc->open(fdev);
         }
-        if(ret == 0) {
+        if(ret >= 0) {
             fdev->open_cnt = 1;
             irq_leave_protection(state);
             return fdev - dev_tbl;
@@ -127,7 +125,7 @@ void dev_close(int dev_id) {
         if(dev->desc->close != NULL) {
             dev->desc->close(dev);
         }
-        kernel_memset((void*)dev, 0, sizeof(device_t));
+        kmemset((void*)dev, 0, sizeof(device_t));
     }
     
     irq_leave_protection(state);

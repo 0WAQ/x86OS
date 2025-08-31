@@ -6,7 +6,7 @@ int sys_lseek(int fd, int offset, int dir) {
         return -1;
     }
 
-    file_t* p = get_task_file(fd);
+    file_t* p = task_get_file(fd);
     if(p == NULL) {
         log_print("file not opened.");
         return -1;

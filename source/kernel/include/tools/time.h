@@ -19,6 +19,6 @@ int get_tm(struct tm* tm);
 /**
  * @brief 将tm结构体转换为从1970-1-1开始的秒数
  */
-time_t kernel_mktime(struct tm* tm);
+time_t kmktime(struct tm* tm);
 
 #endif // TIME_H

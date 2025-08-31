@@ -1,7 +1,5 @@
 /**
- * 
- * tty c文件
- * 
+ * tty
  */
 #include "dev/tty.h"
 #include "dev/console.h"

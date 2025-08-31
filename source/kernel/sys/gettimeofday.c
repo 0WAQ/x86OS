@@ -6,7 +6,7 @@ int sys_gettimeofday(struct timeval* tv, struct timezone* tz) {
 	get_tm(&tm);
 
 	if(tv != NULL) {
-		tv->tv_sec = kernel_mktime(&tm);
+		tv->tv_sec = kmktime(&tm);
 		tv->tv_usec = 0;
 	}
 

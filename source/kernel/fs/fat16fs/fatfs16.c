@@ -77,7 +77,7 @@ static int fat16fs_mount(struct _fs_t* fs, int major, int minor) {
         goto fat16fs_mount_failed;
     }
 
-    if(kernel_memcmp(dbr->BS_FileSysType, "FAT16", 5) != 0) {
+    if(kmemcmp(dbr->BS_FileSysType, "FAT16", 5) != 0) {
         log_print("not a fat16 file system, major: %x, minor: %x", major, minor);
         goto fat16fs_mount_failed;
     }
@@ -134,7 +134,7 @@ static int fat16fs_unlink(struct _fs_t* fs, const char* filename) {
         }
 
         // 若匹配, 则删除
-        if(kernel_strncmp(buf, (char*)p->DIR_Name, 11) == 0) {
+        if(kstrncmp(buf, (char*)p->DIR_Name, 11) == 0) {
             // 释放对应的簇
             cluster_t cluster = (p->DIR_FstClusHI << 16) | (p->DIR_FstClusLO);
             if(cluster_is_valid(cluster)) {
@@ -148,7 +148,7 @@ static int fat16fs_unlink(struct _fs_t* fs, const char* filename) {
 
             // 写item项
             diritem_t item;
-            kernel_memset(&item, 0, sizeof(diritem_t));
+            kmemset(&item, 0, sizeof(diritem_t));
             item.DIR_Name[0] = DIRITEM_NAME_FREE;   // 标记为free
             if(write_dir_entry(fat, &item, i) != 0) {
                 return -1;
@@ -257,7 +257,7 @@ static int fat16fs_read(char* buf, int size, file_t* file) {
             if(ret < 0) {
                 return len;
             }
-            kernel_memcpy(buf, fat->fat_buffer + cluster_offset, curr_read);
+            kmemcpy(buf, fat->fat_buffer + cluster_offset, curr_read);
         }
 
         buf += curr_read;
@@ -318,7 +318,7 @@ static int fat16fs_write(char* buf, int size, file_t* file) {
                 return len;
             }
 
-            kernel_memcpy(fat->fat_buffer + cluster_offset, buf, curr_write);
+            kmemcpy(fat->fat_buffer + cluster_offset, buf, curr_write);
 
             // 写入
             ret = dev_write(fat->fs->dev_id, start_sector, (char*)fat->fat_buffer, fat->sectors_per_cluster);
@@ -401,7 +401,7 @@ static int fat16fs_stat(file_t* file, struct stat* st) {
         return -1;
     }
 
-    kernel_memset(st, 0, sizeof(struct stat));
+    kmemset(st, 0, sizeof(struct stat));
 
     fat16_t* fat = (fat16_t*)file->fs->data;
 
@@ -524,7 +524,7 @@ static int write_dir_entry(fat16_t* fat, diritem_t* dir, int index) {
     if(ret < 0) {
         return -1;
     }
-    kernel_memcpy(fat->fat_buffer + offset % fat->bytes_per_sector, dir, sizeof(diritem_t));
+    kmemcpy(fat->fat_buffer + offset % fat->bytes_per_sector, dir, sizeof(diritem_t));
     return bwrite_sector(fat, sector);
 }
 
@@ -543,7 +543,7 @@ static file_type_t diritem_parse_type(diritem_t* item) {
 // file.c ===> FILE____C__ (_是空格)
 static void diritem_parse_name(diritem_t* item, char* dest) {
     char* c = dest;
-    kernel_memset(dest, 0, SFN_LEN + 1);
+    kmemset(dest, 0, SFN_LEN + 1);
     
     char* ext = NULL;
     for(int i = 0; i < 11; i++) {
@@ -606,11 +606,11 @@ static int diritem_init(diritem_t* item, const char* name, u8_t attr) {
 static int diritem_name_match(diritem_t* item, const char* name) {
     char buf[11];
     to_sfn(buf, name);
-    return kernel_memcmp(buf, item->DIR_Name, 11) == 0;
+    return kmemcmp(buf, item->DIR_Name, 11) == 0;
 }
 
 static void to_sfn(char* dest, const char* src) {
-    kernel_memset(dest, ' ', 11);
+    kmemset(dest, ' ', 11);
     
     char* p = dest;
     char* end = dest + 11;
@@ -729,7 +729,7 @@ static int expand_file(file_t* file, int inc) {
 
     // 文件为空或者刚好达到簇的末尾
     if(file->size % fat->cluster_bytes_size == 0) {
-        cluster_cnt = up2(inc, fat->cluster_bytes_size) / fat->cluster_bytes_size;
+        cluster_cnt = kup2(inc, fat->cluster_bytes_size) / fat->cluster_bytes_size;
     }
     else {  // 文件非空
         int cfree = fat->cluster_bytes_size - (file->size % fat->cluster_bytes_size);
@@ -737,7 +737,7 @@ static int expand_file(file_t* file, int inc) {
             return 0;
         }
 
-        cluster_cnt = up2(inc - cfree, fat->cluster_bytes_size) / fat->cluster_bytes_size;
+        cluster_cnt = kup2(inc - cfree, fat->cluster_bytes_size) / fat->cluster_bytes_size;
         if(cluster_cnt == 0) {
             cluster_cnt = 1;
         }

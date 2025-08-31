@@ -5,9 +5,6 @@
 #include "common/macros.h"
 #include "tools/list_t.h"
 
-#ifdef entry_of
-#endif
-
 void list_init(list_t* list);
 void list_insert_first(list_t* list, list_node_t* node);
 void list_insert_last(list_t* list, list_node_t* node);
@@ -22,5 +19,8 @@ static inline bool list_is_empty(list_t* list) { return list->count == 0; }
 static inline u32_t list_count(list_t* list) { return list->count; }
 static inline list_node_t* list_first(list_t* list) { return list->first; }
 static inline list_node_t* list_last(list_t* list) { return list->last; }
+
+#ifdef entry_of
+#endif
 
 #endif // LIST_H

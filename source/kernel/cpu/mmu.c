@@ -13,7 +13,7 @@ pte_t* find_pte(pde_t* page_dir, u32_t vaddr, bool is_alloc) {
         if (pt_paddr == 0) {
             return NULL;
         }
-        kernel_memset((void*)pt_paddr, 0, MEM_PAGE_SIZE);
+        kmemset((void*)pt_paddr, 0, MEM_PAGE_SIZE);
 
         // 更新 pde
         pde->v = pt_paddr | PDE_P | PDE_W | PDE_U;

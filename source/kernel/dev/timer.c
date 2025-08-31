@@ -1,7 +1,5 @@
 /**
- * 
- * 硬件定时器配置
- * 
+ * 硬件定时器
  */
 #include "dev/timer.h"
 #include "dev/dev_t.h"

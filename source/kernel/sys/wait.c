@@ -21,7 +21,7 @@ int sys_wait(int* status) {
 
                 vmem_destory_uvms(p->tss.cr3);
                 vmem_free_page(p->tss.esp0 - MEM_PAGE_SIZE);
-                kernel_memset(p, 0, sizeof(task_t));
+                kmemset(p, 0, sizeof(task_t));
             
                 mutex_unlock(&task_table_mutex);
                 return pid;
@@ -31,7 +31,7 @@ int sys_wait(int* status) {
 
         // 找不到就让父进程睡眠, 直到有子进程唤醒
         irq_state_t state = irq_enter_protection();
-        set_task_block(task);
+        task_set_block(task);
         task->state = TASK_WAITTING;
 
         // 切换到其它进程

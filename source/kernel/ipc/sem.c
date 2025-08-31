@@ -1,9 +1,3 @@
-/**
- * 
- * 信号量相关实现
- * 
- */
-
 #include "ipc/sem.h"
 #include "core/task/task.h"
 #include "cpu/irq.h"
@@ -24,7 +18,7 @@ void sem_wait(sem_t* sem) {
     }
     else {  // 否则将任务从运行队列中删除, 加入等待队列
         task_t* curr = get_curr_task();
-        set_task_block(curr);
+        task_set_block(curr);
         list_insert_last(&sem->wait_list, &curr->wait_node);
     
         // 任务调度
@@ -43,7 +37,7 @@ void sem_notify(sem_t* sem) {
         list_node_t* node = list_remove_first(&sem->wait_list);
         task_t* task = entry_of(node, task_t, wait_node);
     
-        set_task_ready(task);
+        task_set_ready(task);
 
         // 任务调度
         task_dispatch();

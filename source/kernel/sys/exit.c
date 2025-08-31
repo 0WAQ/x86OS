@@ -3,12 +3,14 @@
 void sys_exit(int status) {
 
     // 清空任务相关的资源
-    task_t* task = get_curr_task();
+    task_t* curr_task = get_curr_task();
+
+    // 清空任务打开的文件
     for(int fd = 0; fd < TASK_OFILE_NR; fd++) {
-        file_t* file = task->file_table[fd];
+        file_t* file = curr_task->file_table[fd];
         if(file) {
             sys_close(fd);
-            task->file_table[fd] = NULL;
+            curr_task->file_table[fd] = NULL;
         }
     }
 
@@ -20,10 +22,10 @@ void sys_exit(int status) {
         // 一个进程退出时, 将其所有的子进程交给一号进程
         for(int i = 0; i < TASK_NR; i++) {
             task_t* p = task_table + i;
-            if(p->parent == task) {
+            if(p->parent == curr_task) {
                 p->parent = task_manager.first_task;
 
-                // 若有子进程是zombie态
+                // 若有子进程是 zombie 态
                 if(p->state == TASK_ZOMBIE) {
                     move_child = 1;
                 }
@@ -33,23 +35,23 @@ void sys_exit(int status) {
     mutex_unlock(&task_table_mutex);
     ////////////////////////////////////////////////
 
-    task->state = TASK_ZOMBIE;
-    task->status = status;      // 保存进程退出时的状态
+    curr_task->state = TASK_ZOMBIE;
+    curr_task->status = status;      // 保存进程退出时的状态
 
     irq_state_t state = irq_enter_protection();
 
-    task_t* parent = task->parent;
+    task_t* parent = curr_task->parent;
     if(move_child && (parent != task_manager.first_task)) {
         if(task_manager.first_task->state == TASK_WAITTING) {
-            set_task_ready(task_manager.first_task);
+            task_set_ready(task_manager.first_task);
         }
     }
 
     if(parent->state == TASK_WAITTING) {
-        set_task_ready(parent);
+        task_set_ready(parent);
     }
 
-    set_task_block(task);
+    task_set_block(curr_task);
     task_dispatch();
 
     irq_leave_protection(state);

@@ -1,7 +1,6 @@
 #include "tools/rbtree.h"
 
-void rb_link_node(rb_node* node, rb_node* parent, rb_node** rb_link)
-{
+void rb_link_node(rb_node* node, rb_node* parent, rb_node** rb_link) {
     // 新节点的颜色需为红色, 否则在插入时会破坏性质4
     // 若新节点的父节点也是红色, 就会破坏性质2, 此时会进行调整, 使树平衡
     node->rb_color = RB_RED;
@@ -13,9 +12,8 @@ void rb_link_node(rb_node* node, rb_node* parent, rb_node** rb_link)
     *rb_link = node;
 }
 
-void __rb_rotate_left(rb_node* node, rb_root* root)	
-{   
-	/***
+void __rb_rotate_left(rb_node* node, rb_root* root)	 {
+	/**
 	 * 
 	 *      A  <- node                                  C  <- right
 	 *     / \                                         / \
@@ -62,10 +60,8 @@ void __rb_rotate_left(rb_node* node, rb_root* root)
 	node->rb_parent = right;
 }
 
-void __rb_rotate_right(rb_node* node, rb_root* root)
-{
-
-	/***
+void __rb_rotate_right(rb_node* node, rb_root* root) {
+	/**
 	 * 
 	 *              C  <- node                    A  <- left
 	 *             / \                           / \
@@ -112,8 +108,7 @@ void __rb_rotate_right(rb_node* node, rb_root* root)
     node->rb_parent = left;
 }
 
-void rb_insert_color(rb_node* node, rb_root* root)
-{
+void rb_insert_color(rb_node* node, rb_root* root) {
 	/**
 	 * 在图中, 小写字母为红色, 大写字母为黑色
 	 * 判定节点(关注节点)一开始为插入的节点, node指的是关注节点
@@ -129,13 +124,11 @@ void rb_insert_color(rb_node* node, rb_root* root)
 	
 	rb_node *parent, *gparent, *tmp;
 
-	while((parent = node->rb_parent) && rb_is_red(parent))
-	{
+	while((parent = node->rb_parent) && rb_is_red(parent)) {
 		gparent = parent->rb_parent;
 		
 		// 情况3: node的父节点为红色, 根据parent的位置获取uncle的位置
-		if(parent == gparent->rb_left)
-		{
+		if(parent == gparent->rb_left) {
 			register rb_node* uncle = gparent->rb_right;
 
 			/**
@@ -148,8 +141,7 @@ void rb_insert_color(rb_node* node, rb_root* root)
 			 *   n            n
 			 * 
 			 */
-			if(uncle && rb_is_red(uncle)) // 若uncle不存在说明其为黑色
-			{
+			if(uncle && rb_is_red(uncle)) { // 若uncle不存在说明其为黑色
 				// 调整颜色
 				rb_set_black(parent);
 				rb_set_black(uncle);
@@ -171,8 +163,7 @@ void rb_insert_color(rb_node* node, rb_root* root)
 			 *      n         p
 			 * 
 			 */
-			if(node == parent->rb_right)
-			{
+			if(node == parent->rb_right) {
 				// 对p进行左旋
 				__rb_rotate_left(parent, root);
 
@@ -196,13 +187,11 @@ void rb_insert_color(rb_node* node, rb_root* root)
 			rb_set_black(parent);
 			__rb_rotate_right(gparent, root);
 		}
-		else // parent == gparent->right
-		{
+		else { // parent == gparent->right
 			register rb_node* uncle = gparent->rb_left;
 
 			// Case 1: uncle为红色
-			if(uncle && rb_is_red(uncle)) // uncle不存在则说明其为黑色
-			{
+			if(uncle && rb_is_red(uncle)) { // uncle不存在则说明其为黑色
 				rb_set_black(parent);
 				rb_set_black(uncle);
 				rb_set_red(gparent);
@@ -214,8 +203,7 @@ void rb_insert_color(rb_node* node, rb_root* root)
 
 
 			// Case 2: RL
-			if(node == parent->rb_left)
-			{
+			if(node == parent->rb_left) {
 				__rb_rotate_right(parent, root);
 
 				// 旋转后node变为父节点, parent变为node的子节点
@@ -235,8 +223,7 @@ void rb_insert_color(rb_node* node, rb_root* root)
 	rb_set_black(root->rb_node);
 }
 
-void rb_erase_next(rb_node* node, rb_root* root)
-{
+void rb_erase_next(rb_node* node, rb_root* root) {
 	rb_node *replace, *parent;
 	int color;
 
@@ -315,7 +302,7 @@ void rb_erase_next(rb_node* node, rb_root* root)
 		if(old->rb_right) {
 			old->rb_right->rb_parent = node;
 		}
-		goto color;
+		goto fix_color;
 	}
 
 	parent = node->rb_parent;
@@ -340,8 +327,7 @@ void rb_erase_next(rb_node* node, rb_root* root)
 		}
 	}
 
-
- color:		// 修复树的性质
+ fix_color:
 	// 若实际被删节点的颜色为黑色, 则会影响黑高, 需调整
 	if(color == RB_BLACK) {
 		// 失衡的位置是真正被删除节点原本的位置, 该结点最多只能有一个孩子
@@ -349,8 +335,7 @@ void rb_erase_next(rb_node* node, rb_root* root)
 	}
 }
 
-void rb_erase_prev(rb_node* node, rb_root* root)
-{
+void rb_erase_prev(rb_node* node, rb_root* root) {
 	rb_node *replace, *parent;
 	int color;
 
@@ -427,10 +412,8 @@ void rb_erase_prev(rb_node* node, rb_root* root)
 		if(old->rb_left) {
 			old->rb_left->rb_parent = node;
 		}
-
 		old->rb_right->rb_parent = node;
-		
-		goto color;
+		goto fix_color;
 	}
 
 	parent = node->rb_parent;
@@ -455,8 +438,7 @@ void rb_erase_prev(rb_node* node, rb_root* root)
 		}
 	}
 
-
- color:		// 修复树的性质
+ fix_color:
 	// 若实际被删节点的颜色为黑色, 则会影响黑高, 需调整
 	if(color == RB_BLACK) {
 		// 失衡的位置是真正被删除节点原本的位置, 该结点最多只能有一个孩子
@@ -464,8 +446,7 @@ void rb_erase_prev(rb_node* node, rb_root* root)
 	}
 }
 
-void __rb_erase_color(rb_node* node, rb_node* parent, rb_root* root)
-{
+static void __rb_erase_color(rb_node* node, rb_node* parent, rb_root* root) {
 	rb_node *other;
 
 	/**
@@ -493,15 +474,12 @@ void __rb_erase_color(rb_node* node, rb_node* parent, rb_root* root)
 	 */
 
 	// 若node是根节点或者红色就跳出
-	while((!node || rb_is_black(node)) && node != root->rb_node)
-	{
-		if(node == parent->rb_left)
-		{
+	while((!node || rb_is_black(node)) && node != root->rb_node) {
+		if(node == parent->rb_left) {
 			other = parent->rb_right;
 
 			// 红兄
-			if(rb_is_red(other))
-			{
+			if(rb_is_red(other)) {
 				/**
 				 * Case 1 - 对P旋转
 				 *
@@ -541,11 +519,9 @@ void __rb_erase_color(rb_node* node, rb_node* parent, rb_root* root)
 				parent = node->rb_parent;
 			}
 			// 黑兄红侄, 需分情况哪个是红
-			else
-			{	
+			else {	
 				// 同侧为红
-				if(!other->rb_right || rb_is_black(other->rb_right))
-				{
+				if(!other->rb_right || rb_is_black(other->rb_right)) {
 					/**
 					 * Case 3 - 红侄, 对sibling旋转
 					 *
@@ -603,13 +579,11 @@ void __rb_erase_color(rb_node* node, rb_node* parent, rb_root* root)
 				break;
 			}
 		}
-		else
-		{
+		else {
 			other = parent->rb_left;
 			
 			// 红兄
-			if(rb_is_red(other))
-			{
+			if(rb_is_red(other)) {
 				/* Case 1 - 在parent处右旋 */
 				rb_set_red(parent);
 				rb_set_black(other);
@@ -631,10 +605,8 @@ void __rb_erase_color(rb_node* node, rb_node* parent, rb_root* root)
 				parent = node->rb_parent;
 			}
 			// 黑兄红侄, 需判断哪一个是红色
-			else
-			{
-				if(!other->rb_left || rb_is_black(other->rb_left))
-				{
+			else {
+				if(!other->rb_left || rb_is_black(other->rb_left)) {
 					/* Case 3 - 在sibling处右旋 */
 					rb_set_red(other);
 					if(other->rb_right) {
@@ -667,10 +639,8 @@ void __rb_erase_color(rb_node* node, rb_node* parent, rb_root* root)
 }
 
 // 取node的下一个节点
-rb_node* rb_next(rb_node* node)
-{
+rb_node* rb_next(rb_node* node) {
 	// node的下一个节点是其右子树的最左节点
-
 	if(node->rb_right) {
 		node = node->rb_right;
 		while(node->rb_left) {
@@ -685,13 +655,11 @@ rb_node* rb_next(rb_node* node)
 	while(node->rb_parent && node == node->rb_parent->rb_right) {
 		node = node->rb_parent;
 	}
-
 	return node->rb_parent;
 }
 
 // 取node的前一个节点
-rb_node* rb_prev(rb_node* node)
-{
+rb_node* rb_prev(rb_node* node) {
 	// 左子树的最右边
 	if(node->rb_left) {
 		node = node->rb_left;
@@ -707,15 +675,12 @@ rb_node* rb_prev(rb_node* node)
 	while(node->rb_parent && node == node->rb_parent->rb_left) {
 		node = node->rb_parent;
 	}
-
 	return node->rb_parent;
 }
 
 // 取树中第一个节点
-rb_node* rb_first(rb_root* root)
-{
+rb_node* rb_first(rb_root* root) {
 	rb_node* node = root->rb_node;
-
 	if(!node) {
 		return ((void*)0);
 	}

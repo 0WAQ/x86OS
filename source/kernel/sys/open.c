@@ -36,7 +36,7 @@ int sys_open(const char* filename, int flags, ...) {
 
     file->mode = flags;
     file->fs = fs;
-    kernel_strncpy(file->filename, filename, FILENAME_SIZE);
+    kstrncpy(file->filename, filename, FILENAME_SIZE);
 
     if(fs->op->open != NULL) {
         fs_lock(fs);

@@ -5,7 +5,7 @@ int sys_fork() {
     task_t* parent = get_curr_task();
 
     // 分配任务结构
-    task_t* child = alloc_task();
+    task_t* child = task_alloc();
     if(child == NULL) {
         goto sys_fork_failed;
     }
@@ -64,7 +64,7 @@ int sys_fork() {
 sys_fork_failed:
     if(child) {
         task_uninit(child);
-        free_task(child);
+        task_free(child);
     }
     return -1;
 }

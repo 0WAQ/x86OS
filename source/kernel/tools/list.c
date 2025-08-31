@@ -6,7 +6,6 @@ void list_init(list_t* list) {
 }
 
 void list_insert_first(list_t* list, list_node_t* node) {
-
     // 先调整node节点自身的指针
     node->next = list->first;
     node->prev = NULL;
@@ -22,7 +21,6 @@ void list_insert_first(list_t* list, list_node_t* node) {
 }
 
 void list_insert_last(list_t* list, list_node_t* node) {
-    
     // 先调整node节点自身的指针
     node->prev = list->last;
     node->next = NULL;
@@ -58,7 +56,7 @@ list_node_t* list_remove_first(list_t* list) {
     // 清空node
     node->next = node->prev = NULL;
     --list->count;
-    
+
     return node;
 }
 

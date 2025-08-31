@@ -9,11 +9,11 @@
 #include <sys/stat.h>
 #include <sys/file.h>
 
-list_t mounted_list;             // 挂载链表
-list_t free_list;                // 空闲链表
-fs_t fs_table[FS_TABLE_SIZE];    // 文件系统表, 最多能挂载10个文件系统
-                                 // 初始化阶段将其组织为空闲链表
-fs_t* root_fs;                   // 根文件系统
+list_t mounted_list;                    // 挂载链表
+static list_t free_list;                // 空闲链表
+static fs_t fs_table[FS_TABLE_SIZE];    // 文件系统表, 最多能挂载10个文件系统
+                                        // 初始化阶段将其组织为空闲链表
+fs_t* root_fs;                          // 根文件系统
 
 // 文件系统回调结构
 extern fs_op_t devfs_op;                // DEV
@@ -81,7 +81,7 @@ static fs_t* mount(fs_type_t type, char* mount_point, int dev_major, int dev_min
     while(curr != NULL) {
         // 若fs的挂载点与入参的挂载点一样就退出
         fs_t* p = entry_of(curr, fs_t, node);
-        if(kernel_strncmp(p->mount_point, mount_point, FS_MOUNTP_SIZE) == 0) {
+        if(kstrncmp(p->mount_point, mount_point, FS_MOUNTP_SIZE) == 0) {
             log_print("fs already mounted.");
             goto mount_failed;
         }
@@ -97,8 +97,8 @@ static fs_t* mount(fs_type_t type, char* mount_point, int dev_major, int dev_min
     fs = entry_of(free_node, fs_t, node);
 
     // 3. 初始化fs
-    kernel_memset(fs, 0, sizeof(fs_t));
-    kernel_strncpy(fs->mount_point, mount_point, FS_MOUNTP_SIZE);
+    kmemset(fs, 0, sizeof(fs_t));
+    kstrncpy(fs->mount_point, mount_point, FS_MOUNTP_SIZE);
     
     fs_op_t* op = get_fs_op(type, dev_major);   // 获取当前fs的操作函数
     if(op == NULL || op->mount == NULL) {

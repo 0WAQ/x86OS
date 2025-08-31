@@ -43,7 +43,7 @@ int task_init(task_t* task, const char* name, u32_t flag, u32_t entry, u32_t esp
     // }
 
     // 设置任务的各种属性
-    kernel_strncpy(task->name, name, TASK_NAME_SIZE);
+    kstrncpy(task->name, name, TASK_NAME_SIZE);
     task->heap_start = 0;
     task->heap_end = 0;
     task->parent = task_manager.curr_task;
@@ -58,27 +58,21 @@ int task_init(task_t* task, const char* name, u32_t flag, u32_t entry, u32_t esp
     list_node_init(&task->run_node);
 
     // 初始化文件表
-    kernel_memset((void*)&task->file_table, 0, sizeof(task->file_table));
+    kmemset((void*)&task->file_table, 0, sizeof(task->file_table));
 
     return 0;
 }
 
 void task_start(task_t* task) {
-
-    /////////////////////////////////////////// 进入临界区
     irq_state_t state = irq_enter_protection();
-
 
     // 插入到任务队列中
     list_insert_last(&task_manager.task_list, &task->all_node);
-    
-    // 插入到就绪队列中(设置任务为就绪态)
-    set_task_ready(task);
 
+    // 插入到就绪队列中(设置任务为就绪态)
+    task_set_ready(task);
 
     irq_leave_protection(state);
-    /////////////////////////////////////////// 退出临界区
-
 }
 
 void task_uninit(task_t* task) {
@@ -94,7 +88,7 @@ void task_uninit(task_t* task) {
         vmem_destory_uvms(task->tss.cr3);
     }
 
-    kernel_memset(task, 0, sizeof(task_t));
+    kmemset(task, 0, sizeof(task_t));
 }
 
 static int tss_init(task_t* task, u32_t flag, u32_t entry, u32_t esp) {
@@ -117,10 +111,9 @@ static int tss_init(task_t* task, u32_t flag, u32_t entry, u32_t esp) {
 
 
 // 2.初始化tss段
+    kmemset(&task->tss, 0, sizeof(tss_t));
 
-    kernel_memset(&task->tss, 0, sizeof(tss_t));
-    
-    int code_sel, data_sel; 
+    int code_sel, data_sel;
     if(flag & TASK_FLAGS_SYSTEM) {
         code_sel = KERNEL_SELECTOR_CS;
         data_sel = KERNEL_SELECTOR_DS;    
@@ -171,15 +164,14 @@ tss_init_failed:
     return -1;
 }
 
-static void task_switch_from_to(task_t* from, task_t* to) {
+static void task_switch(task_t* from, task_t* to) {
     switch_to_tss(to->tss_sel);
     // simple_switch(&from->stack, to->stack);
 }
 
 
 void task_manager_init() {
-
-    kernel_memset(task_table, 0, sizeof(task_table));
+    kmemset(task_table, 0, sizeof(task_table));
     mutex_init(&task_table_mutex);
 
     // 创建两个特权级为3的段
@@ -203,7 +195,7 @@ void task_manager_init() {
 
     // 初始化空闲任务
     u32_t flag = TASK_FLAGS_SYSTEM;
-    task_manager.idle_task = alloc_task();
+    task_manager.idle_task = task_alloc();
     task_init(task_manager.idle_task, "idle task", flag, (u32_t)idle_task_entry, 0);
 
     task_manager.curr_task = NULL;
@@ -230,7 +222,7 @@ void first_task_init() {
     // cpu会自动保存来源
 
     u32_t flag = TASK_FLAGS_USER;
-    task_manager.first_task = alloc_task();
+    task_manager.first_task = task_alloc();
     task_init(task_manager.first_task, "first task", flag, 
             (u32_t)first_task_entry, (u32_t)first_task_entry + alloc_size);
     
@@ -249,7 +241,7 @@ void first_task_init() {
     vmem_alloc_page((u32_t)get_curr_page_dir(), (u32_t)first_task_entry, alloc_size, PTE_P | PTE_W | PTE_U);
 
     // 将first_task从内核移指用户
-    kernel_memcpy((void*)first_task_entry, (void*)&s_first_task, copy_size);
+    kmemcpy((void*)first_task_entry, (void*)&s_first_task, copy_size);
 
     // 启动一号进程
     task_start(task_manager.first_task);
@@ -267,43 +259,31 @@ static void idle_task_entry() {
     for(;;) { hlt(); }
 }
 
-void set_task_ready(task_t* task) {
-
-    if(task == get_idle_task()) {
-        return;
+void task_set_ready(task_t* task) {
+    if (task != get_idle_task()) {
+        list_insert_last(&task_manager.ready_list, &task->run_node);
+        task->state = TASK_READY;
     }
-
-    // 执行插入
-    list_insert_last(&task_manager.ready_list, &task->run_node);
-
-    // 设置任务状态
-    task->state = TASK_READY;
 }
 
-void set_task_block(task_t* task) {
-    
-    if(task == get_idle_task()) {
-        return;
+void task_set_block(task_t* task) {
+    if (task != get_idle_task()) {
+        // 执行删除
+        list_remove(&task_manager.ready_list, &task->run_node);
+
+        // 不设置状态，因为不确定
     }
-
-    // 执行删除
-    list_remove(&task_manager.ready_list, &task->run_node);
-
-    // 不设置状态，因为不确定
 }
 
-void set_task_sleep(task_t* task, u32_t ticks) {
-    if(ticks == 0) {
-        return;
+void task_set_sleep(task_t* task, u32_t ticks) {
+    if (ticks != 0) {
+        task->sleep_ticks = ticks;
+        task->state = TASK_SLEEP;
+        list_insert_last(&task_manager.sleep_list, &task->run_node);
     }
-
-    task->sleep_ticks = ticks;
-    task->state = TASK_SLEEP;
-
-    list_insert_last(&task_manager.sleep_list, &task->run_node);
 }
 
-void set_task_wakeup(task_t* task) {
+void task_set_wakeup(task_t* task) {
     list_remove(&task_manager.sleep_list, &task->run_node);
 }
 
@@ -312,7 +292,6 @@ inline task_t* get_curr_task() {
 }
 
 static task_t* get_next_task() {
-
     if(list_count(&task_manager.ready_list) == 0) {
         return get_idle_task();
     }
@@ -322,10 +301,7 @@ static task_t* get_next_task() {
 }
 
 void task_dispatch() {
-    
-    /////////////////////////////////////////// 进入临界区
     irq_state_t state = irq_enter_protection();
-
 
     // 获取当前任务和下个任务
     task_t* from = get_curr_task();
@@ -335,11 +311,10 @@ void task_dispatch() {
     if(to != from) {
         task_manager.curr_task = to;
         to->state = TASK_RUNNING;
-        task_switch_from_to(from, to);
+        task_switch(from, to);
     }
 
     irq_leave_protection(state);
-    /////////////////////////////////////////// 退出临界区
 }
 
 void task_time_tick() {
@@ -352,8 +327,8 @@ void task_time_tick() {
         curr_task->slice_ticks = curr_task->time_ticks;
 
         // 若就绪队列中还有其它任务,则将当前任务移入队列尾部
-        set_task_block(curr_task);  // 先删除
-        set_task_ready(curr_task);  // 再尾插
+        task_set_block(curr_task);  // 先删除
+        task_set_ready(curr_task);  // 再尾插
     
         task_dispatch();
     }
@@ -365,8 +340,8 @@ void task_time_tick() {
         task_t* task = entry_of(curr, task_t, run_node);
         // 睡眠时间已到
         if(--task->sleep_ticks == 0) {
-            set_task_wakeup(task);
-            set_task_ready(task);
+            task_set_wakeup(task);
+            task_set_ready(task);
         }
     
         curr = next;
@@ -386,7 +361,7 @@ void copy_opened_files(task_t* child) {
     }
 }
 
-task_t* alloc_task() {
+task_t* task_alloc() {
     task_t* task = NULL;
     
     mutex_lock(&task_table_mutex);
@@ -402,7 +377,7 @@ task_t* alloc_task() {
     return task;
 }
 
-void free_task(task_t* task) {
+void task_free(task_t* task) {
     mutex_lock(&task_table_mutex);
     task->name[0] = '\0';
     mutex_unlock(&task_table_mutex);
@@ -536,8 +511,7 @@ load_phdr_failed:
     return -1;
 }
 
-int copy_args(char* to, u32_t page_dir, int argc, char** argv) {
-
+int task_copy_args(char* to, u32_t page_dir, u32_t argc, char** argv) {
     // 再stack_top中一次写入argc, argv
     task_args_t task_args;
     task_args.argc = argc;
@@ -553,7 +527,7 @@ int copy_args(char* to, u32_t page_dir, int argc, char** argv) {
         char* from = argv[i];
 
         // 不能用strcpy, 因为to和argv不在一个页表里
-        int len = kernel_strlen(from) + 1;      // 包含结束符
+        int len = kstrlen(from) + 1;      // 包含结束符
         int ret = vmem_copy_corss_uvms((u32_t)dest_arg, page_dir, (u32_t)from, len);
         ASSERT(ret >= 0);
         
@@ -569,7 +543,7 @@ int copy_args(char* to, u32_t page_dir, int argc, char** argv) {
     return vmem_copy_corss_uvms((u32_t)to, page_dir, (u32_t)&task_args, sizeof(task_args_t));
 }
 
-file_t* get_task_file(int fd) {
+file_t* task_get_file(int fd) {
     if((fd >= 0) && (fd < TASK_OFILE_NR)) {
         file_t* file = get_curr_task()->file_table[fd];
         return file;

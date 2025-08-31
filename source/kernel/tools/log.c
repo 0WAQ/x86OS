@@ -6,7 +6,7 @@
 // 互斥锁
 static mutex_t mutex;
 
-// log的输出设备的dev_id
+// log 的输出设备的 dev_id
 static int log_dev_id;
 
 void log_init() {
@@ -32,16 +32,15 @@ void log_init() {
 }
 
 void log_print(const char* fmt, ...) {
-    
     va_list args; // 声明参数列表
     char buf[256];
-    kernel_memset(buf, '\0', sizeof(buf));
+    kmemset(buf, '\0', sizeof(buf));
 
     // 初始化参数列表
     va_start(args, fmt);
 
     // 解析参数列表，将其填充到buf中
-    kernel_vsprintf(buf, fmt, args);
+    kvsprintf(buf, fmt, args);
     
     // 关闭参数列表
     va_end(args);
@@ -65,7 +64,7 @@ void log_print(const char* fmt, ...) {
 
     // 向 log_dev 输出设备
     dev_write(log_dev_id, 0, "log: ", 5);
-    dev_write(log_dev_id, 0, buf, kernel_strlen(buf));
+    dev_write(log_dev_id, 0, buf, kstrlen(buf));
     dev_write(log_dev_id, 0, "\n", 1);
 
 #endif  // LOG_USE_COM

@@ -1,7 +1,5 @@
-/***
- * 
- * 互斥锁实现
- * 
+/**
+ * 互斥锁
  */
 #include "core/task/task.h"
 #include "cpu/irq.h"
@@ -30,7 +28,7 @@ void mutex_lock(mutex_t* mutex) {
     }
     // 该锁被其它任务拥有, 阻塞, 将其放到等待队列
     else {
-        set_task_block(curr);
+        task_set_block(curr);
         list_insert_last(&mutex->wait_list, &curr->wait_node);
         task_dispatch();
     }
@@ -56,7 +54,7 @@ void mutex_unlock(mutex_t* mutex) {
                 task_t* task = entry_of(node, task_t, wait_node);
 
                 // 加到就绪队列中
-                set_task_ready(task);
+                task_set_ready(task);
 
                 // 修改锁的状态
                 mutex->count = 1;
@@ -66,6 +64,5 @@ void mutex_unlock(mutex_t* mutex) {
             }
         }
     }
-
     irq_leave_protection(state);
 }
