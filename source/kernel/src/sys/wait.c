@@ -18,6 +18,7 @@ int sys_wait(int* status) {
 
                 vmem_destory_uvms(p->tss.cr3);
                 vmem_free_page(p->tss.esp0 - MEM_PAGE_SIZE);
+                list_remove(&task_manager.task_list, &p->all_node);
                 kmemset(p, 0, sizeof(task_t));
             
                 mutex_unlock(&task_table_mutex);
@@ -28,11 +29,9 @@ int sys_wait(int* status) {
 
         // 找不到则等待, 知道有子进程调用 exit
         irq_state_t state = irq_enter_protection();
-        task_set_block(task);
-        task->state = TASK_WAITTING;
+        task->state = TASK_WAITING;
         task_dispatch();
         irq_leave_protection(state);
     }
-
     return 0;
 }

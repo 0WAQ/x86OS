@@ -6,6 +6,7 @@
 
 #include "sys/syscall_t.h"
 
+#include "task/cfs.h"
 #include "task/task.h"
 #include "memory/pmem.h"
 #include "memory/vmem.h"
@@ -79,6 +80,8 @@ int sys_gettimeofday(struct timeval* tv, struct timezone* tz);
 ////////////////////////////////////////////////////////////////////
 
 #ifdef SYSCALL_T_H
+#endif
+#ifdef CFS_H
 #endif
 #ifdef TASK_H
 #endif

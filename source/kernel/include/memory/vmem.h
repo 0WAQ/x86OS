@@ -15,7 +15,7 @@ int vmem_unmap_pages(pde_t* page_dir, u32_t vaddr, u32_t page_nr);
 int vmem_unmap_range(pde_t* page_dir, u32_t vstart, u32_t size);
 
 /**
- * @brief 为指定页目录表分配虚拟内存
+ * @brief 为指定页目录表分配虚拟内存, 并且进行映射
  */
 int vmem_alloc_page(u32_t page_dir, u32_t vaddr, u32_t size, u32_t perm);
 void vmem_free_page(u32_t vaddr); // TODO: To be changed

@@ -296,9 +296,7 @@ void do_handler_page_fault(exception_frame_t * frame) {
     
     if (frame->errno & ERR_PAGE_WR) {
         log_print("  The access causing the fault was a write: 0x%x", read_cr2());
-
-		// 写保护异常
-		vmem_do_wp_page(read_cr2());
+		vmem_do_wp_page(read_cr2());	// 写保护异常
 		goto page_fault;
 	} else {
         log_print("  The access causing the fault was a read: 0x%x", read_cr2());

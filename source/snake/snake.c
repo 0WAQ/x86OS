@@ -17,7 +17,11 @@ static bool is_quit = false;
 static snake_node_t* food;
 static snake_t snake;
 
-int main (int argc, char ** argv) {
+int main(int argc, char** argv) {
+	printf("...snake...\n");
+}
+
+int main1 (int argc, char ** argv) {
 	// 关闭按键回显
 	ioctl(0, TTY_CMD_ECHO, 0, 0);
 
@@ -100,7 +104,7 @@ static void start_game() {
 
 		// 睡眠10s
 		msleep(10);
-	}while (1);
+	} while (1);
 }
 
 static void init_map() {

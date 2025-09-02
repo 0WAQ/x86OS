@@ -1,7 +1,7 @@
 #include "sys/syscall.h"
 
+// TODO: 发现 bug, 当在 shell 中递归使用 shell 后进行退出时, 会 page fault
 void sys_exit(int status) {
-
     // 清空任务相关的资源
     task_t* curr_task = get_curr_task();
 
@@ -14,7 +14,8 @@ void sys_exit(int status) {
         }
     }
 
-    int move_child = 0;
+    // 判断是否需要将子进程交给 1 号进程管理
+    bool move_child = false;
 
     ////////////////////////////////////////////////
     mutex_lock(&task_table_mutex);
@@ -27,7 +28,7 @@ void sys_exit(int status) {
 
                 // 若有子进程是 zombie 态
                 if(p->state == TASK_ZOMBIE) {
-                    move_child = 1;
+                    move_child = true;
                 }
             }
         }
@@ -38,16 +39,17 @@ void sys_exit(int status) {
     irq_state_t state = irq_enter_protection();
 
     task_t* parent = curr_task->parent;
+
+    // 当前进程的子进程由 1 号进程回收
     if(move_child && (parent != task_manager.first_task)) {
-        if(task_manager.first_task->state == TASK_WAITTING) {
+        if(task_manager.first_task->state == TASK_WAITING) {
             task_set_ready(task_manager.first_task);
         }
     }
-    if(parent->state == TASK_WAITTING) {
+    if(parent->state == TASK_WAITING) {
         task_set_ready(parent);
     }
 
-    task_set_block(curr_task);
     curr_task->state = TASK_ZOMBIE;
     curr_task->status = status;      // 保存进程退出时的状态
     task_dispatch();

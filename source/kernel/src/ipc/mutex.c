@@ -28,7 +28,7 @@ void mutex_lock(mutex_t* mutex) {
     }
     // 该锁被其它任务拥有, 阻塞, 将其放到等待队列
     else {
-        task_set_block(curr);
+        curr->state = TASK_WAITING;
         list_insert_last(&mutex->wait_list, &curr->wait_node);
         task_dispatch();
     }

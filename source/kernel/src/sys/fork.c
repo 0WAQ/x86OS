@@ -12,8 +12,9 @@ int sys_fork() {
             (exception_frame_t*)(parent->tss.esp0 - sizeof(exception_frame_t));
 
     // 初始化子进程
-    int ret = task_init(child, parent->name, 0, frame->eip,
-                        frame->esp3);
+    int ret = task_init(child, &task_manager.cfs_rq, parent->prio,
+                parent->name, 0, frame->eip, frame->esp3);
+    
     if(ret < 0) {
         goto sys_fork_failed;
     }

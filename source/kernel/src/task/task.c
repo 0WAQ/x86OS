@@ -10,6 +10,7 @@
 #include "cpu/mmu.h"
 #include "cpu/tss.h"
 #include "fs/file.h"
+#include "task/cfs.h"
 #include "tools/list.h"
 #include "tools/log.h"
 #include "tools/klib.h"
@@ -23,7 +24,11 @@ task_manager_t task_manager;
 task_t task_table[TASK_NR];
 mutex_t task_table_mutex;
 
-int task_init(task_t* task, const char* name, u32_t flag, u32_t entry, u32_t esp) {
+extern const u32_t sched_nice_to_weight[40];
+
+int task_init(task_t* task, cfs_rq_t* rq, int prio,
+        const char* name, u32_t flag, u32_t entry, u32_t esp)
+{
     ASSERT(task != NULL);
 
     // 初始化tss
@@ -51,18 +56,24 @@ int task_init(task_t* task, const char* name, u32_t flag, u32_t entry, u32_t esp
     task->heap_end = 0;
     task->parent = task_manager.curr_task;
     task->state = TASK_CREATED;
-    task->time_ticks = TASK_TIME_SLICE_DEFAULT;
-    task->slice_ticks = task->time_ticks;
     task->sleep_ticks = 0;
     task->status = 0;
+    task->prio = prio;
+    
+    sched_entity_t* se = &task->sched_entity;
+    se->on_rq = false;
+    se->load.weight = sched_nice_to_weight[prio + 20];
+    // TODO: 实际不应该这样, 因为若有很多任务不断加入, 那么其余任务会被一直抢占    
+    se->vruntime = rq->min_vruntime;
+
+    rb_node_init(&se->cfs_node);
 
     list_node_init(&task->all_node);
+    list_node_init(&task->sleep_node);
     list_node_init(&task->wait_node);
-    list_node_init(&task->run_node);
 
     // 初始化文件表
     kmemset((void*)&task->file_table, 0, sizeof(task->file_table));
-
     return 0;
 }
 
@@ -82,15 +93,12 @@ void task_uninit(task_t* task) {
     if(task->tss_sel) {
         gdt_free_desc_with_guard(task->tss_sel);
     }
-
     if(task->tss.esp0) {
         vmem_free_page(task->tss.esp - MEM_PAGE_SIZE);
     }
-
     if(task->tss.cr3) {
         vmem_destory_uvms(task->tss.cr3);
     }
-
     kmemset(task, 0, sizeof(task_t));
 }
 
@@ -119,18 +127,21 @@ void task_manager_init() {
     );
     task_manager.code_sel = code_sel;
 
-    list_init(&task_manager.ready_list);
+    cfs_init(&task_manager.cfs_rq);
     list_init(&task_manager.task_list);
     list_init(&task_manager.sleep_list);
 
     // 初始化空闲任务
     u32_t flag = TASK_FLAGS_SYSTEM;
     task_manager.idle_task = task_alloc();
-    task_init(task_manager.idle_task, "idle task", flag, (u32_t)idle_task_entry, 0);
+    // TODO: 不应该将 idle task 放入到 调度队列中, 只有 cfs 中没有任务才运行它, 所以其压根不是
+    task_init(task_manager.idle_task, &task_manager.cfs_rq, 0,
+        "idle task", flag, (u32_t)idle_task_entry, 0);
 
     task_manager.curr_task = NULL;
 
-    task_start(task_manager.idle_task);
+    list_insert_last(&task_manager.task_list, &task_manager.idle_task->all_node);
+    task_manager.idle_task->state = TASK_READY;
 }
 
 void first_task_init() {
@@ -153,8 +164,9 @@ void first_task_init() {
 
     u32_t flag = TASK_FLAGS_USER;
     task_manager.first_task = task_alloc();
-    task_init(task_manager.first_task, "first task", flag, 
-            (u32_t)first_task_entry, (u32_t)first_task_entry + alloc_size);
+    // TEST:
+    task_init(task_manager.first_task, &task_manager.cfs_rq, 0,
+        "first task", flag, (u32_t)first_task_entry, (u32_t)first_task_entry + alloc_size);
     
     task_manager.first_task->heap_start = (u32_t)e_first_task;
     task_manager.first_task->heap_end = (u32_t)e_first_task;
@@ -173,8 +185,8 @@ void first_task_init() {
     // 将first_task从内核移指用户
     kmemcpy((void*)first_task_entry, (void*)&s_first_task, copy_size);
 
-    // 启动一号进程
-    task_start(task_manager.first_task);
+    list_insert_last(&task_manager.task_list, &task_manager.first_task->all_node);
+    task_manager.first_task->state = TASK_READY;
 }
 
 static task_t* get_first_task() {
@@ -191,30 +203,21 @@ static void idle_task_entry() {
 
 void task_set_ready(task_t* task) {
     if (task != get_idle_task()) {
-        list_insert_last(&task_manager.ready_list, &task->run_node);
+        cfs_enqueue_task(&task_manager.cfs_rq, task);
         task->state = TASK_READY;
-    }
-}
-
-void task_set_block(task_t* task) {
-    if (task != get_idle_task()) {
-        // 执行删除
-        list_remove(&task_manager.ready_list, &task->run_node);
-
-        // 不设置状态，因为不确定
     }
 }
 
 void task_set_sleep(task_t* task, u32_t ticks) {
     if (ticks != 0) {
         task->sleep_ticks = ticks;
-        task->state = TASK_SLEEP;
-        list_insert_last(&task_manager.sleep_list, &task->run_node);
+        list_insert_last(&task_manager.sleep_list, &task->sleep_node);
+        task->state = TASK_SLEEPING;
     }
 }
 
 void task_set_wakeup(task_t* task) {
-    list_remove(&task_manager.sleep_list, &task->run_node);
+    list_remove(&task_manager.sleep_list, &task->sleep_node);
 }
 
 inline task_t* get_curr_task() {
@@ -222,12 +225,10 @@ inline task_t* get_curr_task() {
 }
 
 static task_t* get_next_task() {
-    if(list_count(&task_manager.ready_list) == 0) {
+    if (cfs_rq_empty(&task_manager.cfs_rq)) {
         return get_idle_task();
     }
-
-    list_node_t* task_node = list_first(&task_manager.ready_list);
-    return entry_of(task_node, task_t, run_node);
+    return cfs_pick_next_task(&task_manager.cfs_rq);
 }
 
 void task_dispatch() {
@@ -237,10 +238,23 @@ void task_dispatch() {
     task_t* from = get_curr_task();
     task_t* to   = get_next_task();
 
+    if (to != get_idle_task()) {
+        // cfs_dequeue_task(&task_manager.cfs_rq);
+        cfs_erase_task(&task_manager.cfs_rq, to);
+    }
+
+    if (from != get_idle_task()) {
+        u32_t delta_exec = 100; // TEST: 如何获取实际执行时间?
+        cfs_update_vruntime(&from->sched_entity, delta_exec);
+
+        if (from->state == TASK_READY) {
+            cfs_enqueue_task(&task_manager.cfs_rq, from);
+        }
+    }
+
     // 若与当前任务不相同, 那么就切换过去
     if(to != from) {
         task_manager.curr_task = to;
-        to->state = TASK_RUNNING;
         task_switch(from, to);
     }
 
@@ -248,26 +262,12 @@ void task_dispatch() {
 }
 
 void task_time_tick() {
-    task_t* curr_task = get_curr_task();
-
-    // 处理时间片
-    if(--curr_task->slice_ticks == 0) {
-        
-        // 时间片用完, 重新设置时间片
-        curr_task->slice_ticks = curr_task->time_ticks;
-
-        // 若就绪队列中还有其它任务,则将当前任务移入队列尾部
-        task_set_block(curr_task);  // 先删除
-        task_set_ready(curr_task);  // 再尾插
-    
-        task_dispatch();
-    }
-
+    // 处理睡眠队列中的任务
     list_node_t* curr = list_first(&task_manager.sleep_list);
     while(curr) {
         list_node_t* next = list_node_next(curr);
+        task_t* task = entry_of(curr, task_t, sleep_node);
 
-        task_t* task = entry_of(curr, task_t, run_node);
         // 睡眠时间已到
         if(--task->sleep_ticks == 0) {
             task_set_wakeup(task);

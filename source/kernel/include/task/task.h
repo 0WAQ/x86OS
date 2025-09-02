@@ -1,6 +1,8 @@
 #ifndef TASK_H
 #define TASK_H
 
+#include "common/types.h"
+#include "task/cfs_t.h"
 #include "task/task_t.h"
 #include "common/elf.h"
 
@@ -8,7 +10,9 @@
  * @brief 初始化任务
  * @param esp 任务的用户栈
  */
-int task_init(task_t* task, const char* name, u32_t flag, u32_t entry, u32_t esp);
+// TEST: int task_init(task_t* task, const char* name, u32_t flag, u32_t entry, u32_t esp);
+int task_init(task_t* task, cfs_rq_t* rq, int prio,
+        const char* name, u32_t flag, u32_t entry, u32_t esp);
 
 /**
  * @brief 将任务加入到运行队列中
@@ -26,7 +30,7 @@ void task_uninit(task_t* task);
 static void task_switch(task_t* from, task_t* to);
 
 /**
- * @brief 切换任务，不使用硬件，在core/task.S中实现 TODO:
+ * @brief 切换任务，不使用硬件，在core/task.S中实现 // TODO:
  */
 void simple_switch(u32_t** from, u32_t* to);
 
@@ -62,24 +66,9 @@ static void idle_task_entry();
  */
 task_t* get_curr_task();
 
-/**
- * @brief 将任务设置为就绪态
- */
 void task_set_ready(task_t* task);
 
-/**
- * @brief 将任务设置为block
- */
-void task_set_block(task_t* task);
-
-/**
- * @brief 将任务设置为sleep
- */
 void task_set_sleep(task_t* task, u32_t ticks);
-
-/**
- * @brief 将任务从sleep唤醒
- */
 void task_set_wakeup(task_t* task);
 
 /**

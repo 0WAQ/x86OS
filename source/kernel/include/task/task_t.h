@@ -2,6 +2,7 @@
 #define TASK_T_H
 
 #include "common/types.h"
+#include "task/cfs_t.h"
 #include "tools/list_t.h"
 #include "cpu/tss_t.h"
 #include "fs/file_t.h"
@@ -24,11 +25,10 @@ typedef struct _task_t {
     enum {
         TASK_CREATED,
         TASK_READY,
-        TASK_RUNNING,
-        TASK_SLEEP,
-        TASK_WAITTING,
+        TASK_SLEEPING,
+        TASK_WAITING,
         TASK_ZOMBIE
-    }state;
+    } state;
 
     // 记录堆区的位置
     u32_t heap_start;
@@ -40,16 +40,16 @@ typedef struct _task_t {
     struct _tss_t tss;
     int tss_sel;    // 该任务对应的tss段的选择子
 
-    list_node_t run_node;   // task在就绪队列中的节点
-    list_node_t wait_node;  // task在等待队列(信号量)中的节点
-    list_node_t all_node;   // task在任务队列中的节点
+    sched_entity_t sched_entity;    // TEST: task 的调度实体, 目前只支持 cfs 调度
+    list_node_t sleep_node;         // TODO: 是否删除
+    list_node_t wait_node;          // task在等待队列(信号量)中的节点
+    list_node_t all_node;           // task在任务队列中的节点
 
     char name[TASK_NAME_SIZE];    // 任务名称
 
-    // 每个时间片是100ms
-    u32_t slice_ticks;   // 时间片计数(递减)
-    u32_t time_ticks;    // 时间片
-    u32_t sleep_ticks;   // 
+    u32_t sleep_ticks;   // 睡眠时间
+
+    int prio; // TEST: 任务优先级
 
     file_t* file_table[TASK_OFILE_NR];      // 任务打开的文件表
 
@@ -63,7 +63,7 @@ typedef struct _task_t {
 typedef struct _task_manager_t {
     task_t* curr_task;  // 当前运行进程
 
-    list_t ready_list;  // 就绪队列
+    cfs_rq_t cfs_rq;  // TEST: 就绪队列, 使用 cfs 调度
     list_t task_list;   // 任务队列
     list_t sleep_list;  // 睡眠队列
 

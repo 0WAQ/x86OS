@@ -9,8 +9,7 @@
 extern task_manager_t task_manager;
 
 int tss_init(tss_t* tss, u32_t flag, u32_t entry, u32_t esp) {
-    
-// 1.创建tss, 注册到gdt中
+// 1. 创建tss, 注册到gdt中
 
     // 分配一个gdt表项
     int tss_sel = gdt_alloc_desc_with_guard();
@@ -18,61 +17,58 @@ int tss_init(tss_t* tss, u32_t flag, u32_t entry, u32_t esp) {
         goto tss_init_failed;
     }
 
-    // 注册为tss段，段的起始地址就是&task->tss，偏移为tss的大小
+    // 注册为 tss 段，段的起始地址就是 &task->tss, 偏移为 tss 的大小
     set_segment_desc(tss_sel, (u32_t)tss, sizeof(tss_t), 
         DESC_ATTR_P | DESC_ATTR_DPL0 | DESC_ATTR_TYPE_TSS   
     );
 
-// 2.初始化tss段
+// 2. 初始化 tss 段
     kmemset(tss, 0, sizeof(tss_t));
 
+    // 2.1 初始化任务的各种段
     int code_sel, data_sel;
-    if(flag & TASK_FLAGS_SYSTEM) {
+    if(flag & TASK_FLAGS_SYSTEM) {  // 内核任务
         code_sel = KERNEL_SELECTOR_CS;
         data_sel = KERNEL_SELECTOR_DS;    
     }
-    else {
-        // 使用数据段寄存器访问段时要算上RPL
+    else { // 用户任务
         code_sel = task_manager.code_sel | DESC_ATTR_RPL3;
         data_sel = task_manager.data_sel | DESC_ATTR_RPL3;
     }
-    tss->cs = code_sel;
-    tss->ss = tss->ds = tss->es = tss->fs = tss->gs = data_sel;
+    tss->cs = code_sel;     // 代码段
+    tss->ds = tss->es = tss->fs = tss->gs = data_sel; // 数据段
+    tss->ss = data_sel;     // 用户栈段
+    tss->ss0 = KERNEL_SELECTOR_DS;     // 内核栈v段
 
-
-    tss->ss0 = KERNEL_SELECTOR_DS;     // 任务的内核栈段
-
-    // 分配一页内存作为内核栈
-    u32_t kernel_stack = pmem_alloc_page();
-    if(kernel_stack == 0) {
-        goto tss_init_failed;
-    }
-
-    // 若未指定用户栈那么就用内核栈, 一般是特权级为0的进程, 如idle
-    tss->esp = esp ? esp : kernel_stack + MEM_PAGE_SIZE;
-    tss->esp0 = kernel_stack + MEM_PAGE_SIZE;
-
-    tss->eip = entry;
-    tss->eflags = EFLAGS_DEFAULT | EFLAGS_IF;
-    
-    tss->iomap = 0;
-
-    // 创建用户自己的页目录表
+    // 2.3. 创建页目录表
     u32_t page_dir = vmem_create_uvms();
     if(page_dir == 0) {
         goto tss_init_failed;
     }
     tss->cr3 = page_dir;
 
+    // 2.2. 初始化任务的各种寄存器
+    u32_t kernel_stack_start = pmem_alloc_page();
+    if(kernel_stack_start == 0) {
+        goto tss_init_failed;
+    }
+
+    // 若未指定用户栈那么就用内核栈, 一般是特权级为0的进程, 如 idle
+    tss->esp = esp ? esp : kernel_stack_start + MEM_PAGE_SIZE;  // 用户栈, 由用户自行分配
+    tss->esp0 = kernel_stack_start + MEM_PAGE_SIZE; // 内核栈
+    tss->eip = entry;
+    tss->eflags = EFLAGS_DEFAULT | EFLAGS_IF;
+    tss->iomap = 0;
+
     return tss_sel;
 
 tss_init_failed:
     gdt_free_desc_with_guard(tss_sel);
-    if(kernel_stack) {
-        vmem_free_page(kernel_stack);
-    }
     if(page_dir) {
         gdt_free_desc_with_guard(tss_sel);
+    }
+    if(kernel_stack_start) {
+        pmem_free_page(kernel_stack_start);
     }
     return -1;
 }

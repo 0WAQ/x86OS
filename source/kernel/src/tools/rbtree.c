@@ -12,6 +12,11 @@ void rb_link_node(rb_node* node, rb_node* parent, rb_node** rb_link) {
     *rb_link = node;
 }
 
+void rb_node_init(rb_node* node) {
+	node->rb_left = node->rb_right = node->rb_parent = (void*)0;
+	node->rb_color = RB_RED;
+}
+
 void __rb_rotate_left(rb_node* node, rb_root* root)	 {
 	/**
 	 * 

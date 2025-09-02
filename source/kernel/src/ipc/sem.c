@@ -9,7 +9,6 @@ void sem_init(sem_t* sem, u32_t count) {
 }
 
 void sem_wait(sem_t* sem) {
-    
     irq_state_t state =  irq_enter_protection();
 
     // 若计数大于0, 则获取信号量
@@ -18,20 +17,18 @@ void sem_wait(sem_t* sem) {
     }
     else {  // 否则将任务从运行队列中删除, 加入等待队列
         task_t* curr = get_curr_task();
-        task_set_block(curr);
+        curr->state = TASK_WAITING;
         list_insert_last(&sem->wait_list, &curr->wait_node);
     
         // 任务调度
         task_dispatch();
     }
-
     irq_leave_protection(state);
 }
 
 void sem_notify(sem_t* sem) {
-    
     irq_state_t state = irq_enter_protection();
-    
+
     // 若等待队列中有任务, 则将第一个任务移指就绪队列
     if(list_count(&sem->wait_list) > 0) {
         list_node_t* node = list_remove_first(&sem->wait_list);
@@ -45,15 +42,12 @@ void sem_notify(sem_t* sem) {
     else {
         ++sem->count;
     }
-
     irq_leave_protection(state);
 }
 
 u32_t sem_count(sem_t* sem) {
-
     irq_state_t state = irq_enter_protection();
     u32_t count = sem->count;
     irq_leave_protection(state);
-
     return count;
 }

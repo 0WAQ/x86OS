@@ -10,6 +10,8 @@
  */
 void rb_link_node(rb_node* node, rb_node* parent, rb_node** rb_link);
 
+void rb_node_init(rb_node* node);
+
 static void __rb_rotate_left(rb_node* node, rb_root* root);
 static void __rb_rotate_right(rb_node* node, rb_root* root);
 

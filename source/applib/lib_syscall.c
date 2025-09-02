@@ -22,7 +22,6 @@ int msleep(int ms) {
     if(ms <= 0) {
         return 0;
     }
-
     syscall_args_t args;
     args.arg0 = ms;
     return syscall(SYS_sleep, &args);
