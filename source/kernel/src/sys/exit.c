@@ -34,10 +34,7 @@ void sys_exit(int status) {
     }
     mutex_unlock(&task_table_mutex);
     ////////////////////////////////////////////////
-
-    curr_task->state = TASK_ZOMBIE;
-    curr_task->status = status;      // 保存进程退出时的状态
-
+    
     irq_state_t state = irq_enter_protection();
 
     task_t* parent = curr_task->parent;
@@ -46,12 +43,13 @@ void sys_exit(int status) {
             task_set_ready(task_manager.first_task);
         }
     }
-
     if(parent->state == TASK_WAITTING) {
         task_set_ready(parent);
     }
 
     task_set_block(curr_task);
+    curr_task->state = TASK_ZOMBIE;
+    curr_task->status = status;      // 保存进程退出时的状态
     task_dispatch();
 
     irq_leave_protection(state);

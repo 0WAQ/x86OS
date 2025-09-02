@@ -16,7 +16,7 @@
 cli_t cli;
 static const char* promot = "sh >> ";
 
-static cli_cmd_t cmd_table[] = {
+static const cli_cmd_t cmd_table[] = {
     {
         .name = "help",
         .usage = "-- list supported commmand.",
@@ -69,7 +69,7 @@ int main(int argc, char** argv) {
     dup(fd);
     dup(fd);
 
-    cli_init(promot, cmd_table, sizeof(cmd_table) / sizeof(cmd_table[0]));
+    cli_init(promot, cmd_table, sizeof(cmd_table) / sizeof(cli_cmd_t));
 
     while(1) {
         show_pormot();
@@ -116,7 +116,7 @@ int main(int argc, char** argv) {
     }
 }
 
-void cli_init(const char* promot, cli_cmd_t* cmd_table, int size) {
+void cli_init(const char* promot, const cli_cmd_t* cmd_table, int size) {
     cli.promot = promot;
     memset(cli.ibuf, 0, CLI_IBUF_SIZE);
     cli.cmd_start = cmd_table;
@@ -168,15 +168,13 @@ static void run_exec_file(const char* path, int argc, char** argv) {
     int pid = fork();
     if(pid < 0) {
         fprintf(stderr, "fork failed %s", path);
-    }
-    else if(pid == 0) {
+    } else if(pid == 0) {
         int ret = execve(path, argv, NULL);
         if(ret < 0) {
             fprintf(stderr, "exec failed: %s\n", path);
         }
         exit(-1);
-    }
-    else {
+    } else {
         int status;
         int pid = wait(&status);
         fprintf(stderr, "cmd %s result: %d, pid: %d\n", path, status, pid);

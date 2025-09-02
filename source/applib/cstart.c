@@ -14,5 +14,6 @@ void cstart(int argc, char** argv) {
         *start++ = 0;
     }
 
-    exit(main(argc, argv));
+    int ret = main(argc, argv);
+    exit(ret);
 }

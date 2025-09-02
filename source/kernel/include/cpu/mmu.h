@@ -13,8 +13,8 @@ pte_t* find_pte(pde_t* page_dir, u32_t vaddr, bool is_alloc);
 
 // 重新加载CR3寄存器
 static inline
-void mmu_set_page_dir(u32_t paddr) {
-    write_cr3(paddr);
+void mmu_set_page_dir(u32_t addr) {
+    write_cr3(addr);
 }
 
 // 根据虚拟地址, 获取页目录项的索引(一个小页表)

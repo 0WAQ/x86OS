@@ -12,6 +12,9 @@ int sys_execve(char* path, char** argv, char** env) {
     // 创建新的页目录表, 防止在中途出现错误
     u32_t old_page_dir = task->tss.cr3;
     u32_t new_page_dir = vmem_create_uvms();
+    if (!new_page_dir) {
+        goto sys_execve_failed;
+    }
 
     // 解析elf文件到内存中
     u32_t entry = load_elf_file(task, path, new_page_dir);   // TODO: 第二个参数
@@ -19,13 +22,11 @@ int sys_execve(char* path, char** argv, char** env) {
         goto sys_execve_failed;
     }
 
-    // TODO: 用户栈不是已经分配过了吗
-
     // 准备用户栈, 为环境变量与参数预留足够的空间
     u32_t stack_top = MEM_TASK_STACK_TOP - MEM_TASK_ARG_SIZE;
     int ret = vmem_alloc_page(new_page_dir, 
-                                     MEM_TASK_STACK_TOP - MEM_TASK_STACK_SIZE, 
-                                     MEM_TASK_STACK_SIZE, PTE_P | PTE_U | PTE_W);
+                            MEM_TASK_STACK_TOP - MEM_TASK_STACK_SIZE, 
+                            MEM_TASK_STACK_SIZE, PTE_P | PTE_U | PTE_W);
     if(ret < 0) {
         goto sys_execve_failed;
     }
@@ -40,7 +41,6 @@ int sys_execve(char* path, char** argv, char** env) {
     /// 加载完毕
 
     // 改变当前进程的执行流以替换进程
-    // syscall_frame_t* frame = (syscall_frame_t*)(task->tss.esp0 - sizeof(syscall_frame_t));
     exception_frame_t* frame = (exception_frame_t*)(task->tss.esp0 - sizeof(exception_frame_t));
     frame->eip = entry;
     frame->eax = frame->ebx = frame->ecx = frame->edx = 0;
@@ -60,7 +60,6 @@ int sys_execve(char* path, char** argv, char** env) {
     return 0;
 
 sys_execve_failed:
-
     // 切换至旧页表, 销毁新页表
     if(new_page_dir) {
         task->tss.cr3 = old_page_dir;

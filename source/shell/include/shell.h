@@ -6,7 +6,7 @@
 /**
  * @brief 初始化命令行接口
  */
-static void cli_init(const char* promot, cli_cmd_t* cmd_table, int size);
+static void cli_init(const char* promot, const cli_cmd_t* cmd_table, int size);
 
 /**
  * @brief 打印命令提示符

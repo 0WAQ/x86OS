@@ -1,22 +1,19 @@
 #include "sys/syscall.h"
 
 int sys_fork() {
-
     task_t* parent = get_curr_task();
-
-    // 分配任务结构
     task_t* child = task_alloc();
     if(child == NULL) {
         goto sys_fork_failed;
     }
 
-    // 获取父进程的栈0的esp寄存器(只有在切换走时才被更新), 强转为syscall_frame_t*
-    exception_frame_t* frame = (exception_frame_t*)(parent->tss.esp0 - sizeof(exception_frame_t));
+    // 获取父进程的内核栈的 esp 寄存器(只有在切换走时才被更新), 转换为 exception_frame_t*
+    exception_frame_t* frame =
+            (exception_frame_t*)(parent->tss.esp0 - sizeof(exception_frame_t));
 
     // 初始化子进程
     int ret = task_init(child, parent->name, 0, frame->eip,
                         frame->esp3);
-    
     if(ret < 0) {
         goto sys_fork_failed;
     }

@@ -155,21 +155,17 @@ void vmem_destory_uvms(u32_t page_dir) {
         if(!pde->present) {
             continue;
         }
-
         pte_t* pte = (pte_t*)pde_addr(pde);
         for(int j = 0; j < PTE_CNT; ++j, ++pte) {
             if(!pte->present) {
                 continue;
             }
-            
             // 释放页
             pmem_free_page(pte_addr(pte));
         }
-
         // 释放页目录项
         pmem_free_page(pde_addr(pde));
     }
-
     // 释放页目录表
     pmem_free_page(page_dir);
 }
